@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>GlamTec · AR</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { overflow:hidden; background:#000; font-family:system-ui,sans-serif; }
+    canvas { display:block; }
+
+    #header {
+      position:fixed; top:0; left:0; right:0; z-index:999;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 20px;
+      background:linear-gradient(180deg,rgba(0,0,0,0.7) 0%,transparent 100%);
+      pointer-events:none;
+    }
+    .logo { font-family:Georgia,serif; font-size:20px; font-weight:700; color:#fff; }
+    .badge {
+      background:rgba(255,255,255,0.15); color:#fff;
+      font-size:10px; font-weight:700; padding:4px 12px;
+      border-radius:20px; letter-spacing:0.12em; text-transform:uppercase;
+      border:1px solid rgba(255,255,255,0.2);
+    }
+
+    #panel {
+      position:fixed; bottom:0; left:0; right:0; z-index:999;
+      background:rgba(255,255,255,0.97);
+      border-radius:20px 20px 0 0;
+      padding:12px 20px 36px;
+      box-shadow:0 -8px 40px rgba(0,0,0,0.2);
+    }
+    .handle { width:40px; height:4px; background:#e2e8f0; border-radius:2px; margin:0 auto 12px; }
+    .product-name { font-size:16px; font-weight:700; color:#0f172a; font-family:Georgia,serif; margin-bottom:4px; }
+    .product-hint { font-size:12px; color:#94a3b8; margin-bottom:14px; }
+    .controls-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .ctrl-label { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.1em; min-width:60px; }
+    .ctrl-btn {
+      width:38px; height:38px; border-radius:50%;
+      background:#1e3a8a; color:#fff; border:none;
+      font-size:20px; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .ctrl-val { font-size:13px; font-weight:700; color:#1e3a8a; min-width:44px; text-align:center; }
+    .ctrl-btn-wide {
+      flex:1; padding:9px;
+      background:#f1f5f9; color:#1e3a8a;
+      border:1.5px solid #e2e8f0; border-radius:10px;
+      font-size:12px; font-weight:700; cursor:pointer;
+    }
+
+    /* Bouton START AR */
+    #start-btn {
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      width:100%; padding:14px;
+      background:#1e3a8a; color:#fff;
+      border:none; border-radius:12px;
+      font-size:15px; font-weight:700; cursor:pointer;
+      margin-bottom:14px;
+      font-family:system-ui,sans-serif;
+      transition:background 0.2s;
+    }
+    #start-btn:hover { background:#1e40af; }
+    #start-btn.started { background:#16a34a; }
+
+    /* Hint tap */
+    #tap-hint {
+      position:fixed; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      z-index:998; pointer-events:none;
+      text-align:center; transition:opacity 0.5s;
+      display:none;
+    }
+    #tap-hint.visible { display:block; }
+    #tap-hint.hidden { opacity:0; }
+    .tap-circle {
+      width:80px; height:80px;
+      border:3px solid rgba(255,255,255,0.8);
+      border-radius:50%; margin:0 auto 12px;
+      animation:pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform:scale(1); opacity:0.7; }
+      50% { transform:scale(1.15); opacity:1; }
+    }
+    .tap-text {
+      color:#fff; font-size:14px; font-weight:600;
+      background:rgba(0,0,0,0.55); backdrop-filter:blur(8px);
+      padding:8px 18px; border-radius:20px;
+      border:1px solid rgba(255,255,255,0.2);
+    }
+
+    #loading {
+      position:fixed; inset:0; z-index:9999;
+      background:#0f172a;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:20px;
+    }
+    .loading-logo { font-family:Georgia,serif; font-size:28px; font-weight:700; color:#fff; }
+    .loading-sub { font-size:13px; color:rgba(255,255,255,0.45); text-align:center; padding:0 24px; }
+    .spinner {
+      width:44px; height:44px;
+      border:3px solid rgba(255,255,255,0.1);
+      border-top-color:#fff; border-radius:50%;
+      animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    #no-webxr {
+      display:none; position:fixed; inset:0; z-index:9999;
+      background:#0f172a; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:16px; padding:40px; text-align:center;
+    }
+    #no-webxr h2 { color:#fff; font-family:Georgia,serif; font-size:22px; }
+    #no-webxr p { color:rgba(255,255,255,0.55); font-size:14px; line-height:1.7; }
+    #no-webxr .tip {
+      background:rgba(255,255,255,0.07);
+      border-radius:12px; padding:16px 20px;
+      color:rgba(255,255,255,0.6); font-size:13px; line-height:1.8;
+      border:1px solid rgba(255,255,255,0.1);
+      text-align:left;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading">
+    <div class="loading-logo">GlamTec</div>
+    <div class="spinner"></div>
+    <div class="loading-sub" id="loading-sub">Chargement du modèle…</div>
+  </div>
+
+  <div id="no-webxr">
+    <h2>AR non disponible</h2>
+    <p>Votre navigateur ne supporte pas la réalité augmentée.</p>
+    <div class="tip">
+      📱 <strong>Sur Android :</strong> Chrome + ARCore installé<br/>
+      🍎 <strong>Sur iPhone :</strong> Safari iOS 15+<br/>
+      💻 <strong>Sur PC :</strong> Utilisez votre téléphone pour scanner le QR
+    </div>
+  </div>
+
+  <div id="header">
+    <span class="logo">GlamTec</span>
+    <span class="badge">AR Try-On</span>
+  </div>
+
+  <div id="tap-hint">
+    <div class="tap-circle"></div>
+    <div class="tap-text">👆 Touchez pour poser le produit</div>
+  </div>
+
+  <div id="panel">
+    <div class="handle"></div>
+    <div class="product-name" id="product-name">Chargement…</div>
+    <div class="product-hint" id="product-hint">Appuyez sur "Lancer l'AR" puis touchez le sol</div>
+
+    <button id="start-btn" onclick="startAR()">
+      📷 Lancer l'AR
+    </button>
+
+    <div class="controls-row">
+      <span class="ctrl-label">Taille</span>
+      <button class="ctrl-btn" onclick="changeScale(-0.1)">−</button>
+      <span class="ctrl-val" id="scale-val">1.0×</span>
+      <button class="ctrl-btn" onclick="changeScale(+0.1)">+</button>
+    </div>
+    <div class="controls-row">
+      <span class="ctrl-label">Rotation</span>
+      <button class="ctrl-btn-wide" onclick="changeRot(-15)">↺ Gauche</button>
+      <button class="ctrl-btn-wide" onclick="changeRot(+15)">↻ Droite</button>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+
+    var PRODUCTS = {
+      "tshirt-basic":     { name:"T-Shirt Basic",     model:"/models/male_basic_t_shirt.glb", scale:0.4 },
+      "tshirt-oversized": { name:"Oversized T-Shirt", model:"/models/oversized_t-shirt.glb",  scale:0.4 },
+      "tshirt-2":         { name:"T-Shirt Style 2",   model:"/models/t-shirt (2).glb",         scale:0.4 },
+    };
+
+    var params    = new URLSearchParams(window.location.search);
+    var productId = params.get("product") || "tshirt-basic";
+    var product   = PRODUCTS[productId];
+
+    if (!product) {
+      document.getElementById("loading").style.display   = "none";
+      document.getElementById("no-webxr").style.display  = "flex";
+      document.querySelector("#no-webxr h2").textContent  = "Produit introuvable";
+      document.querySelector("#no-webxr p").textContent   = 'Produit "'+productId+'" inconnu.';
+      return;
+    }
+
+    document.getElementById("product-name").textContent = product.name;
+
+    // ── Three.js setup ──
+    var scene    = new THREE.Scene();
+    var camera   = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 20);
+    var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.xr.enabled = true;
+    document.body.insertBefore(renderer.domElement, document.getElementById("header"));
+
+    // Éclairage
+    scene.add(new THREE.AmbientLight(0xffffff, 2));
+    var d1 = new THREE.DirectionalLight(0xffffff, 1.5);
+    d1.position.set(5,8,5); scene.add(d1);
+    var d2 = new THREE.DirectionalLight(0xffffff, 0.8);
+    d2.position.set(-5,3,3); scene.add(d2);
+
+    // Réticule (cercle sur le sol)
+    var reticle = new THREE.Mesh(
+      new THREE.RingGeometry(0.08, 0.10, 32).rotateX(-Math.PI/2),
+      new THREE.MeshBasicMaterial({ color:0x1e3a8a, side:THREE.DoubleSide })
+    );
+    reticle.visible = false;
+    scene.add(reticle);
+
+    // Modèle 3D
+    var model3D      = null;
+    var placed       = false;
+    var currentScale = product.scale;
+    var currentRotY  = 0;
+    var hitTestSource = null;
+    var hitTestSourceRequested = false;
+
+    var loader = new THREE.GLTFLoader();
+    loader.load(
+      product.model,
+      function(gltf) {
+        model3D = gltf.scene;
+        model3D.scale.setScalar(currentScale);
+        model3D.visible = false;
+        scene.add(model3D);
+        document.getElementById("loading").style.display = "none";
+      },
+      function(xhr) {
+        if (xhr.total > 0) {
+          var pct = Math.round(xhr.loaded/xhr.total*100);
+          document.getElementById("loading-sub").textContent = "Chargement… "+pct+"%";
+        }
+      },
+      function() {
+        document.getElementById("loading").style.display = "none";
+        alert("Erreur: impossible de charger le modèle 3D");
+      }
+    );
+
+    // ── Lancer WebXR AR ──
+    window.startAR = function() {
+      if (!navigator.xr) {
+        document.getElementById("no-webxr").style.display = "flex";
+        return;
+      }
+      navigator.xr.isSessionSupported("immersive-ar").then(function(supported) {
+        if (!supported) {
+          document.getElementById("no-webxr").style.display = "flex";
+          return;
+        }
+        navigator.xr.requestSession("immersive-ar", {
+          requiredFeatures: ["hit-test"],
+          optionalFeatures: ["dom-overlay"],
+          domOverlay: { root: document.body }
+        }).then(function(session) {
+          renderer.xr.setReferenceSpaceType("local");
+          renderer.xr.setSession(session);
+
+          var btn = document.getElementById("start-btn");
+          btn.textContent = "✅ AR actif";
+          btn.classList.add("started");
+          btn.onclick = null;
+
+          document.getElementById("tap-hint").classList.add("visible");
+          document.getElementById("product-hint").textContent = "Touchez le sol pour poser le produit";
+
+          // Tap pour placer le modèle
+          session.addEventListener("select", function() {
+            if (reticle.visible && model3D) {
+              model3D.position.setFromMatrixPosition(reticle.matrix);
+              model3D.rotation.y = currentRotY;
+              model3D.visible = true;
+              placed = true;
+              document.getElementById("tap-hint").classList.add("hidden");
+            }
+          });
+
+          renderer.setAnimationLoop(function(timestamp, frame) {
+            if (frame) {
+              var referenceSpace = renderer.xr.getReferenceSpace();
+              var session = renderer.xr.getSession();
+
+              if (!hitTestSourceRequested) {
+                session.requestReferenceSpace("viewer").then(function(viewerSpace) {
+                  session.requestHitTestSource({ space: viewerSpace }).then(function(source) {
+                    hitTestSource = source;
+                  });
+                });
+                hitTestSourceRequested = true;
+              }
+
+              if (hitTestSource) {
+                var hitTestResults = frame.getHitTestResults(hitTestSource);
+                if (hitTestResults.length > 0) {
+                  var hit = hitTestResults[0];
+                  reticle.visible = true;
+                  reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
+                } else {
+                  reticle.visible = false;
+                }
+              }
+            }
+            renderer.render(scene, camera);
+          });
+
+          session.addEventListener("end", function() {
+            hitTestSource = null;
+            hitTestSourceRequested = false;
+            var btn = document.getElementById("start-btn");
+            btn.textContent = "📷 Lancer l'AR";
+            btn.classList.remove("started");
+            btn.onclick = window.startAR;
+          });
+        });
+      });
+    };
+
+    // ── Contrôles ──
+    window.changeScale = function(delta) {
+      currentScale = Math.max(0.1, Math.min(3.0, currentScale + delta));
+      if (model3D) model3D.scale.setScalar(currentScale);
+      document.getElementById("scale-val").textContent = currentScale.toFixed(1)+"×";
+    };
+
+    window.changeRot = function(delta) {
+      currentRotY = (currentRotY + delta * Math.PI/180) % (Math.PI*2);
+      if (model3D) model3D.rotation.y = currentRotY;
+    };
+
+    window.addEventListener("resize", function() {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+  })();
+  </script>
+</body>
+</html>

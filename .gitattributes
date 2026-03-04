@@ -1,0 +1,2 @@
+*.glb !text !filter !merge !diff
+*.usdz !text !filter !merge !diff

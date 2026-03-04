@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/((?!ar-product.html).*)", "destination": "/index.html" }
+  ]
+}
