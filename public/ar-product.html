@@ -30,12 +30,13 @@
       position:fixed; bottom:0; left:0; right:0; z-index:999;
       background:rgba(255,255,255,0.97);
       border-radius:20px 20px 0 0;
-      padding:12px 20px 36px;
+      padding:12px 20px 40px;
       box-shadow:0 -8px 40px rgba(0,0,0,0.2);
     }
-    .handle { width:40px; height:4px; background:#e2e8f0; border-radius:2px; margin:0 auto 12px; }
+    .handle { width:40px; height:4px; background:#e2e8f0; border-radius:2px; margin:0 auto 14px; }
     .product-name { font-size:16px; font-weight:700; color:#0f172a; font-family:Georgia,serif; margin-bottom:4px; }
-    .product-hint { font-size:12px; color:#94a3b8; margin-bottom:14px; }
+    .product-hint { font-size:12px; color:#94a3b8; margin-bottom:16px; }
+
     .controls-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
     .ctrl-label { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.1em; min-width:60px; }
     .ctrl-btn {
@@ -52,27 +53,47 @@
       font-size:12px; font-weight:700; cursor:pointer;
     }
 
-    /* Bouton START AR */
+    /* Bouton AR Android */
     #start-btn {
       display:flex; align-items:center; justify-content:center; gap:10px;
       width:100%; padding:14px;
       background:#1e3a8a; color:#fff;
       border:none; border-radius:12px;
       font-size:15px; font-weight:700; cursor:pointer;
-      margin-bottom:14px;
+      margin-bottom:12px;
       font-family:system-ui,sans-serif;
       transition:background 0.2s;
     }
     #start-btn:hover { background:#1e40af; }
     #start-btn.started { background:#16a34a; }
 
-    /* Hint tap */
+    /* Bouton Quick Look iPhone */
+    #ios-ar-btn {
+      display:none;
+      width:100%; padding:14px;
+      background:#000; color:#fff;
+      border:none; border-radius:12px;
+      font-size:15px; font-weight:700; cursor:pointer;
+      margin-bottom:12px;
+      font-family:system-ui,sans-serif;
+      text-decoration:none;
+      text-align:center;
+      align-items:center; justify-content:center; gap:10px;
+    }
+
+    /* Badge plateforme */
+    #platform-badge {
+      text-align:center; font-size:11px;
+      color:#94a3b8; font-family:system-ui,sans-serif;
+      margin-bottom:12px;
+    }
+
+    /* Tap hint */
     #tap-hint {
       position:fixed; top:50%; left:50%;
       transform:translate(-50%,-50%);
       z-index:998; pointer-events:none;
-      text-align:center; transition:opacity 0.5s;
-      display:none;
+      text-align:center; transition:opacity 0.5s; display:none;
     }
     #tap-hint.visible { display:block; }
     #tap-hint.hidden { opacity:0; }
@@ -82,10 +103,7 @@
       border-radius:50%; margin:0 auto 12px;
       animation:pulse 1.5s ease-in-out infinite;
     }
-    @keyframes pulse {
-      0%,100% { transform:scale(1); opacity:0.7; }
-      50% { transform:scale(1.15); opacity:1; }
-    }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.7;} 50%{transform:scale(1.15);opacity:1;} }
     .tap-text {
       color:#fff; font-size:14px; font-weight:600;
       background:rgba(0,0,0,0.55); backdrop-filter:blur(8px);
@@ -93,6 +111,7 @@
       border:1px solid rgba(255,255,255,0.2);
     }
 
+    /* Loading */
     #loading {
       position:fixed; inset:0; z-index:9999;
       background:#0f172a;
@@ -109,6 +128,17 @@
     }
     @keyframes spin { to { transform:rotate(360deg); } }
 
+    /* iPhone info panel */
+    #ios-info {
+      display:none;
+      background:#f0fdf4; border:1px solid #bbf7d0;
+      border-radius:10px; padding:12px 14px;
+      margin-bottom:12px;
+      font-size:12px; color:#15803d;
+      font-family:system-ui,sans-serif; line-height:1.6;
+    }
+
+    /* Erreur */
     #no-webxr {
       display:none; position:fixed; inset:0; z-index:9999;
       background:#0f172a; flex-direction:column;
@@ -118,11 +148,9 @@
     #no-webxr h2 { color:#fff; font-family:Georgia,serif; font-size:22px; }
     #no-webxr p { color:rgba(255,255,255,0.55); font-size:14px; line-height:1.7; }
     #no-webxr .tip {
-      background:rgba(255,255,255,0.07);
-      border-radius:12px; padding:16px 20px;
+      background:rgba(255,255,255,0.07); border-radius:12px; padding:16px 20px;
       color:rgba(255,255,255,0.6); font-size:13px; line-height:1.8;
-      border:1px solid rgba(255,255,255,0.1);
-      text-align:left;
+      border:1px solid rgba(255,255,255,0.1); text-align:left;
     }
   </style>
 </head>
@@ -138,9 +166,9 @@
     <h2>AR non disponible</h2>
     <p>Votre navigateur ne supporte pas la réalité augmentée.</p>
     <div class="tip">
-      📱 <strong>Sur Android :</strong> Chrome + ARCore installé<br/>
-      🍎 <strong>Sur iPhone :</strong> Safari iOS 15+<br/>
-      💻 <strong>Sur PC :</strong> Utilisez votre téléphone pour scanner le QR
+      📱 <strong>Sur Android :</strong> Chrome + ARCore requis<br/>
+      🍎 <strong>Sur iPhone :</strong> Safari iOS 15+ requis<br/>
+      💻 <strong>Sur PC :</strong> Scannez le QR avec votre téléphone
     </div>
   </div>
 
@@ -157,11 +185,26 @@
   <div id="panel">
     <div class="handle"></div>
     <div class="product-name" id="product-name">Chargement…</div>
-    <div class="product-hint" id="product-hint">Appuyez sur "Lancer l'AR" puis touchez le sol</div>
+    <div class="product-hint" id="product-hint">Activez l'AR pour voir le produit</div>
 
+    <!-- Badge plateforme détectée -->
+    <div id="platform-badge"></div>
+
+    <!-- Info iPhone -->
+    <div id="ios-info">
+      ✅ Fichier USDZ prêt — appuyez sur le bouton pour ouvrir l'AR Apple
+    </div>
+
+    <!-- Bouton Android WebXR -->
     <button id="start-btn" onclick="startAR()">
       📷 Lancer l'AR
     </button>
+
+    <!-- Bouton iPhone Quick Look -->
+    <a id="ios-ar-btn" rel="ar">
+      <img src="" style="display:none"/>
+      🍎 Voir en AR (iPhone)
+    </a>
 
     <div class="controls-row">
       <span class="ctrl-label">Taille</span>
@@ -179,11 +222,57 @@
   <script>
   (function() {
 
+    // ══════════════════════════════════════════
+    // CATALOGUE PRODUITS
+    // usdz = fichier converti pour iPhone AR
+    // model = fichier GLB pour Android WebXR
+    // ══════════════════════════════════════════
     var PRODUCTS = {
-      "tshirt-basic":     { name:"T-Shirt Basic",     model:"/models/male_basic_t_shirt.glb", scale:0.4 },
-      "tshirt-oversized": { name:"Oversized T-Shirt", model:"/models/oversized_t-shirt.glb",  scale:0.4 },
-      "tshirt-2":         { name:"T-Shirt Style 2",   model:"/models/t-shirt (2).glb",         scale:0.4 },
+      // ── T-Shirts ──
+      "tshirt-basic": {
+        name:  "T-Shirt Basic",
+        model: "/models/male_basic_t_shirt.glb",
+        usdz:  "/models-usdz/male_basic_t_shirt.usdz",
+        scale: 0.4,
+      },
+      "tshirt-oversized": {
+        name:  "Oversized T-Shirt",
+        model: "/models/oversized_t-shirt.glb",
+        usdz:  "/models-usdz/oversized_t-shirt.usdz",
+        scale: 0.4,
+      },
+      "tshirt-2": {
+        name:  "T-Shirt Style 2",
+        model: "/models/t-shirt (2).glb",
+        usdz:  "/models-usdz/t-shirt-2.usdz",
+        scale: 0.4,
+      },
+      // ── Meubles ──
+      "chair": {
+        name:  "Chaise",
+        model: "/models/chair.glb",
+        usdz:  "/models-usdz/chair.usdz",
+        scale: 0.5,
+      },
+      "cover-chair": {
+        name:  "Chaise Couverte",
+        model: "/models/cover_chair.glb",
+        usdz:  "/models-usdz/cover_chair.usdz",
+        scale: 0.5,
+      },
+      "table": {
+        name:  "Table",
+        model: "/models/table.glb",
+        usdz:  "/models-usdz/table.usdz",
+        scale: 0.5,
+      },
     };
+
+    // ── Détection plateforme ──
+    var ua       = navigator.userAgent || "";
+    var isIOS    = /iPhone|iPad|iPod/i.test(ua);
+    var isSafari = /Safari/i.test(ua) && !/Chrome/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
 
     var params    = new URLSearchParams(window.location.search);
     var productId = params.get("product") || "tshirt-basic";
@@ -192,14 +281,53 @@
     if (!product) {
       document.getElementById("loading").style.display   = "none";
       document.getElementById("no-webxr").style.display  = "flex";
-      document.querySelector("#no-webxr h2").textContent  = "Produit introuvable";
-      document.querySelector("#no-webxr p").textContent   = 'Produit "'+productId+'" inconnu.';
+      document.querySelector("#no-webxr h2").textContent = "Produit introuvable";
+      document.querySelector("#no-webxr p").textContent  = 'Produit "'+productId+'" inconnu.';
       return;
     }
 
     document.getElementById("product-name").textContent = product.name;
 
-    // ── Three.js setup ──
+    // ══════════════════════════════════════════
+    // iPhone — Quick Look AR (USDZ)
+    // ══════════════════════════════════════════
+    if (isIOS && isSafari) {
+      // Cache bouton Android, montre bouton iPhone
+      document.getElementById("start-btn").style.display  = "none";
+      var iosBtn = document.getElementById("ios-ar-btn");
+      iosBtn.style.display = "flex";
+      iosBtn.href = product.usdz;
+
+      // Badge plateforme
+      document.getElementById("platform-badge").innerHTML =
+        '🍎 <strong>iPhone détecté</strong> — Quick Look AR';
+      document.getElementById("platform-badge").style.color = "#000";
+
+      // Info
+      document.getElementById("ios-info").style.display = "block";
+      document.getElementById("product-hint").textContent =
+        "Appuyez sur le bouton — le t-shirt apparaît sur votre sol";
+
+      // Pas besoin de Three.js sur iPhone
+      document.getElementById("loading").style.display = "none";
+      return;
+    }
+
+    // ══════════════════════════════════════════
+    // Android / PC — WebXR + Three.js
+    // ══════════════════════════════════════════
+
+    // Badge plateforme
+    if (isAndroid) {
+      document.getElementById("platform-badge").innerHTML =
+        '🤖 <strong>Android détecté</strong> — WebXR AR';
+      document.getElementById("platform-badge").style.color = "#3b82f6";
+    } else {
+      document.getElementById("platform-badge").innerHTML =
+        '💻 <strong>PC détecté</strong> — Scannez le QR avec votre téléphone';
+      document.getElementById("platform-badge").style.color = "#94a3b8";
+    }
+
     var scene    = new THREE.Scene();
     var camera   = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 20);
     var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
@@ -215,7 +343,7 @@
     var d2 = new THREE.DirectionalLight(0xffffff, 0.8);
     d2.position.set(-5,3,3); scene.add(d2);
 
-    // Réticule (cercle sur le sol)
+    // Réticule
     var reticle = new THREE.Mesh(
       new THREE.RingGeometry(0.08, 0.10, 32).rotateX(-Math.PI/2),
       new THREE.MeshBasicMaterial({ color:0x1e3a8a, side:THREE.DoubleSide })
@@ -223,14 +351,13 @@
     reticle.visible = false;
     scene.add(reticle);
 
-    // Modèle 3D
-    var model3D      = null;
-    var placed       = false;
+    var model3D = null;
     var currentScale = product.scale;
     var currentRotY  = 0;
     var hitTestSource = null;
     var hitTestSourceRequested = false;
 
+    // Charge GLB
     var loader = new THREE.GLTFLoader();
     loader.load(
       product.model,
@@ -249,11 +376,11 @@
       },
       function() {
         document.getElementById("loading").style.display = "none";
-        alert("Erreur: impossible de charger le modèle 3D");
+        alert("Erreur: impossible de charger le modèle 3D.");
       }
     );
 
-    // ── Lancer WebXR AR ──
+    // Lance WebXR
     window.startAR = function() {
       if (!navigator.xr) {
         document.getElementById("no-webxr").style.display = "flex";
@@ -280,37 +407,32 @@
           document.getElementById("tap-hint").classList.add("visible");
           document.getElementById("product-hint").textContent = "Touchez le sol pour poser le produit";
 
-          // Tap pour placer le modèle
           session.addEventListener("select", function() {
             if (reticle.visible && model3D) {
               model3D.position.setFromMatrixPosition(reticle.matrix);
               model3D.rotation.y = currentRotY;
               model3D.visible = true;
-              placed = true;
               document.getElementById("tap-hint").classList.add("hidden");
             }
           });
 
           renderer.setAnimationLoop(function(timestamp, frame) {
             if (frame) {
-              var referenceSpace = renderer.xr.getReferenceSpace();
-              var session = renderer.xr.getSession();
-
+              var refSpace = renderer.xr.getReferenceSpace();
+              var sess     = renderer.xr.getSession();
               if (!hitTestSourceRequested) {
-                session.requestReferenceSpace("viewer").then(function(viewerSpace) {
-                  session.requestHitTestSource({ space: viewerSpace }).then(function(source) {
-                    hitTestSource = source;
+                sess.requestReferenceSpace("viewer").then(function(vs) {
+                  sess.requestHitTestSource({ space:vs }).then(function(src) {
+                    hitTestSource = src;
                   });
                 });
                 hitTestSourceRequested = true;
               }
-
               if (hitTestSource) {
-                var hitTestResults = frame.getHitTestResults(hitTestSource);
-                if (hitTestResults.length > 0) {
-                  var hit = hitTestResults[0];
+                var results = frame.getHitTestResults(hitTestSource);
+                if (results.length > 0) {
                   reticle.visible = true;
-                  reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
+                  reticle.matrix.fromArray(results[0].getPose(refSpace).transform.matrix);
                 } else {
                   reticle.visible = false;
                 }
@@ -331,7 +453,6 @@
       });
     };
 
-    // ── Contrôles ──
     window.changeScale = function(delta) {
       currentScale = Math.max(0.1, Math.min(3.0, currentScale + delta));
       if (model3D) model3D.scale.setScalar(currentScale);

@@ -6,12 +6,17 @@ import QRCode from "qrcode";
 // Ex: "https://ar.glamtec.ma"
 // En dev: "http://localhost:5173"
 // ══════════════════════════════════════════
-const BASE_URL = "https://glamtec-ar.vercel.app/";
+const BASE_URL = "https://glamtec-ar.vercel.app";
 
 const PRODUCTS = [
+  // T-Shirts
   { id: "tshirt-basic",     name: "T-Shirt Basic",     model: "male_basic_t_shirt.glb" },
   { id: "tshirt-oversized", name: "Oversized T-Shirt", model: "oversized_t-shirt.glb" },
   { id: "tshirt-2",         name: "T-Shirt Style 2",   model: "t-shirt (2).glb" },
+  // Meubles
+  { id: "chair",            name: "Chaise",            model: "chair.glb" },
+  { id: "cover-chair",      name: "Chaise Couverte",   model: "cover_chair.glb" },
+  { id: "table",            name: "Table",             model: "table.glb" },
 ];
 
 export default function QRGenerator() {
