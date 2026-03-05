@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 // Ex: "https://ar.glamtec.ma"
 // En dev: "http://localhost:5173"
 // ══════════════════════════════════════════
-const BASE_URL = "https://192.168.8.197:5173";
+const BASE_URL = "https://glamtec-ar.vercel.app/";
 
 const PRODUCTS = [
   { id: "tshirt-basic",     name: "T-Shirt Basic",     model: "male_basic_t_shirt.glb" },
