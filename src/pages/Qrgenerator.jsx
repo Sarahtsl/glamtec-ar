@@ -9,14 +9,9 @@ import QRCode from "qrcode";
 const BASE_URL = "https://glamtec-ar.vercel.app";
 
 const PRODUCTS = [
-  // T-Shirts
-  { id: "tshirt-basic",     name: "T-Shirt Basic",     model: "male_basic_t_shirt.glb" },
-  { id: "tshirt-oversized", name: "Oversized T-Shirt", model: "oversized_t-shirt.glb" },
-  { id: "tshirt-2",         name: "T-Shirt Style 2",   model: "t-shirt (2).glb" },
-  // Meubles
-  { id: "chair",            name: "Chaise",            model: "chair.glb" },
-  { id: "cover-chair",      name: "Chaise Couverte",   model: "cover_chair.glb" },
-  { id: "table",            name: "Table",             model: "table.glb" },
+  { id: "gaming-chair", name: "Gaming Chair",      model: "Gaming_Chair.usdz" },
+  { id: "garden-chair", name: "Chaise de Jardin",  model: "Monobloc_Plastic_Garden_Chair.usdz" },
+  { id: "round-chair",  name: "Chaise Ronde",      model: "Round_chair.usdz" },
 ];
 
 export default function QRGenerator() {
