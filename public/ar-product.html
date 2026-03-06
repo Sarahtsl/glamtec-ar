@@ -4,273 +4,155 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>GlamTec · AR</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-
+  <!-- Google Model Viewer — fonctionne sur iPhone ET Android, AR natif -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { width:100%; height:100%; overflow:hidden; background:#111; font-family:'DM Sans',system-ui,sans-serif; }
+    html, body { width:100%; height:100%; overflow:hidden; background:#0a0a14; font-family:system-ui,sans-serif; }
 
-    /* ── Canvas ── */
-    #three-canvas {
-      position:fixed; inset:0; z-index:1;
-      width:100%; height:100%;
-    }
-
-    /* ── Header ── */
+    /* Header */
     #header {
       position:fixed; top:0; left:0; right:0; z-index:10;
       display:flex; align-items:center; justify-content:space-between;
       padding:16px 20px;
-      background:linear-gradient(180deg,rgba(0,0,0,0.8) 0%,transparent 100%);
+      background:linear-gradient(180deg,rgba(0,0,0,0.85) 0%,transparent 100%);
     }
-    .logo {
-      font-size:18px; font-weight:800; color:#fff;
-      letter-spacing:-0.02em;
-    }
+    .logo { font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.02em; }
     .logo span { color:#6366f1; }
     .ar-pill {
-      background:rgba(99,102,241,0.2);
-      border:1px solid rgba(99,102,241,0.4);
+      background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4);
       color:#a5b4fc; font-size:10px; font-weight:700;
-      padding:5px 12px; border-radius:20px;
-      letter-spacing:0.1em; text-transform:uppercase;
+      padding:5px 12px; border-radius:20px; letter-spacing:0.1em; text-transform:uppercase;
     }
 
-    /* ── Panel bas ── */
+    /* Model Viewer — prend tout l'écran */
+    model-viewer {
+      width:100vw; height:100vh;
+      background-color:#0a0a14;
+      --poster-color:#0a0a14;
+    }
+
+    /* Panel bas */
     #panel {
       position:fixed; bottom:0; left:0; right:0; z-index:10;
-      background:rgba(15,15,25,0.92);
+      background:rgba(10,10,20,0.92);
       backdrop-filter:blur(20px);
       border-top:1px solid rgba(255,255,255,0.08);
       border-radius:24px 24px 0 0;
       padding:10px 20px 40px;
     }
-    .handle {
-      width:36px; height:4px;
-      background:rgba(255,255,255,0.15);
-      border-radius:2px; margin:0 auto 16px;
-    }
-    .product-name {
-      font-size:17px; font-weight:700; color:#fff;
-      margin-bottom:4px; letter-spacing:-0.01em;
-    }
-    .product-hint { font-size:12px; color:rgba(255,255,255,0.35); margin-bottom:16px; }
+    .handle { width:36px; height:4px; background:rgba(255,255,255,0.15); border-radius:2px; margin:0 auto 14px; }
+    .product-name { font-size:17px; font-weight:700; color:#fff; margin-bottom:4px; }
+    .product-hint { font-size:12px; color:rgba(255,255,255,0.35); margin-bottom:14px; }
 
-    /* ── Contrôles ── */
-    .controls {
-      display:flex; gap:10px; margin-bottom:0;
-    }
-    .ctrl-group {
-      flex:1; background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:14px; padding:10px 14px;
-      display:flex; align-items:center; gap:8px;
-    }
-    .ctrl-group-label {
-      font-size:9px; font-weight:700; color:rgba(255,255,255,0.3);
-      text-transform:uppercase; letter-spacing:0.12em;
-      white-space:nowrap;
-    }
-    .ctrl-row { display:flex; align-items:center; gap:6px; }
-    .ctrl-btn {
-      width:32px; height:32px; border-radius:50%;
-      background:rgba(99,102,241,0.2);
-      border:1px solid rgba(99,102,241,0.3);
-      color:#a5b4fc; font-size:16px; font-weight:700;
-      cursor:pointer; display:flex;
-      align-items:center; justify-content:center;
-      transition:all 0.15s; flex-shrink:0;
-    }
-    .ctrl-btn:hover { background:rgba(99,102,241,0.4); }
-    .ctrl-val {
-      font-size:12px; font-weight:700;
-      color:#fff; min-width:36px; text-align:center;
-    }
-    .rot-btn {
-      flex:1; padding:8px 6px;
-      background:rgba(99,102,241,0.15);
-      border:1px solid rgba(99,102,241,0.25);
-      color:#a5b4fc; border-radius:10px;
-      font-size:12px; font-weight:700; cursor:pointer;
-      transition:all 0.15s; font-family:system-ui,sans-serif;
-    }
-    .rot-btn:hover { background:rgba(99,102,241,0.3); }
-
-    /* ── iOS button ── */
-    #ios-ar-btn {
-      display:none;
-      width:100%; padding:14px;
-      background:linear-gradient(135deg,#6366f1,#4f46e5);
-      color:#fff; border:none; border-radius:14px;
-      font-size:15px; font-weight:700;
-      text-decoration:none; text-align:center;
-      align-items:center; justify-content:center; gap:10px;
-      margin-bottom:14px; cursor:pointer;
-      font-family:system-ui,sans-serif;
-      box-shadow:0 4px 20px rgba(99,102,241,0.4);
-      letter-spacing:0.01em;
-    }
-
-    /* ── Loading ── */
-    #loading {
-      position:fixed; inset:0; z-index:999;
-      background:#0a0a14;
-      display:flex; flex-direction:column;
-      align-items:center; justify-content:center; gap:20px;
-    }
-    .loading-logo {
-      font-size:26px; font-weight:800; color:#fff;
-      letter-spacing:-0.02em;
-    }
-    .loading-logo span { color:#6366f1; }
-    .loading-sub {
-      font-size:13px; color:rgba(255,255,255,0.4);
-      font-family:system-ui,sans-serif;
-    }
-    .spinner {
-      width:40px; height:40px;
-      border:2px solid rgba(99,102,241,0.2);
-      border-top-color:#6366f1;
-      border-radius:50%;
-      animation:spin 0.8s linear infinite;
-    }
-    @keyframes spin { to{transform:rotate(360deg);} }
-
-    /* ── Hint tactile ── */
-    #touch-hint {
-      position:fixed; bottom:200px; left:50%;
-      transform:translateX(-50%);
-      z-index:9; pointer-events:none;
-      text-align:center;
-      transition:opacity 0.5s;
-    }
-    #touch-hint.hidden { opacity:0; }
-    .hint-pill {
-      background:rgba(0,0,0,0.6);
-      backdrop-filter:blur(10px);
-      color:rgba(255,255,255,0.8);
-      font-size:12px; font-weight:600;
-      padding:8px 18px; border-radius:20px;
-      border:1px solid rgba(255,255,255,0.12);
-      font-family:system-ui,sans-serif;
-    }
-
-    /* ── WebXR tap hint ── */
-    #tap-hint {
-      position:fixed; top:50%; left:50%;
-      transform:translate(-50%,-50%);
-      z-index:9; pointer-events:none;
-      text-align:center; display:none;
-      transition:opacity 0.5s;
-    }
-    #tap-hint.visible { display:block; }
-    #tap-hint.hidden { opacity:0; }
-    .tap-ring {
-      width:70px; height:70px;
-      border:2px solid rgba(99,102,241,0.8);
-      border-radius:50%; margin:0 auto 10px;
-      animation:pulse 1.5s ease-in-out infinite;
-      box-shadow:0 0 20px rgba(99,102,241,0.3);
-    }
-    @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.8;} 50%{transform:scale(1.15);opacity:1;} }
-    .tap-label {
-      color:#fff; font-size:13px; font-weight:600;
-      background:rgba(0,0,0,0.6); backdrop-filter:blur(8px);
-      padding:7px 16px; border-radius:20px;
-      border:1px solid rgba(255,255,255,0.1);
-      font-family:system-ui,sans-serif;
-    }
-
-    /* ── Android start btn ── */
-    #start-btn {
+    /* Bouton AR */
+    #ar-btn {
       display:flex; align-items:center; justify-content:center; gap:8px;
       width:100%; padding:14px;
       background:linear-gradient(135deg,#6366f1,#4f46e5);
       color:#fff; border:none; border-radius:14px;
       font-size:15px; font-weight:700; cursor:pointer;
-      margin-bottom:14px; font-family:system-ui,sans-serif;
-      box-shadow:0 4px 20px rgba(99,102,241,0.35);
-      transition:all 0.2s; letter-spacing:0.01em;
+      margin-bottom:12px; font-family:system-ui,sans-serif;
+      box-shadow:0 4px 20px rgba(99,102,241,0.4);
+      transition:all 0.2s;
     }
-    #start-btn.started { background:linear-gradient(135deg,#16a34a,#15803d); box-shadow:0 4px 20px rgba(22,163,74,0.3); }
+    #ar-btn:hover { transform:translateY(-1px); box-shadow:0 6px 28px rgba(99,102,241,0.5); }
 
-    /* ── Erreur ── */
+    /* Contrôles */
+    .controls { display:flex; gap:10px; }
+    .ctrl-group {
+      flex:1; background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:14px; padding:10px 12px;
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .ctrl-label { font-size:9px; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.12em; }
+    .ctrl-row { display:flex; align-items:center; gap:6px; }
+    .ctrl-btn {
+      width:32px; height:32px; border-radius:50%;
+      background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3);
+      color:#a5b4fc; font-size:16px; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:all 0.15s;
+    }
+    .ctrl-btn:active { background:rgba(99,102,241,0.5); }
+    .ctrl-val { font-size:12px; font-weight:700; color:#fff; min-width:36px; text-align:center; }
+    .rot-btn {
+      flex:1; padding:8px; background:rgba(99,102,241,0.15);
+      border:1px solid rgba(99,102,241,0.25); color:#a5b4fc;
+      border-radius:10px; font-size:14px; font-weight:700;
+      cursor:pointer; font-family:system-ui,sans-serif; transition:all 0.15s;
+    }
+    .rot-btn:active { background:rgba(99,102,241,0.35); }
+
+    /* Loading */
+    #loading {
+      position:fixed; inset:0; z-index:999; background:#0a0a14;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:20px;
+    }
+    .loading-logo { font-size:26px; font-weight:800; color:#fff; letter-spacing:-0.02em; }
+    .loading-logo span { color:#6366f1; }
+    .loading-sub { font-size:13px; color:rgba(255,255,255,0.4); }
+    .spinner {
+      width:40px; height:40px;
+      border:2px solid rgba(99,102,241,0.2); border-top-color:#6366f1;
+      border-radius:50%; animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin { to{transform:rotate(360deg);} }
+
+    /* Erreur */
     #error-screen {
-      display:none; position:fixed; inset:0; z-index:999;
-      background:#0a0a14; flex-direction:column;
-      align-items:center; justify-content:center;
+      display:none; position:fixed; inset:0; z-index:999; background:#0a0a14;
+      flex-direction:column; align-items:center; justify-content:center;
       gap:16px; padding:40px; text-align:center;
     }
     #error-screen h2 { color:#fff; font-size:22px; font-weight:800; }
-    #error-screen p { color:rgba(255,255,255,0.4); font-size:14px; line-height:1.7; font-family:system-ui,sans-serif; }
-    .error-card {
-      background:rgba(99,102,241,0.1);
-      border:1px solid rgba(99,102,241,0.2);
-      border-radius:16px; padding:16px 20px;
-      color:rgba(255,255,255,0.5); font-size:13px;
-      line-height:1.8; text-align:left;
-      font-family:system-ui,sans-serif;
-    }
+    #error-screen p { color:rgba(255,255,255,0.4); font-size:14px; line-height:1.7; }
   </style>
 </head>
 <body>
 
-  <!-- Loading -->
   <div id="loading">
     <div class="loading-logo">Glam<span>Tec</span></div>
     <div class="spinner"></div>
-    <div class="loading-sub" id="loading-sub">Chargement…</div>
+    <div class="loading-sub" id="loading-sub">Chargement du modèle…</div>
   </div>
 
-  <!-- Erreur -->
   <div id="error-screen">
-    <h2>Produit introuvable</h2>
-    <p id="error-msg">Ce QR code ne correspond à aucun produit.</p>
-    <div class="error-card">
-      📱 Scannez un QR code valide depuis<br/>
-      le site <strong>glamtec-ar.vercel.app</strong>
-    </div>
+    <h2>❌ Produit introuvable</h2>
+    <p id="error-msg">QR code invalide.</p>
   </div>
 
-  <!-- Header -->
   <div id="header">
     <span class="logo">Glam<span>Tec</span></span>
     <span class="ar-pill">AR Try-On</span>
   </div>
 
-  <!-- Hint tactile 3D viewer -->
-  <div id="touch-hint">
-    <div class="hint-pill">👆 Glisser · Pincer pour zoomer</div>
-  </div>
+  <!-- Model Viewer Google — AR natif iPhone + Android -->
+  <model-viewer
+    id="mv"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    camera-controls
+    touch-action="pan-y"
+    auto-rotate
+    shadow-intensity="1"
+    exposure="1"
+    style="display:none"
+  ></model-viewer>
 
-  <!-- Tap hint WebXR -->
-  <div id="tap-hint">
-    <div class="tap-ring"></div>
-    <div class="tap-label">Touchez le sol</div>
-  </div>
-
-  <!-- Panel bas -->
   <div id="panel">
     <div class="handle"></div>
     <div class="product-name" id="product-name">Chargement…</div>
-    <div class="product-hint" id="product-hint">Visualisation 3D interactive</div>
+    <div class="product-hint" id="product-hint">Glissez pour tourner · Pincez pour zoomer</div>
 
-    <!-- Bouton iOS Quick Look -->
-    <a id="ios-ar-btn" rel="ar">
-      <img src="" style="display:none"/>
-      🍎 Voir en AR — Quick Look
-    </a>
-
-    <!-- Bouton Android WebXR -->
-    <button id="start-btn" onclick="startAR()">
-      📷 Lancer l'AR
+    <button id="ar-btn" onclick="launchAR()">
+      📷 Voir en AR
     </button>
 
-    <!-- Contrôles -->
     <div class="controls">
       <div class="ctrl-group">
-        <span class="ctrl-group-label">Taille</span>
+        <div class="ctrl-label">Taille</div>
         <div class="ctrl-row">
           <button class="ctrl-btn" onclick="changeScale(-0.1)">−</button>
           <span class="ctrl-val" id="scale-val">1.0×</span>
@@ -278,10 +160,10 @@
         </div>
       </div>
       <div class="ctrl-group">
-        <span class="ctrl-group-label">Rotation</span>
-        <div class="ctrl-row" style="width:100%">
-          <button class="rot-btn" onclick="changeRot(-15)">↺</button>
-          <button class="rot-btn" onclick="changeRot(+15)">↻</button>
+        <div class="ctrl-label">Rotation</div>
+        <div class="ctrl-row">
+          <button class="rot-btn" onclick="changeRot(-30)">↺</button>
+          <button class="rot-btn" onclick="changeRot(+30)">↻</button>
         </div>
       </div>
     </div>
@@ -290,37 +172,26 @@
   <script>
   (function() {
 
-    // ══════════════════════════════════════════
-    // CATALOGUE — seulement les meubles
-    // ══════════════════════════════════════════
     var PRODUCTS = {
       "gaming-chair": {
         name:  "Gaming Chair",
         model: "/models/chair.glb",
         usdz:  "/models-usdz/Gaming_Chair.usdz",
-        scale: 0.5,
       },
       "garden-chair": {
         name:  "Chaise de Jardin",
         model: "/models/cover_chair.glb",
         usdz:  "/models-usdz/Monobloc_Plastic_Garden_Chair.usdz",
-        scale: 0.5,
       },
       "round-chair": {
         name:  "Chaise Ronde",
         model: "/models/table.glb",
         usdz:  "/models-usdz/Round_chair.usdz",
-        scale: 0.5,
       },
     };
 
-    var ua       = navigator.userAgent || "";
-    var isIOS    = /iPhone|iPad|iPod/i.test(ua);
-    var isSafari = /Safari/i.test(ua) && !/CriOS|Chrome/i.test(ua);
-    var isAndroid = /Android/i.test(ua);
-
     var params    = new URLSearchParams(window.location.search);
-    var productId = params.get("product") || "chair";
+    var productId = params.get("product") || "gaming-chair";
     var product   = PRODUCTS[productId];
 
     if (!product) {
@@ -332,321 +203,42 @@
 
     document.getElementById("product-name").textContent = product.name;
 
-    // ══════════════════════════════════════════
-    // iPhone Safari → Quick Look USDZ
-    // ══════════════════════════════════════════
-    if (isIOS && isSafari) {
-      var btn = document.getElementById("ios-ar-btn");
-      btn.style.display = "flex";
-      btn.href = product.usdz;
-      document.getElementById("start-btn").style.display = "none";
-      document.getElementById("product-hint").textContent = "Appuyez pour voir en AR sur votre sol";
+    // Configure model-viewer
+    var mv = document.getElementById("mv");
+    mv.src = product.model;
+    mv.setAttribute("ios-src", product.usdz);
+
+    // Quand le modèle est chargé
+    mv.addEventListener("load", function() {
       document.getElementById("loading").style.display = "none";
-      document.getElementById("touch-hint").classList.add("hidden");
-      // Pas de Three.js nécessaire sur iPhone
-      return;
-    }
-
-    // ══════════════════════════════════════════
-    // Android + PC → Three.js Viewer 3D
-    // ══════════════════════════════════════════
-    if (!isAndroid) {
-      // PC — cache bouton AR
-      document.getElementById("start-btn").style.display = "none";
-      document.getElementById("product-hint").textContent = "Glissez pour tourner · Pincez pour zoomer";
-    } else {
-      document.getElementById("product-hint").textContent = "Viewer 3D · ou lancez l'AR";
-    }
-
-    // ── Three.js setup ──
-    var W = window.innerWidth;
-    var H = window.innerHeight;
-
-    var scene    = new THREE.Scene();
-    var camera   = new THREE.PerspectiveCamera(45, W/H, 0.01, 100);
-    camera.position.set(0, 1.2, 3.5);
-
-    var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-    renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.xr.enabled = true;
-    renderer.domElement.id = "three-canvas";
-    document.body.insertBefore(renderer.domElement, document.getElementById("header"));
-
-    // Fond dégradé
-    scene.background = new THREE.Color(0x111118);
-
-    // Éclairage
-    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-    var sun = new THREE.DirectionalLight(0xffffff, 2);
-    sun.position.set(5,10,7); sun.castShadow = true;
-    scene.add(sun);
-    var fill = new THREE.DirectionalLight(0x8888ff, 0.6);
-    fill.position.set(-5,3,-5); scene.add(fill);
-    var back = new THREE.DirectionalLight(0xffffff, 0.4);
-    back.position.set(0,-5,-5); scene.add(back);
-
-    // Sol réfléchissant
-    var floorGeo  = new THREE.CircleGeometry(3, 64);
-    var floorMat  = new THREE.MeshStandardMaterial({
-      color:0x1a1a2e, roughness:0.8, metalness:0.1, transparent:true, opacity:0.6
-    });
-    var floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI/2;
-    floor.position.y = -0.01;
-    floor.receiveShadow = true;
-    scene.add(floor);
-
-    // ── Charge le modèle ──
-    var model3D      = null;
-    var currentScale = product.scale;
-    var currentRotY  = 0;
-
-    var loader = new THREE.GLTFLoader();
-    loader.load(
-      product.model,
-      function(gltf) {
-        model3D = gltf.scene;
-
-        // Centre le modèle
-        var box = new THREE.Box3().setFromObject(model3D);
-        var center = box.getCenter(new THREE.Vector3());
-        var size   = box.getSize(new THREE.Vector3());
-        model3D.position.sub(center);
-        model3D.position.y += size.y / 2;
-
-        model3D.scale.setScalar(currentScale);
-        model3D.castShadow = true;
-
-        model3D.traverse(function(child) {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-          }
-        });
-
-        scene.add(model3D);
-        document.getElementById("loading").style.display = "none";
-
-        // Auto-rotate
-        animate();
-      },
-      function(xhr) {
-        if (xhr.total > 0) {
-          var pct = Math.round(xhr.loaded/xhr.total*100);
-          document.getElementById("loading-sub").textContent = "Chargement… "+pct+"%";
-        }
-      },
-      function(err) {
-        console.error(err);
-        document.getElementById("loading").style.display    = "none";
-        document.getElementById("error-screen").style.display = "flex";
-        document.getElementById("error-msg").textContent   = "Impossible de charger le modèle 3D.";
-      }
-    );
-
-    // ── Animation loop ──
-    var autoRotate = true;
-    var autoRotateSpeed = 0.003;
-
-    function animate() {
-      requestAnimationFrame(animate);
-      if (model3D && autoRotate) {
-        model3D.rotation.y += autoRotateSpeed;
-        currentRotY = model3D.rotation.y;
-      }
-      renderer.render(scene, camera);
-    }
-
-    // ── Touch / Mouse controls ──
-    var isDragging  = false;
-    var prevX = 0, prevY = 0;
-    var lastPinchDist = 0;
-
-    function getDistance(t1, t2) {
-      var dx = t1.clientX - t2.clientX;
-      var dy = t1.clientY - t2.clientY;
-      return Math.sqrt(dx*dx + dy*dy);
-    }
-
-    // Touch start
-    renderer.domElement.addEventListener("touchstart", function(e) {
-      e.preventDefault();
-      autoRotate = false;
-      document.getElementById("touch-hint").classList.add("hidden");
-      if (e.touches.length === 2) {
-        lastPinchDist = getDistance(e.touches[0], e.touches[1]);
-      } else {
-        isDragging = true;
-        prevX = e.touches[0].clientX;
-        prevY = e.touches[0].clientY;
-      }
-    }, { passive:false });
-
-    // Touch move
-    renderer.domElement.addEventListener("touchmove", function(e) {
-      e.preventDefault();
-      if (!model3D) return;
-
-      if (e.touches.length === 2) {
-        // Pinch zoom
-        var dist = getDistance(e.touches[0], e.touches[1]);
-        var delta = (dist - lastPinchDist) * 0.003;
-        currentScale = Math.max(0.1, Math.min(4.0, currentScale + delta));
-        model3D.scale.setScalar(currentScale);
-        document.getElementById("scale-val").textContent = currentScale.toFixed(1)+"×";
-        lastPinchDist = dist;
-      } else if (isDragging) {
-        var dx = e.touches[0].clientX - prevX;
-        var dy = e.touches[0].clientY - prevY;
-        currentRotY += dx * 0.01;
-        model3D.rotation.y = currentRotY;
-        // Vertical tilt
-        var tilt = camera.position.y - dy * 0.01;
-        camera.position.y = Math.max(0.2, Math.min(4, tilt));
-        camera.lookAt(0, 0.5, 0);
-        prevX = e.touches[0].clientX;
-        prevY = e.touches[0].clientY;
-      }
-    }, { passive:false });
-
-    renderer.domElement.addEventListener("touchend", function() {
-      isDragging = false;
+      mv.style.display = "block";
     });
 
-    // Mouse controls (PC)
-    renderer.domElement.addEventListener("mousedown", function(e) {
-      isDragging = true; autoRotate = false;
-      prevX = e.clientX; prevY = e.clientY;
+    mv.addEventListener("error", function() {
+      document.getElementById("loading").style.display    = "none";
+      document.getElementById("error-screen").style.display = "flex";
+      document.getElementById("error-msg").textContent   = "Impossible de charger le modèle.";
     });
-    renderer.domElement.addEventListener("mousemove", function(e) {
-      if (!isDragging || !model3D) return;
-      var dx = e.clientX - prevX;
-      currentRotY += dx * 0.008;
-      model3D.rotation.y = currentRotY;
-      prevX = e.clientX; prevY = e.clientY;
-    });
-    renderer.domElement.addEventListener("mouseup", function() { isDragging = false; });
 
-    // Scroll zoom (PC)
-    renderer.domElement.addEventListener("wheel", function(e) {
-      if (!model3D) return;
-      e.preventDefault();
-      currentScale = Math.max(0.1, Math.min(4.0, currentScale - e.deltaY * 0.001));
-      model3D.scale.setScalar(currentScale);
-      document.getElementById("scale-val").textContent = currentScale.toFixed(1)+"×";
-    }, { passive:false });
-
-    // ── WebXR AR (Android) ──
-    var hitTestSource = null;
-    var hitTestSourceRequested = false;
-    var xrModel = null;
-
-    window.startAR = function() {
-      if (!navigator.xr) { showNoAR(); return; }
-      navigator.xr.isSessionSupported("immersive-ar").then(function(ok) {
-        if (!ok) { showNoAR(); return; }
-        navigator.xr.requestSession("immersive-ar", {
-          requiredFeatures:["hit-test"],
-          optionalFeatures:["dom-overlay"],
-          domOverlay:{ root: document.body }
-        }).then(function(session) {
-          // Clone model pour XR
-          if (model3D) {
-            scene.background = null;
-            xrModel = model3D.clone();
-            xrModel.visible = false;
-            scene.add(xrModel);
-            model3D.visible = false;
-          }
-
-          renderer.xr.setReferenceSpaceType("local");
-          renderer.xr.setSession(session);
-
-          var btn = document.getElementById("start-btn");
-          btn.textContent = "✅ AR actif";
-          btn.classList.add("started");
-          btn.onclick = null;
-          document.getElementById("tap-hint").classList.add("visible");
-          document.getElementById("touch-hint").classList.add("hidden");
-
-          session.addEventListener("select", function() {
-            if (hitTestSource && xrModel) {
-              var refSpace = renderer.xr.getReferenceSpace();
-              xrModel.visible = true;
-              document.getElementById("tap-hint").classList.add("hidden");
-            }
-          });
-
-          renderer.setAnimationLoop(function(ts, frame) {
-            if (frame) {
-              var refSpace = renderer.xr.getReferenceSpace();
-              var sess = renderer.xr.getSession();
-              if (!hitTestSourceRequested) {
-                sess.requestReferenceSpace("viewer").then(function(vs) {
-                  sess.requestHitTestSource({space:vs}).then(function(src) {
-                    hitTestSource = src;
-                  });
-                });
-                hitTestSourceRequested = true;
-              }
-              if (hitTestSource && xrModel) {
-                var results = frame.getHitTestResults(hitTestSource);
-                if (results.length > 0) {
-                  var pose = results[0].getPose(refSpace);
-                  xrModel.position.setFromMatrixPosition(new THREE.Matrix4().fromArray(pose.transform.matrix));
-                  xrModel.rotation.y = currentRotY;
-                  xrModel.scale.setScalar(currentScale);
-                }
-              }
-            }
-            renderer.render(scene, camera);
-          });
-
-          session.addEventListener("end", function() {
-            hitTestSource = null; hitTestSourceRequested = false;
-            if (model3D) { model3D.visible = true; }
-            if (xrModel) { scene.remove(xrModel); xrModel = null; }
-            scene.background = new THREE.Color(0x111118);
-            renderer.setAnimationLoop(null);
-            animate();
-            var btn = document.getElementById("start-btn");
-            btn.textContent = "📷 Lancer l'AR";
-            btn.classList.remove("started");
-            btn.onclick = window.startAR;
-          });
-        });
-      });
+    // Bouton AR — déclenche l'AR natif (Quick Look sur iPhone, ARCore sur Android)
+    window.launchAR = function() {
+      mv.activateAR();
     };
 
-    function showNoAR() {
-      document.getElementById("error-screen").style.display = "flex";
-      document.querySelector("#error-screen h2").textContent = "AR non disponible";
-      document.getElementById("error-msg").textContent = "Votre navigateur ne supporte pas WebXR AR. Utilisez Chrome sur Android avec ARCore installé.";
-    }
-
-    // ── Contrôles boutons ──
+    // Scale
+    var currentScale = 1.0;
     window.changeScale = function(delta) {
       currentScale = Math.max(0.1, Math.min(4.0, currentScale + delta));
-      if (model3D) model3D.scale.setScalar(currentScale);
-      if (xrModel) xrModel.scale.setScalar(currentScale);
+      mv.scale = currentScale + " " + currentScale + " " + currentScale;
       document.getElementById("scale-val").textContent = currentScale.toFixed(1)+"×";
     };
 
+    // Rotation
+    var currentRotY = 0;
     window.changeRot = function(delta) {
-      autoRotate = false;
-      currentRotY += delta * Math.PI/180;
-      if (model3D) model3D.rotation.y = currentRotY;
-      if (xrModel) xrModel.rotation.y = currentRotY;
+      currentRotY = (currentRotY + delta) % 360;
+      mv.setAttribute("orientation", "0deg " + currentRotY + "deg 0deg");
     };
-
-    window.addEventListener("resize", function() {
-      var w = window.innerWidth, h = window.innerHeight;
-      camera.aspect = w/h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    });
 
   })();
   </script>
