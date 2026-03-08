@@ -16,6 +16,12 @@ app.get('/ar-product.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'ar-product.html'));
 });
 
+// Redirect /ar-product → ar-product.html (serve strips .html)
+app.get('/ar-product', (req, res) => {
+  const query = req.query.product ? `?product=${req.query.product}` : '';
+  res.sendFile(path.join(__dirname, 'dist', 'ar-product.html'));
+});
+
 // Toutes les autres routes → index.html (React SPA)
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
