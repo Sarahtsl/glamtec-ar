@@ -6,8 +6,10 @@
   <title>AR Viewer</title>
 
   <!--
-    ar-modes="webxr scene-viewer"  → PAS de quick-look → pas d'erreur USDZ iOS
-    ios-src absent intentionnellement → force WebXR dans Safari iOS 16+
+    ar-modes="webxr scene-viewer quick-look"
+    → iOS  : quick-look avec fichier .usdz de /models-usdz/
+    → Android : scene-viewer (Google AR) avec .glb
+    → Fallback : webxr dans le navigateur
   -->
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 
@@ -17,19 +19,46 @@
     :root { --accent:#7c6dfa; --accentB:#fa6d9f; --bg:#07080f; --text:#eeeef5; --muted:rgba(255,255,255,0.45); }
     html,body { height:100%; width:100%; background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; overflow:hidden; }
 
-    .topbar { position:fixed; top:0;left:0;right:0; z-index:20; height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(7,8,15,0.88); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.06); }
+    .topbar {
+      position:fixed; top:0;left:0;right:0; z-index:20; height:56px;
+      display:flex; align-items:center; justify-content:space-between; padding:0 20px;
+      background:rgba(7,8,15,0.88); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
     .topbar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; background:linear-gradient(135deg,var(--accent),var(--accentB)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .topbar-name { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:2px; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .topbar-name { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:2px; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .topbar-badge { font-size:0.6rem; padding:3px 10px; border-radius:20px; letter-spacing:1px; }
+    .badge-ios     { background:rgba(0,200,120,0.12); border:1px solid rgba(0,200,120,0.3); color:#00c878; }
+    .badge-android { background:rgba(0,180,255,0.12); border:1px solid rgba(0,180,255,0.3); color:#00b4ff; }
+    .badge-unknown { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--muted); }
 
     model-viewer { width:100vw; height:100vh; background:radial-gradient(ellipse at 50% 40%,#1a1830 0%,#07080f 70%); }
 
-    .ar-btn { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); padding:16px 36px; background:linear-gradient(135deg,var(--accent),var(--accentB)); border:none; border-radius:60px; font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; color:#fff; cursor:pointer; letter-spacing:0.5px; box-shadow:0 8px 40px rgba(124,109,250,0.5); display:flex; align-items:center; gap:10px; white-space:nowrap; animation:floatBtn 3s ease-in-out infinite; }
+    .ar-btn {
+      position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+      padding:16px 36px; background:linear-gradient(135deg,var(--accent),var(--accentB));
+      border:none; border-radius:60px; font-family:'Syne',sans-serif; font-weight:800;
+      font-size:1rem; color:#fff; cursor:pointer; letter-spacing:0.5px;
+      box-shadow:0 8px 40px rgba(124,109,250,0.5);
+      display:flex; align-items:center; gap:10px; white-space:nowrap;
+      animation:floatBtn 3s ease-in-out infinite;
+    }
     @keyframes floatBtn { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-7px)} }
 
-    .hint-pill { position:absolute; top:68px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.08); border-radius:50px; padding:8px 18px; font-size:0.68rem; color:var(--muted); white-space:nowrap; pointer-events:none; animation:hintFade 5s forwards; animation-delay:1.5s; opacity:0; }
+    .hint-pill {
+      position:absolute; top:68px; left:50%; transform:translateX(-50%);
+      background:rgba(0,0,0,0.6); backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,0.08); border-radius:50px;
+      padding:8px 18px; font-size:0.68rem; color:var(--muted); white-space:nowrap;
+      pointer-events:none; animation:hintFade 5s forwards; animation-delay:1.5s; opacity:0;
+    }
     @keyframes hintFade { 0%{opacity:0;transform:translateX(-50%) translateY(-6px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 80%{opacity:1} 100%{opacity:0} }
 
-    #loadingOverlay { position:fixed; inset:0; background:var(--bg); z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity 0.5s; }
+    #loadingOverlay {
+      position:fixed; inset:0; background:var(--bg); z-index:30;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:20px; transition:opacity 0.5s;
+    }
     #loadingOverlay.hide { opacity:0; pointer-events:none; }
     .loader-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem; background:linear-gradient(135deg,var(--accent),var(--accentB)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
     .loader-ring { width:52px;height:52px; border:3px solid rgba(124,109,250,0.15); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
@@ -38,18 +67,21 @@
     .loader-progress { width:160px;height:2px; background:rgba(124,109,250,0.15); border-radius:2px; overflow:hidden; }
     .loader-bar { height:100%; background:linear-gradient(90deg,var(--accent),var(--accentB)); border-radius:2px; width:0%; transition:width 0.3s; }
 
-    /* iOS info banner */
-    #iosBanner { display:none; position:fixed; top:56px; left:0; right:0; z-index:15; background:rgba(124,109,250,0.1); border-bottom:1px solid rgba(124,109,250,0.2); padding:9px 20px; font-size:0.68rem; color:rgba(200,190,255,0.85); text-align:center; line-height:1.6; backdrop-filter:blur(10px); }
-
-    /* Error state */
-    #errorState { display:none; position:fixed; inset:0; background:var(--bg); z-index:40; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:32px; text-align:center; }
+    #errorState {
+      display:none; position:fixed; inset:0; background:var(--bg); z-index:40;
+      flex-direction:column; align-items:center; justify-content:center;
+      gap:16px; padding:32px; text-align:center;
+    }
     #errorState .err-icon { font-size:52px; }
     #errorState h2 { font-family:'Syne',sans-serif; font-size:1.3rem; }
     #errorState p  { font-size:0.75rem; color:var(--muted); line-height:1.8; max-width:300px; }
     #errorState a  { margin-top:8px; padding:12px 28px; border-radius:50px; background:linear-gradient(135deg,var(--accent),var(--accentB)); color:#fff; text-decoration:none; font-family:'Syne',sans-serif; font-weight:700; font-size:0.85rem; }
 
-    /* No AR support */
-    #noArState { display:none; position:fixed; inset:0; background:var(--bg); z-index:35; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:32px; text-align:center; }
+    #noArState {
+      display:none; position:fixed; inset:0; background:var(--bg); z-index:35;
+      flex-direction:column; align-items:center; justify-content:center;
+      gap:18px; padding:32px; text-align:center;
+    }
     #noArState .na-icon { font-size:52px; }
     #noArState h2 { font-family:'Syne',sans-serif; font-size:1.2rem; line-height:1.4; }
     #noArState p  { font-size:0.72rem; color:var(--muted); line-height:1.9; max-width:300px; }
@@ -63,59 +95,46 @@
 
 <div class="topbar">
   <div class="topbar-logo">AR·VIEWER</div>
-  <div class="topbar-name" id="topTitle">Chargement…</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="topbar-name" id="topTitle">Chargement…</div>
+    <div class="topbar-badge" id="platformBadge"></div>
+  </div>
 </div>
 
-<!-- Affiché uniquement sur iOS -->
-<div id="iosBanner">
-  📱 iOS détecté — WebXR Mode · Requiert Safari 16+ · Aucun fichier USDZ nécessaire
-</div>
-
-<!-- Loading -->
 <div id="loadingOverlay">
   <div class="loader-logo">AR·VIEWER</div>
   <div class="loader-ring"></div>
-  <div class="loader-text">Chargement du modèle…</div>
+  <div class="loader-text" id="loaderText">Chargement du modèle…</div>
   <div class="loader-progress"><div class="loader-bar" id="loaderBar"></div></div>
 </div>
 
-<!-- Erreur: fichier introuvable -->
 <div id="errorState">
   <div class="err-icon">⚠️</div>
   <h2>Modèle introuvable</h2>
-  <p>Le fichier GLB est introuvable.<br>Vérifiez que le modèle est bien dans <code>/public/models/</code> sur Vercel.</p>
+  <p>Le fichier GLB est introuvable sur le serveur.<br>Vérifiez que le modèle est bien dans <code>/public/models/</code></p>
   <a href="/qr-generator">← Retour au générateur</a>
 </div>
 
-<!-- AR non supporté sur cet appareil -->
 <div id="noArState">
   <div class="na-icon">📱</div>
   <h2>AR non disponible<br>sur cet appareil</h2>
-  <p>WebXR AR nécessite un appareil et navigateur compatibles.</p>
+  <p>Votre appareil ou navigateur ne supporte pas la Réalité Augmentée.</p>
   <div class="req-list">
-    <strong>iOS Safari :</strong><br>
-    ✅ iPhone 12 ou plus récent<br>
-    ✅ iOS 16 minimum<br>
-    ✅ Ouvrir dans Safari (pas Chrome)<br><br>
-    <strong>Android Chrome :</strong><br>
-    ✅ ARCore installé<br>
+    <strong>🍎 iOS — QuickLook :</strong><br>
+    ✅ iPhone 12+ · iOS 14+<br>
+    ✅ Ouvrir dans Safari<br><br>
+    <strong>🤖 Android — Scene Viewer :</strong><br>
+    ✅ Google Play Services for AR<br>
     ✅ Chrome 79+
   </div>
   <p style="font-size:0.67rem;color:var(--muted);">Vous pouvez quand même visualiser le modèle en 3D.</p>
   <button class="btn-dismiss" id="dismissNoAr">Voir en 3D seulement →</button>
 </div>
 
-<!--
-  CLÉS :
-  ar-modes="webxr scene-viewer"  ← PAS quick-look → pas d'erreur USDZ
-  PAS d'attribut ios-src          ← évite que QuickLook se déclenche
-  xr-environment                  ← meilleure intégration de l'éclairage AR
--->
 <model-viewer
   id="viewer"
   ar
-  ar-modes="webxr scene-viewer"
-  xr-environment
+  ar-modes="webxr scene-viewer quick-look"
   camera-controls
   auto-rotate
   auto-rotate-delay="800"
@@ -137,25 +156,52 @@
   const modelParam = params.get("model");
   const titleParam = params.get("title");
 
-  const viewer    = document.getElementById("viewer");
-  const overlay   = document.getElementById("loadingOverlay");
-  const errState  = document.getElementById("errorState");
-  const noArState = document.getElementById("noArState");
-  const topTitle  = document.getElementById("topTitle");
-  const loaderBar = document.getElementById("loaderBar");
-  const iosBanner = document.getElementById("iosBanner");
+  const viewer        = document.getElementById("viewer");
+  const overlay       = document.getElementById("loadingOverlay");
+  const errState      = document.getElementById("errorState");
+  const noArState     = document.getElementById("noArState");
+  const topTitle      = document.getElementById("topTitle");
+  const loaderBar     = document.getElementById("loaderBar");
+  const loaderText    = document.getElementById("loaderText");
+  const platformBadge = document.getElementById("platformBadge");
 
-  // Détecter iOS
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  if (isIOS) iosBanner.style.display = "block";
+  // ── Détecter la plateforme ──────────────────────────────────────
+  const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isAndroid = /Android/.test(navigator.userAgent);
 
+  if (isIOS) {
+    platformBadge.textContent = "🍎 iOS · QuickLook";
+    platformBadge.className = "topbar-badge badge-ios";
+    loaderText.textContent = "Chargement · iOS QuickLook prêt…";
+  } else if (isAndroid) {
+    platformBadge.textContent = "🤖 Android · Scene Viewer";
+    platformBadge.className = "topbar-badge badge-android";
+    loaderText.textContent = "Chargement · Android AR prêt…";
+  } else {
+    platformBadge.textContent = "💻 Desktop · 3D Viewer";
+    platformBadge.className = "topbar-badge badge-unknown";
+  }
+
+  // ── Résoudre URL ────────────────────────────────────────────────
   function resolveUrl(param) {
     if (!param) return null;
     if (param.startsWith("http://") || param.startsWith("https://")) return param;
     return `/models/${param}`;
   }
 
+  // ── Résoudre USDZ (même nom, dossier models-usdz) ───────────────
+  function resolveUsdzUrl(param) {
+    if (!param) return null;
+    const base = param
+      .replace(/\.glb$/i, ".usdz")
+      .replace(/\.gltf$/i, ".usdz");
+    if (base.startsWith("http://") || base.startsWith("https://")) return base;
+    return `/models-usdz/${base}`;
+  }
+
   const modelUrl = resolveUrl(modelParam);
+  const usdzUrl  = resolveUsdzUrl(modelParam);
+
   const title = titleParam
     ? decodeURIComponent(titleParam)
     : (modelParam || "").replace(/\.(glb|gltf)$/i, "").replace(/_/g, " ");
@@ -167,9 +213,15 @@
     overlay.classList.add("hide");
     errState.style.display = "flex";
   } else {
-    // ⚠️ PAS de ios-src → évite complètement QuickLook et l'erreur USDZ
+    // GLB pour Android / WebXR
     viewer.setAttribute("src", modelUrl);
     viewer.setAttribute("alt", title);
+
+    // USDZ pour iOS QuickLook (seulement si iOS)
+    if (isIOS && usdzUrl) {
+      viewer.setAttribute("ios-src", usdzUrl);
+    }
+
     viewer.style.display = "block";
 
     viewer.addEventListener("progress", e => {
@@ -186,7 +238,6 @@
       errState.style.display = "flex";
     });
 
-    // Si AR échoue (appareil non compatible)
     viewer.addEventListener("ar-status", e => {
       if (e.detail.status === "failed") {
         noArState.style.display = "flex";
