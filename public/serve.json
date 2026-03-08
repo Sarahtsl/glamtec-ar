@@ -1,4 +1,7 @@
 {
   "cleanUrls": false,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/((?!models|models-usdz|assets|ar-product.html).*)", "destination": "/index.html" }
+  ]
 }
