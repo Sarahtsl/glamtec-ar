@@ -3,312 +3,400 @@ import TryOnPage from "./pages/TryOnPage";
 import TryOnBodyPage from "./pages/TryOnBodyPage";
 import QrGenerator from "./pages/Qrgenerator";
 
+/* ══════════════════════════════════════════════
+   HOME PAGE
+══════════════════════════════════════════════ */
 function Home() {
   return (
-    <div style={{ minHeight: "100vh", background: "#f8faff", fontFamily: "Georgia, serif", color: "#0f172a", overflowX: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "#faf8f5", fontFamily: "'DM Sans', sans-serif", color: "#0f172a", overflowX: "hidden", width: "100%" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { width: 100%; overflow-x: hidden; }
+        html, body, #root { width: 100%; overflow-x: hidden; }
 
-        .nav-a { color: #475569; text-decoration: none; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; transition: color 0.2s; }
-        .nav-a:hover { color: #1e3a8a; }
-
-        .btn-blue {
-          display: inline-flex; align-items: center; gap: 9px;
-          background: #1e3a8a; color: #fff;
-          padding: 15px 32px; border-radius: 50px;
-          text-decoration: none; font-family: 'DM Sans', sans-serif;
-          font-weight: 600; font-size: 15px; border: none; cursor: pointer;
-          box-shadow: 0 8px 32px rgba(30,58,138,0.25);
-          transition: all 0.25s;
-        }
-        .btn-blue:hover { background: #1e40af; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(30,58,138,0.35); }
-
-        .btn-outline {
-          display: inline-flex; align-items: center; gap: 9px;
-          background: #fff; color: #1e3a8a;
-          padding: 15px 32px; border-radius: 50px;
-          text-decoration: none; font-family: 'DM Sans', sans-serif;
-          font-weight: 600; font-size: 15px;
-          border: 2px solid #1e3a8a; cursor: pointer;
-          transition: all 0.25s;
-        }
-        .btn-outline:hover { background: #eef2ff; transform: translateY(-2px); }
-
-        .tag {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: #eef2ff; color: #1e3a8a;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 11px; font-weight: 700;
-          letter-spacing: 0.15em; text-transform: uppercase;
-          padding: 6px 16px; border-radius: 50px;
-          border: 1px solid #c7d2fe;
+        :root {
+          --navy:      #0f2557;
+          --navy-mid:  #1e3a8a;
+          --gold:      #c9a84c;
+          --gold-lt:   #e8c97e;
+          --cream:     #faf8f5;
+          --border:    #e2e8f0;
+          --muted:     #64748b;
+          --shadow:    0 4px 32px rgba(15,37,87,0.08);
+          --shadow-lg: 0 20px 60px rgba(15,37,87,0.13);
         }
 
-        .card {
-          background: #fff; border: 1px solid #e2e8f0;
-          border-radius: 24px; overflow: hidden;
-          transition: all 0.3s; box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        /* ── Nav ── */
+        .g-nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100; width: 100%;
+          height: 68px; display: flex; align-items: center; justify-content: space-between;
+          padding: 0 64px;
+          background: rgba(250,248,245,0.95); backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--border);
         }
-        .card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(30,58,138,0.12); border-color: #bfdbfe; }
+        .g-logo { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; color: var(--navy); letter-spacing: -0.02em; text-decoration: none; }
+        .g-nav-links { display: flex; gap: 44px; }
+        .g-nav-a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; letter-spacing: 0.01em; }
+        .g-nav-a:hover { color: var(--navy); }
+        .g-nav-cta { padding: 10px 24px; background: var(--navy); color: #fff; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; transition: all 0.2s; }
+        .g-nav-cta:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(15,37,87,0.2); }
 
-        .step-card {
-          background: #fff; border: 1px solid #e2e8f0;
-          border-radius: 20px; padding: 32px 28px;
-          transition: all 0.3s;
+        /* ── Hero ── */
+        .g-hero { width: 100%; display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; padding-top: 68px; }
+
+        .g-hero-left {
+          display: flex; flex-direction: column; justify-content: center;
+          padding: 80px 72px 80px 64px;
+          background: var(--cream);
         }
-        .step-card:hover { box-shadow: 0 12px 40px rgba(30,58,138,0.1); transform: translateY(-4px); border-color: #bfdbfe; }
+        .g-hero-right {
+          position: relative; background: var(--navy);
+          display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .g-hero-right::before {
+          content: ''; position: absolute;
+          top: -100px; right: -100px; width: 400px; height: 400px;
+          border: 1px solid rgba(255,255,255,0.05); border-radius: 50%;
+        }
+        .g-hero-right::after {
+          content: ''; position: absolute;
+          bottom: -80px; left: -60px; width: 300px; height: 300px;
+          border: 1px solid rgba(201,168,76,0.08); border-radius: 50%;
+        }
 
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; display: inline-block; animation: blink 2s ease-in-out infinite; }
-        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        /* Eyebrow */
+        .g-eyebrow {
+          display: inline-flex; align-items: center; gap: 12px;
+          font-size: 11px; font-weight: 600; letter-spacing: 0.2em;
+          text-transform: uppercase; color: var(--gold); margin-bottom: 28px;
+        }
+        .g-eyebrow::before { content: ''; width: 36px; height: 1px; background: var(--gold); }
 
-        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-14px);} }
-        @keyframes spin1 { to{transform:rotate(360deg);} }
-        @keyframes spin2 { to{transform:rotate(-360deg);} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(28px);} to{opacity:1;transform:translateY(0);} }
+        /* Heading */
+        .g-h1 {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: clamp(48px, 4.8vw, 76px);
+          font-weight: 600; line-height: 1.04;
+          letter-spacing: -0.03em; color: var(--navy); margin-bottom: 24px;
+        }
+        .g-h1 em { font-style: italic; color: var(--navy-mid); }
 
-        .float { animation: float 5s ease-in-out infinite; }
-        .f1 { animation: fadeUp 0.7s ease both; }
-        .f2 { animation: fadeUp 0.7s 0.12s ease both; }
-        .f3 { animation: fadeUp 0.7s 0.24s ease both; }
-        .f4 { animation: fadeUp 0.7s 0.36s ease both; }
+        .g-hero-p {
+          font-size: 16px; line-height: 1.85; color: var(--muted);
+          max-width: 420px; margin-bottom: 48px; font-weight: 400;
+        }
 
-        @media (max-width: 900px) {
-          .hero-grid { grid-template-columns: 1fr !important; }
-          .two-col { grid-template-columns: 1fr !important; }
-          .three-col { grid-template-columns: 1fr !important; }
-          .hero-illus { display: none !important; }
-          .nav-links { display: none !important; }
+        /* CTA buttons */
+        .g-btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
+        .g-btn-primary {
+          padding: 14px 32px; background: var(--navy); color: #fff;
+          border-radius: 6px; text-decoration: none; font-weight: 600;
+          font-size: 14px; letter-spacing: 0.03em; border: 2px solid var(--navy);
+          transition: all 0.22s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .g-btn-primary:hover { background: var(--navy-mid); border-color: var(--navy-mid); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .g-btn-ghost {
+          padding: 14px 32px; background: transparent; color: var(--navy);
+          border-radius: 6px; text-decoration: none; font-weight: 600;
+          font-size: 14px; letter-spacing: 0.03em; border: 2px solid var(--navy);
+          transition: all 0.22s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .g-btn-ghost:hover { background: var(--navy); color: #fff; transform: translateY(-2px); }
+
+        /* Stats */
+        .g-stats { display: flex; gap: 48px; margin-top: 56px; padding-top: 48px; border-top: 1px solid var(--border); }
+        .g-stat-n { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 700; color: var(--navy); line-height: 1; }
+        .g-stat-l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.14em; margin-top: 6px; }
+
+        /* Hero visual */
+        .g-visual { position: relative; z-index: 1; padding: 60px; text-align: center; }
+        .g-glasses-wrap { position: relative; display: inline-block; }
+        .g-ring1 { position: absolute; inset: -52px; border: 1px solid rgba(255,255,255,0.07); border-radius: 50%; animation: gRot1 24s linear infinite; }
+        .g-ring2 { position: absolute; inset: -96px; border: 1px solid rgba(201,168,76,0.08); border-radius: 50%; animation: gRot2 38s linear infinite; }
+        @keyframes gRot1 { to { transform: rotate(360deg); } }
+        @keyframes gRot2 { to { transform: rotate(-360deg); } }
+        .g-glasses { animation: gFloat 5s ease-in-out infinite; filter: drop-shadow(0 24px 60px rgba(0,0,0,0.45)); }
+        @keyframes gFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+
+        .g-badge {
+          position: absolute; backdrop-filter: blur(12px);
+          background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 8px; padding: 10px 16px;
+        }
+        .g-badge-1 { top: 18%; right: 4%; }
+        .g-badge-2 { bottom: 26%; left: 4%; }
+        .g-badge-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+        .g-badge-val { font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 7px; }
+        .g-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: gBlink 2s infinite; }
+        @keyframes gBlink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+        /* ── Feature strip ── */
+        .g-strip { width: 100%; display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: #fff; }
+        .g-strip-item { padding: 32px 28px; text-align: center; border-right: 1px solid var(--border); transition: background 0.2s; cursor: default; }
+        .g-strip-item:last-child { border-right: none; }
+        .g-strip-item:hover { background: var(--cream); }
+        .g-strip-icon { font-size: 26px; margin-bottom: 12px; }
+        .g-strip-val { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: var(--navy); }
+        .g-strip-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.13em; margin-top: 5px; }
+
+        /* ── Section ── */
+        .g-section { width: 100%; padding: 100px 64px; }
+        .g-section-inner { max-width: 1240px; margin: 0 auto; }
+        .g-sec-ey { font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .g-sec-ey::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
+        .g-sec-h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(34px, 3vw, 52px); font-weight: 600; letter-spacing: -0.02em; color: var(--navy); line-height: 1.1; }
+        .g-sec-h2 em { font-style: italic; }
+
+        /* ── Products ── */
+        .g-products { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 52px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        .g-pcard { background: #fff; padding: 52px 48px; transition: all 0.25s; position: relative; overflow: hidden; }
+        .g-pcard::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--navy), var(--navy-mid)); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
+        .g-pcard:hover::after { transform: scaleX(1); }
+        .g-pcard:hover { background: var(--cream); }
+        .g-pcard + .g-pcard { border-left: 1px solid var(--border); }
+        .g-pcard-tag { display: inline-block; padding: 4px 12px; background: rgba(15,37,87,0.06); border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--navy-mid); margin-bottom: 28px; }
+        .g-pcard-icon { font-size: 48px; margin-bottom: 24px; display: block; }
+        .g-pcard-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 700; color: var(--navy); margin-bottom: 14px; letter-spacing: -0.01em; }
+        .g-pcard-desc { font-size: 14px; color: var(--muted); line-height: 1.85; margin-bottom: 32px; max-width: 340px; }
+        .g-pcard-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+        .g-chip { padding: 5px 14px; background: var(--cream); border: 1px solid var(--border); border-radius: 4px; font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 0.02em; }
+        .g-pcard-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+        .g-pbtn-main { padding: 13px 26px; background: var(--navy); color: #fff; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.03em; transition: all 0.2s; }
+        .g-pbtn-main:hover { background: var(--navy-mid); transform: translateY(-1px); }
+        .g-pbtn-alt { padding: 13px 22px; background: transparent; color: var(--navy); border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.03em; border: 1.5px solid var(--border); transition: all 0.2s; }
+        .g-pbtn-alt:hover { border-color: var(--navy); background: var(--cream); }
+        .g-pbtn-gold { padding: 13px 22px; background: var(--gold); color: var(--navy); border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; letter-spacing: 0.03em; transition: all 0.2s; }
+        .g-pbtn-gold:hover { background: var(--gold-lt); transform: translateY(-1px); }
+
+        /* ── Process ── */
+        .g-process-bg { width: 100%; background: var(--navy); padding: 100px 64px; }
+        .g-process-inner { max-width: 1240px; margin: 0 auto; }
+        .g-steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: 60px; position: relative; }
+        .g-step { padding: 48px 40px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; transition: background 0.2s; }
+        .g-step:hover { background: rgba(255,255,255,0.06); }
+        .g-step-num { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 600; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; margin-bottom: 20px; }
+        .g-step-icon { font-size: 36px; margin-bottom: 20px; display: block; }
+        .g-step-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+        .g-step-desc { font-size: 13px; color: rgba(255,255,255,0.42); line-height: 1.85; }
+
+        /* ── Footer ── */
+        .g-footer { width: 100%; background: var(--navy); border-top: 1px solid rgba(255,255,255,0.07); padding: 40px 64px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+        .g-footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: #fff; }
+        .g-footer-copy { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 5px; letter-spacing: 0.04em; }
+        .g-footer-links { display: flex; gap: 32px; }
+        .g-footer-a { color: rgba(255,255,255,0.35); text-decoration: none; font-size: 13px; transition: color 0.2s; }
+        .g-footer-a:hover { color: #fff; }
+
+        /* ── Responsive ── */
+        @media(max-width:960px) {
+          .g-hero { grid-template-columns: 1fr; min-height: auto; }
+          .g-hero-right { display: none; }
+          .g-hero-left { padding: 56px 28px; }
+          .g-nav { padding: 0 28px; }
+          .g-nav-links { display: none; }
+          .g-stats { gap: 28px; flex-wrap: wrap; }
+          .g-strip { grid-template-columns: 1fr 1fr; }
+          .g-strip-item:nth-child(2) { border-right: none; }
+          .g-strip-item:nth-child(3) { border-top: 1px solid var(--border); }
+          .g-section { padding: 60px 28px; }
+          .g-products { grid-template-columns: 1fr; }
+          .g-pcard + .g-pcard { border-left: none; border-top: 1px solid var(--border); }
+          .g-process-bg { padding: 60px 28px; }
+          .g-steps { grid-template-columns: 1fr; gap: 12px; }
+          .g-footer { padding: 36px 28px; flex-direction: column; align-items: flex-start; }
         }
       `}</style>
 
-      {/* ══ NAVBAR ══ */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        background: "rgba(255,255,255,0.92)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid #e2e8f0",
-        padding: "0 60px", height: 68,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        boxShadow: "0 1px 12px rgba(0,0,0,0.06)",
-      }}>
-        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 900, color: "#1e3a8a", letterSpacing: "-0.02em" }}>
-          GlamTec
-        </div>
-        <div className="nav-links" style={{ display: "flex", gap: 40 }}>
-          {["Accueil","Produits","Blog","Contact"].map(l => (
-            <a key={l} href="#" className="nav-a">{l}</a>
+      {/* ── NAVBAR ── */}
+      <nav className="g-nav">
+        <a href="/" className="g-logo">GlamTec</a>
+        <div className="g-nav-links">
+          {["Accueil", "Produits", "Blog", "Contact"].map(l => (
+            <a key={l} href="#" className="g-nav-a">{l}</a>
           ))}
         </div>
-        <Link to="/try" className="btn-blue" style={{ padding: "10px 24px", fontSize: 13 }}>Essayer AR</Link>
+        <Link to="/try" className="g-nav-cta">Essayer AR →</Link>
       </nav>
 
-      {/* ══ HERO ══ */}
-      <div style={{
-        paddingTop: 68,
-        background: "linear-gradient(160deg, #f0f4ff 0%, #ffffff 50%, #f8faff 100%)",
-        borderBottom: "1px solid #e2e8f0",
-      }}>
-        <div className="hero-grid" style={{
-          maxWidth: 1280, margin: "0 auto",
-          padding: "90px 60px 80px",
-          display: "grid", gridTemplateColumns: "1fr 1fr",
-          gap: 80, alignItems: "center",
-        }}>
-          {/* Texte */}
-          <div>
-            <div className="tag f1" style={{ marginBottom: 28 }}>
-              <span className="dot"></span>
-              Réalité Augmentée · Nouveau
-            </div>
+      {/* ── HERO ── */}
+      <section className="g-hero">
 
-            <h1 className="f2" style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "clamp(42px, 4.5vw, 70px)",
-              fontWeight: 900, lineHeight: 1.06,
-              color: "#0f172a", marginBottom: 24,
-              letterSpacing: "-0.03em",
-            }}>
-              Essayez avant<br/>
-              <span style={{ color: "#1e3a8a" }}>d'acheter.</span>
-            </h1>
+        {/* Left — texte */}
+        <div className="g-hero-left">
+          <div className="g-eyebrow">Réalité Augmentée</div>
 
-            <p className="f3" style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 17, lineHeight: 1.75,
-              color: "#64748b", maxWidth: 460, marginBottom: 40,
-              fontWeight: 400,
-            }}>
-              Testez lunettes et vêtements en réalité augmentée —
-              directement depuis votre navigateur, sans télécharger d'application.
-            </p>
+          <h1 className="g-h1">
+            Essayez<br />avant<br />
+            <em>d'acheter.</em>
+          </h1>
 
-            <div className="f4" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 56 }}>
-              <Link to="/try" className="btn-blue">👓 Essayer des lunettes</Link>
-              <Link to="/try-body" className="btn-outline">👕 Essayer un t-shirt</Link>
-            </div>
+          <p className="g-hero-p">
+            Lunettes, vêtements et meubles en AR — directement depuis votre navigateur, sans application.
+          </p>
 
-            {/* Stats */}
-            <div style={{
-              display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 32,
-              paddingTop: 32, borderTop: "1px solid #e2e8f0",
-            }}>
-              {[
-                { num: "468", label: "Points visage" },
-                { num: "<16ms", label: "Latence" },
-                { num: "100%", label: "Navigateur" },
-              ].map(({ num, label }) => (
-                <div key={label}>
-                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 900, color: "#1e3a8a" }}>{num}</div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.12em", marginTop: 4 }}>{label}</div>
-                </div>
-              ))}
-            </div>
+          <div className="g-btn-group">
+            <Link to="/try" className="g-btn-primary">👓 Lunettes AR</Link>
+            <Link to="/try-body" className="g-btn-ghost">👕 Vêtements</Link>
           </div>
 
-          {/* Illustration */}
-          <div className="hero-illus" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div className="float" style={{ position: "relative", width: 400, height: 400 }}>
-              <div style={{ position: "absolute", inset: -28, border: "1.5px dashed #bfdbfe", borderRadius: "50%", animation: "spin1 22s linear infinite" }}/>
-              <div style={{ position: "absolute", inset: -60, border: "1px dashed #dbeafe", borderRadius: "50%", animation: "spin2 32s linear infinite" }}/>
-              <div style={{
-                position: "absolute", inset: 0, borderRadius: "50%",
-                background: "radial-gradient(circle at 40% 35%, #dbeafe 0%, #eff6ff 60%, #f8faff 100%)",
-                boxShadow: "0 20px 80px rgba(30,58,138,0.12)",
-              }}/>
-              {/* Lunettes */}
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg viewBox="0 0 220 80" style={{ width: 300, filter: "drop-shadow(0 8px 32px rgba(30,58,138,0.2))" }}>
-                  <rect x="4" y="16" width="86" height="48" rx="24" fill="#1e3a8a" opacity="0.92"/>
-                  <rect x="130" y="16" width="86" height="48" rx="24" fill="#1e3a8a" opacity="0.92"/>
-                  <rect x="10" y="22" width="74" height="36" rx="18" fill="#60a5fa" opacity="0.25"/>
-                  <rect x="136" y="22" width="74" height="36" rx="18" fill="#60a5fa" opacity="0.25"/>
-                  <path d="M90 40 Q110 26 130 40" stroke="#1e3a8a" strokeWidth="5" fill="none" strokeLinecap="round"/>
-                  <line x1="4" y1="40" x2="-22" y2="34" stroke="#1e3a8a" strokeWidth="5" strokeLinecap="round"/>
-                  <line x1="216" y1="40" x2="242" y2="34" stroke="#1e3a8a" strokeWidth="5" strokeLinecap="round"/>
-                </svg>
-              </div>
-              {/* Badges */}
-              <div style={{
-                position: "absolute", top: 28, right: 0,
-                background: "#1e3a8a", color: "#fff",
-                fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 700,
-                padding: "5px 14px", borderRadius: 20, letterSpacing: "0.1em",
-                boxShadow: "0 4px 16px rgba(30,58,138,0.3)",
-              }}>AR LIVE</div>
-              <div style={{
-                position: "absolute", bottom: 44, left: 0,
-                background: "#fff", color: "#1e3a8a",
-                fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
-                padding: "6px 16px", borderRadius: 20,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                border: "1px solid #e0e7ff",
-              }}>✓ Face Tracking actif</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ══ PRODUITS ══ */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 60px" }}>
-        <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <div className="tag" style={{ marginBottom: 18 }}><span className="dot"></span>Nos Technologies</div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px,3vw,46px)", fontWeight: 900, color: "#0f172a", letterSpacing: "-0.02em" }}>
-            Deux façons d'essayer
-          </h2>
-        </div>
-
-        <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-
-          {/* Card Lunettes */}
-          <div className="card">
-            <div style={{ background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", padding: "44px 36px 36px", borderBottom: "1px solid #e2e8f0" }}>
-              <div style={{ fontSize: 52, marginBottom: 18 }}>👓</div>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "#0f172a", marginBottom: 12 }}>Lunettes AR</h3>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: "#64748b", lineHeight: 1.75, marginBottom: 24 }}>
-                Face tracking MediaPipe — 468 points de repère pour placer les lunettes parfaitement sur votre visage en temps réel.
-              </p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {["Face Tracking","468 points","Temps réel","Couleurs"].map(t => (
-                  <span key={t} style={{ background: "#dbeafe", color: "#1e40af", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 600, padding: "4px 12px", borderRadius: 20 }}>{t}</span>
-                ))}
-              </div>
-            </div>
-            <div style={{ padding: "24px 36px" }}>
-              <Link to="/try" className="btn-blue" style={{ width: "100%", justifyContent: "center" }}>Essayer maintenant →</Link>
-            </div>
-          </div>
-
-          {/* Card T-shirt */}
-          <div className="card">
-            <div style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", padding: "44px 36px 36px", borderBottom: "1px solid #e2e8f0" }}>
-              <div style={{ fontSize: 52, marginBottom: 18 }}>👕</div>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "#0f172a", marginBottom: 12 }}>Vêtements AR</h3>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: "#64748b", lineHeight: 1.75, marginBottom: 24 }}>
-                Scannez le QR code — le vêtement s'affiche en 3D via la caméra de votre téléphone, posé sur une surface réelle.
-              </p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {["QR Code","WebXR","Mobile AR","3D Viewer"].map(t => (
-                  <span key={t} style={{ background: "#dcfce7", color: "#15803d", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 600, padding: "4px 12px", borderRadius: 20 }}>{t}</span>
-                ))}
-              </div>
-            </div>
-            <div style={{ padding: "24px 36px", display: "flex", gap: 12 }}>
-              <Link to="/try-body" className="btn-outline" style={{ flex: 1, justifyContent: "center" }}>Viewer 3D</Link>
-              <Link to="/qr-generator" style={{
-                flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center",
-                background: "#16a34a", color: "#fff", borderRadius: 50,
-                textDecoration: "none", fontFamily: "'DM Sans',sans-serif",
-                fontWeight: 600, fontSize: 14,
-                boxShadow: "0 4px 20px rgba(22,163,74,0.25)",
-                transition: "all 0.2s",
-              }}>📲 QR Codes</Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ══ COMMENT ÇA MARCHE ══ */}
-      <div style={{ background: "#fff", borderTop: "1px solid #e2e8f0", borderBottom: "1px solid #e2e8f0", padding: "80px 60px" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
-            <div className="tag" style={{ marginBottom: 18 }}><span className="dot"></span>Simple et rapide</div>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px,3vw,46px)", fontWeight: 900, color: "#0f172a", letterSpacing: "-0.02em" }}>
-              Comment ça marche ?
-            </h2>
-          </div>
-          <div className="three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+          <div className="g-stats">
             {[
-              { n:"01", icon:"🔍", title:"Choisissez", desc:"Parcourez lunettes et vêtements disponibles en AR.", color:"#1e3a8a", bg:"#eff6ff" },
-              { n:"02", icon:"📷", title:"Activez",    desc:"Autorisez la caméra — tout reste dans le navigateur.", color:"#0369a1", bg:"#e0f2fe" },
-              { n:"03", icon:"✨", title:"Essayez",    desc:"Visualisez le produit sur vous en temps réel.", color:"#0f766e", bg:"#f0fdfa" },
-            ].map(({ n, icon, title, desc, color, bg }) => (
-              <div key={n} className="step-card" style={{ position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: -8, right: 12, fontSize: 80, fontWeight: 900, opacity: 0.05, color: "#000", fontFamily: "'Playfair Display',serif", lineHeight: 1 }}>{n}</div>
-                <div style={{ width: 52, height: 52, borderRadius: 16, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 20 }}>{icon}</div>
-                <div style={{ fontSize: 10, fontWeight: 700, color, fontFamily: "'DM Sans',sans-serif", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>Étape {n}</div>
-                <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 10 }}>{title}</h3>
-                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#64748b", lineHeight: 1.7 }}>{desc}</p>
+              { n: "468",   l: "Points visage" },
+              { n: "<16ms", l: "Latence"       },
+              { n: "100%",  l: "Navigateur"    },
+            ].map(({ n, l }) => (
+              <div key={l}>
+                <div className="g-stat-n">{n}</div>
+                <div className="g-stat-l">{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right — visuel */}
+        <div className="g-hero-right">
+          <div className="g-visual">
+            <div className="g-glasses-wrap">
+              <div className="g-ring1" />
+              <div className="g-ring2" />
+              <svg className="g-glasses" viewBox="0 0 280 100" style={{ width: 340, maxWidth: "90%" }}>
+                <defs>
+                  <linearGradient id="gG1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#1e3a8a" />
+                    <stop offset="100%" stopColor="#3b5fc0" />
+                  </linearGradient>
+                  <linearGradient id="gL1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#93c5fd" stopOpacity="0.15" />
+                  </linearGradient>
+                </defs>
+                <rect x="6" y="20" width="108" height="60" rx="30" fill="url(#gG1)" />
+                <rect x="166" y="20" width="108" height="60" rx="30" fill="url(#gG1)" />
+                <rect x="13" y="27" width="94" height="46" rx="23" fill="url(#gL1)" />
+                <rect x="173" y="27" width="94" height="46" rx="23" fill="url(#gL1)" />
+                <path d="M114 50 Q140 32 166 50" stroke="url(#gG1)" strokeWidth="7" fill="none" strokeLinecap="round" />
+                <line x1="6" y1="50" x2="-30" y2="42" stroke="url(#gG1)" strokeWidth="7" strokeLinecap="round" />
+                <line x1="274" y1="50" x2="310" y2="42" stroke="url(#gG1)" strokeWidth="7" strokeLinecap="round" />
+                <ellipse cx="38" cy="38" rx="16" ry="9" fill="rgba(255,255,255,0.13)" transform="rotate(-12 38 38)" />
+                <ellipse cx="198" cy="38" rx="16" ry="9" fill="rgba(255,255,255,0.13)" transform="rotate(-12 198 38)" />
+              </svg>
+            </div>
+
+            <div className="g-badge g-badge-1">
+              <div className="g-badge-lbl">Statut</div>
+              <div className="g-badge-val"><span className="g-live-dot" />AR Actif</div>
+            </div>
+            <div className="g-badge g-badge-2">
+              <div className="g-badge-lbl">Face Tracking</div>
+              <div className="g-badge-val">468 pts détectés</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURE STRIP ── */}
+      <div className="g-strip">
+        {[
+          { icon: "🎯", val: "Précis",    lbl: "Face tracking MediaPipe"     },
+          { icon: "⚡", val: "Rapide",    lbl: "Moins de 16ms de latence"    },
+          { icon: "📱", val: "Mobile AR", lbl: "iOS & Android compatibles"   },
+          { icon: "🔒", val: "Privé",     lbl: "100% dans votre navigateur"  },
+        ].map(({ icon, val, lbl }) => (
+          <div key={val} className="g-strip-item">
+            <div className="g-strip-icon">{icon}</div>
+            <div className="g-strip-val">{val}</div>
+            <div className="g-strip-lbl">{lbl}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── PRODUITS ── */}
+      <div className="g-section" style={{ background: "#fff" }}>
+        <div className="g-section-inner">
+          <div className="g-sec-ey">Nos technologies</div>
+          <h2 className="g-sec-h2">Deux façons <em>d'essayer</em></h2>
+
+          <div className="g-products">
+
+            {/* Lunettes */}
+            <div className="g-pcard">
+              <span className="g-pcard-tag">Face Tracking</span>
+              <span className="g-pcard-icon">👓</span>
+              <div className="g-pcard-title">Lunettes AR</div>
+              <div className="g-pcard-desc">
+                468 points de repère faciaux pour un placement parfait en temps réel, dans votre navigateur.
+              </div>
+              <div className="g-pcard-chips">
+                {["MediaPipe", "Temps réel", "Tous modèles", "Couleurs"].map(t => (
+                  <span key={t} className="g-chip">{t}</span>
+                ))}
+              </div>
+              <div className="g-pcard-btns">
+                <Link to="/try" className="g-pbtn-main">Essayer maintenant →</Link>
+              </div>
+            </div>
+
+            {/* Meubles / vêtements */}
+            <div className="g-pcard">
+              <span className="g-pcard-tag">QR Code · WebXR</span>
+              <span className="g-pcard-icon">🪑</span>
+              <div className="g-pcard-title">Meubles & Vêtements AR</div>
+              <div className="g-pcard-desc">
+                Scannez un QR code — le modèle 3D s'affiche sur votre surface via la caméra de votre téléphone.
+              </div>
+              <div className="g-pcard-chips">
+                {["iOS QuickLook", "Android AR", "GLB · USDZ", "3D Viewer"].map(t => (
+                  <span key={t} className="g-chip">{t}</span>
+                ))}
+              </div>
+              <div className="g-pcard-btns">
+                <Link to="/try-body" className="g-pbtn-main">Viewer 3D →</Link>
+                <Link to="/qr-generator" className="g-pbtn-gold">📲 QR Codes</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── PROCESS ── */}
+      <div className="g-process-bg">
+        <div className="g-process-inner">
+          <div className="g-sec-ey" style={{ color: "var(--gold)" }}>Simple & rapide</div>
+          <h2 className="g-sec-h2" style={{ color: "#fff" }}>
+            En <em style={{ color: "var(--gold-lt)" }}>3 étapes</em>
+          </h2>
+
+          <div className="g-steps">
+            {[
+              { n: "Étape 01", icon: "🔍", t: "Choisissez", d: "Parcourez notre catalogue de lunettes, vêtements et mobilier disponibles en AR." },
+              { n: "Étape 02", icon: "📷", t: "Activez",    d: "Autorisez la caméra — tout reste en local dans votre navigateur, rien n'est envoyé." },
+              { n: "Étape 03", icon: "✨", t: "Visualisez", d: "Le produit s'affiche sur vous ou sur une surface réelle en temps réel." },
+            ].map(({ n, icon, t, d }) => (
+              <div key={n} className="g-step">
+                <div className="g-step-num">{n}</div>
+                <span className="g-step-icon">{icon}</span>
+                <div className="g-step-title">{t}</div>
+                <div className="g-step-desc">{d}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ══ FOOTER ══ */}
-      <footer style={{
-        padding: "32px 60px",
-        display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20,
-        background: "#f8faff", borderTop: "1px solid #e2e8f0",
-      }}>
+      {/* ── FOOTER ── */}
+      <footer className="g-footer">
         <div>
-          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 900, color: "#1e3a8a" }}>GlamTec</div>
-          <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, color: "#94a3b8", marginTop: 3 }}>© 2025 · PFE Webcom Casablanca</div>
+          <div className="g-footer-logo">GlamTec</div>
+          <div className="g-footer-copy">© 2025 · PFE Webcom Casablanca</div>
         </div>
-        <div style={{ display: "flex", gap: 28 }}>
-          {[{to:"/try",l:"AR Lunettes"},{to:"/try-body",l:"AR Vêtements"},{to:"/qr-generator",l:"QR Codes"}].map(({to,l}) => (
-            <Link key={to} to={to} style={{ color: "#94a3b8", textDecoration: "none", fontFamily: "'DM Sans',sans-serif", fontSize: 13, transition: "color 0.2s" }}
-              onMouseEnter={e=>e.target.style.color="#1e3a8a"} onMouseLeave={e=>e.target.style.color="#94a3b8"}>{l}</Link>
+        <div className="g-footer-links">
+          {[
+            { to: "/try",          l: "AR Lunettes"  },
+            { to: "/try-body",     l: "AR Vêtements" },
+            { to: "/qr-generator", l: "QR Codes"     },
+          ].map(({ to, l }) => (
+            <Link key={to} to={to} className="g-footer-a">{l}</Link>
           ))}
         </div>
       </footer>
@@ -316,6 +404,9 @@ function Home() {
   );
 }
 
+/* ══════════════════════════════════════════════
+   APP
+══════════════════════════════════════════════ */
 function App() {
   return (
     <BrowserRouter>
