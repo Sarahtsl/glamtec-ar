@@ -1,246 +1,110 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>GlamTec · AR</title>
-  <!-- Google Model Viewer — fonctionne sur iPhone ET Android, AR natif -->
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AR Viewer</title>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { width:100%; height:100%; overflow:hidden; background:#0a0a14; font-family:system-ui,sans-serif; }
-
-    /* Header */
-    #header {
-      position:fixed; top:0; left:0; right:0; z-index:10;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:16px 20px;
-      background:linear-gradient(180deg,rgba(0,0,0,0.85) 0%,transparent 100%);
-    }
-    .logo { font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.02em; }
-    .logo span { color:#6366f1; }
-    .ar-pill {
-      background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4);
-      color:#a5b4fc; font-size:10px; font-weight:700;
-      padding:5px 12px; border-radius:20px; letter-spacing:0.1em; text-transform:uppercase;
-    }
-
-    /* Model Viewer — prend tout l'écran */
-    model-viewer {
-      width:100vw; height:100vh;
-      background-color:#0a0a14;
-      --poster-color:#0a0a14;
-    }
-
-    /* Panel bas */
-    #panel {
-      position:fixed; bottom:0; left:0; right:0; z-index:10;
-      background:rgba(10,10,20,0.92);
-      backdrop-filter:blur(20px);
-      border-top:1px solid rgba(255,255,255,0.08);
-      border-radius:24px 24px 0 0;
-      padding:10px 20px 40px;
-    }
-    .handle { width:36px; height:4px; background:rgba(255,255,255,0.15); border-radius:2px; margin:0 auto 14px; }
-    .product-name { font-size:17px; font-weight:700; color:#fff; margin-bottom:4px; }
-    .product-hint { font-size:12px; color:rgba(255,255,255,0.35); margin-bottom:14px; }
-
-    /* Bouton AR */
-    #ar-btn {
-      display:flex; align-items:center; justify-content:center; gap:8px;
-      width:100%; padding:14px;
-      background:linear-gradient(135deg,#6366f1,#4f46e5);
-      color:#fff; border:none; border-radius:14px;
-      font-size:15px; font-weight:700; cursor:pointer;
-      margin-bottom:12px; font-family:system-ui,sans-serif;
-      box-shadow:0 4px 20px rgba(99,102,241,0.4);
-      transition:all 0.2s;
-    }
-    #ar-btn:hover { transform:translateY(-1px); box-shadow:0 6px 28px rgba(99,102,241,0.5); }
-
-    /* Contrôles */
-    .controls { display:flex; gap:10px; }
-    .ctrl-group {
-      flex:1; background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:14px; padding:10px 12px;
-      display:flex; flex-direction:column; gap:8px;
-    }
-    .ctrl-label { font-size:9px; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.12em; }
-    .ctrl-row { display:flex; align-items:center; gap:6px; }
-    .ctrl-btn {
-      width:32px; height:32px; border-radius:50%;
-      background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3);
-      color:#a5b4fc; font-size:16px; font-weight:700; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; transition:all 0.15s;
-    }
-    .ctrl-btn:active { background:rgba(99,102,241,0.5); }
-    .ctrl-val { font-size:12px; font-weight:700; color:#fff; min-width:36px; text-align:center; }
-    .rot-btn {
-      flex:1; padding:8px; background:rgba(99,102,241,0.15);
-      border:1px solid rgba(99,102,241,0.25); color:#a5b4fc;
-      border-radius:10px; font-size:14px; font-weight:700;
-      cursor:pointer; font-family:system-ui,sans-serif; transition:all 0.15s;
-    }
-    .rot-btn:active { background:rgba(99,102,241,0.35); }
-
-    /* Loading */
-    #loading {
-      position:fixed; inset:0; z-index:999; background:#0a0a14;
-      display:flex; flex-direction:column;
-      align-items:center; justify-content:center; gap:20px;
-    }
-    .loading-logo { font-size:26px; font-weight:800; color:#fff; letter-spacing:-0.02em; }
-    .loading-logo span { color:#6366f1; }
-    .loading-sub { font-size:13px; color:rgba(255,255,255,0.4); }
-    .spinner {
-      width:40px; height:40px;
-      border:2px solid rgba(99,102,241,0.2); border-top-color:#6366f1;
-      border-radius:50%; animation:spin 0.8s linear infinite;
-    }
-    @keyframes spin { to{transform:rotate(360deg);} }
-
-    /* Erreur */
-    #error-screen {
-      display:none; position:fixed; inset:0; z-index:999; background:#0a0a14;
-      flex-direction:column; align-items:center; justify-content:center;
-      gap:16px; padding:40px; text-align:center;
-    }
-    #error-screen h2 { color:#fff; font-size:22px; font-weight:800; }
-    #error-screen p { color:rgba(255,255,255,0.4); font-size:14px; line-height:1.7; }
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono&display=swap');
+    * { margin:0;padding:0;box-sizing:border-box; }
+    :root { --accent:#7c6dfa; --accentB:#fa6d9f; --bg:#07080f; --text:#eeeef5; --muted:rgba(255,255,255,0.45); }
+    html,body { height:100%; background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; overflow:hidden; }
+    .topbar { position:fixed; top:0;left:0;right:0; z-index:20; height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(7,8,15,0.85); backdrop-filter:blur(16px); border-bottom:1px solid rgba(255,255,255,0.06); }
+    .topbar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; background:linear-gradient(135deg,var(--accent),var(--accentB)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .topbar-name { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:2px; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    model-viewer { width:100vw; height:100vh; background:radial-gradient(ellipse at 50% 40%,#1a1830 0%,#07080f 70%); }
+    .ar-btn { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); padding:16px 40px; background:linear-gradient(135deg,var(--accent),var(--accentB)); border:none; border-radius:60px; font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; color:#fff; cursor:pointer; letter-spacing:0.5px; box-shadow:0 8px 40px rgba(124,109,250,0.45); display:flex; align-items:center; gap:10px; white-space:nowrap; animation:floatBtn 3s ease-in-out infinite; }
+    @keyframes floatBtn { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-6px)} }
+    #loadingOverlay { position:fixed; inset:0; background:var(--bg); z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity 0.5s; }
+    #loadingOverlay.hide { opacity:0; pointer-events:none; }
+    .loader-ring { width:52px;height:52px; border:3px solid rgba(124,109,250,0.15); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .loader-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem; background:linear-gradient(135deg,var(--accent),var(--accentB)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .loader-text { font-size:0.7rem; color:var(--muted); letter-spacing:3px; text-transform:uppercase; }
+    .loader-progress { width:160px;height:2px; background:rgba(124,109,250,0.15); border-radius:2px; overflow:hidden; }
+    .loader-bar { height:100%; background:linear-gradient(90deg,var(--accent),var(--accentB)); border-radius:2px; width:0%; transition:width 0.3s; }
+    #errorState { display:none; position:fixed; inset:0; background:var(--bg); z-index:40; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:32px; text-align:center; }
+    #errorState .err-icon { font-size:52px; }
+    #errorState h2 { font-family:'Syne',sans-serif; font-size:1.3rem; }
+    #errorState p  { font-size:0.75rem; color:var(--muted); line-height:1.8; max-width:300px; }
+    .hint-pill { position:absolute; top:72px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.65); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.08); border-radius:50px; padding:8px 18px; font-size:0.68rem; color:var(--muted); white-space:nowrap; pointer-events:none; animation:hintFade 5s forwards; animation-delay:1.5s; opacity:0; }
+    @keyframes hintFade { 0%{opacity:0;transform:translateX(-50%) translateY(-6px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 80%{opacity:1} 100%{opacity:0} }
   </style>
 </head>
 <body>
+<div class="topbar">
+  <div class="topbar-logo">AR·VIEWER</div>
+  <div class="topbar-name" id="topTitle">Chargement…</div>
+</div>
 
-  <div id="loading">
-    <div class="loading-logo">Glam<span>Tec</span></div>
-    <div class="spinner"></div>
-    <div class="loading-sub" id="loading-sub">Chargement du modèle…</div>
-  </div>
+<div id="loadingOverlay">
+  <div class="loader-logo">AR·VIEWER</div>
+  <div class="loader-ring"></div>
+  <div class="loader-text">Chargement du modèle…</div>
+  <div class="loader-progress"><div class="loader-bar" id="loaderBar"></div></div>
+</div>
 
-  <div id="error-screen">
-    <h2>❌ Produit introuvable</h2>
-    <p id="error-msg">QR code invalide.</p>
-  </div>
+<div id="errorState">
+  <div class="err-icon">⚠️</div>
+  <h2>Modèle introuvable</h2>
+  <p>Le fichier GLB demandé n'existe pas ou l'URL est incorrecte.<br>Vérifiez que le modèle est bien dans <code>/public/models/</code></p>
+</div>
 
-  <div id="header">
-    <span class="logo">Glam<span>Tec</span></span>
-    <span class="ar-pill">AR Try-On</span>
-  </div>
+<model-viewer id="viewer" ar ar-modes="webxr scene-viewer quick-look"
+  camera-controls auto-rotate auto-rotate-delay="800" rotation-per-second="18deg"
+  environment-image="neutral" shadow-intensity="1.2" shadow-softness="0.9"
+  style="display:none;">
+  <button slot="ar-button" class="ar-btn"><span>📱</span><span>Voir en Réalité Augmentée</span></button>
+  <div class="hint-pill">Glissez pour tourner · Pincez pour zoomer</div>
+</model-viewer>
 
-  <!-- Model Viewer Google — AR natif iPhone + Android -->
-  <model-viewer
-    id="mv"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    camera-controls
-    touch-action="pan-y"
-    auto-rotate
-    shadow-intensity="1"
-    exposure="1"
-    style="display:none"
-  ></model-viewer>
+<script>
+  const params     = new URLSearchParams(window.location.search);
+  const modelParam = params.get("model");
+  const titleParam = params.get("title");
+  const viewer     = document.getElementById("viewer");
+  const overlay    = document.getElementById("loadingOverlay");
+  const errState   = document.getElementById("errorState");
+  const topTitle   = document.getElementById("topTitle");
+  const loaderBar  = document.getElementById("loaderBar");
 
-  <div id="panel">
-    <div class="handle"></div>
-    <div class="product-name" id="product-name">Chargement…</div>
-    <div class="product-hint" id="product-hint">Glissez pour tourner · Pincez pour zoomer</div>
+  function resolveUrl(param) {
+    if (!param) return null;
+    if (param.startsWith("http://") || param.startsWith("https://")) return param;
+    return `/models/${param}`;
+  }
 
-    <button id="ar-btn" onclick="launchAR()">
-      📷 Voir en AR
-    </button>
+  const modelUrl = resolveUrl(modelParam);
+  const title = titleParam
+    ? decodeURIComponent(titleParam)
+    : (modelParam || "").replace(/\.(glb|gltf|usdz)$/i,"").replace(/_/g," ");
 
-    <div class="controls">
-      <div class="ctrl-group">
-        <div class="ctrl-label">Taille</div>
-        <div class="ctrl-row">
-          <button class="ctrl-btn" onclick="changeScale(-0.1)">−</button>
-          <span class="ctrl-val" id="scale-val">1.0×</span>
-          <button class="ctrl-btn" onclick="changeScale(+0.1)">+</button>
-        </div>
-      </div>
-      <div class="ctrl-group">
-        <div class="ctrl-label">Rotation</div>
-        <div class="ctrl-row">
-          <button class="rot-btn" onclick="changeRot(-30)">↺</button>
-          <button class="rot-btn" onclick="changeRot(+30)">↻</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  document.title = title ? `${title} — AR Viewer` : "AR Viewer";
+  topTitle.textContent = title || "Modèle AR";
 
-  <script>
-  (function() {
+  if (!modelUrl) {
+    overlay.classList.add("hide");
+    errState.style.display = "flex";
+  } else {
+    const usdzUrl = modelUrl.replace("/models/","/models-usdz/").replace(/\.glb$/i,".usdz");
+    viewer.setAttribute("src", modelUrl);
+    viewer.setAttribute("ios-src", usdzUrl);
+    viewer.setAttribute("alt", title);
+    viewer.style.display = "block";
 
-    var PRODUCTS = {
-      "gaming-chair": {
-        name:  "Gaming Chair",
-        model: "/models/chair.glb",
-        usdz:  "/models-usdz/Gaming_Chair.usdz",
-      },
-      "garden-chair": {
-        name:  "Chaise de Jardin",
-        model: "/models/cover_chair.glb",
-        usdz:  "/models-usdz/Monobloc_Plastic_Garden_Chair.usdz",
-      },
-      "round-chair": {
-        name:  "Chaise Ronde",
-        model: "/models/table.glb",
-        usdz:  "/models-usdz/Round_chair.usdz",
-      },
-    };
-
-    var params    = new URLSearchParams(window.location.search);
-    var productId = params.get("product") || "gaming-chair";
-    var product   = PRODUCTS[productId];
-
-    if (!product) {
-      document.getElementById("loading").style.display    = "none";
-      document.getElementById("error-screen").style.display = "flex";
-      document.getElementById("error-msg").textContent   = 'Produit "'+productId+'" introuvable.';
-      return;
-    }
-
-    document.getElementById("product-name").textContent = product.name;
-
-    // Configure model-viewer
-    var mv = document.getElementById("mv");
-    mv.src = product.model;
-    mv.setAttribute("ios-src", product.usdz);
-
-    // Quand le modèle est chargé
-    mv.addEventListener("load", function() {
-      document.getElementById("loading").style.display = "none";
-      mv.style.display = "block";
+    viewer.addEventListener("progress", e => {
+      loaderBar.style.width = Math.round(e.detail.totalProgress * 100) + "%";
     });
-
-    mv.addEventListener("error", function() {
-      document.getElementById("loading").style.display    = "none";
-      document.getElementById("error-screen").style.display = "flex";
-      document.getElementById("error-msg").textContent   = "Impossible de charger le modèle.";
+    viewer.addEventListener("load", () => {
+      loaderBar.style.width = "100%";
+      setTimeout(() => overlay.classList.add("hide"), 400);
     });
-
-    // Bouton AR — déclenche l'AR natif (Quick Look sur iPhone, ARCore sur Android)
-    window.launchAR = function() {
-      mv.activateAR();
-    };
-
-    // Scale
-    var currentScale = 1.0;
-    window.changeScale = function(delta) {
-      currentScale = Math.max(0.1, Math.min(4.0, currentScale + delta));
-      mv.scale = currentScale + " " + currentScale + " " + currentScale;
-      document.getElementById("scale-val").textContent = currentScale.toFixed(1)+"×";
-    };
-
-    // Rotation
-    var currentRotY = 0;
-    window.changeRot = function(delta) {
-      currentRotY = (currentRotY + delta) % 360;
-      mv.setAttribute("orientation", "0deg " + currentRotY + "deg 0deg");
-    };
-
-  })();
-  </script>
+    viewer.addEventListener("error", () => {
+      overlay.classList.add("hide");
+      errState.style.display = "flex";
+    });
+  }
+</script>
 </body>
 </html>

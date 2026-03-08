@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import TryOnPage from "./pages/TryOnPage";
 import TryOnBodyPage from "./pages/TryOnBodyPage";
-import QRGenerator from "./pages/Qrgenerator";
+import QrGenerator from "./pages/Qrgenerator";
 
 function Home() {
   return (
@@ -323,7 +323,7 @@ function App() {
         <Route path="/"             element={<Home />} />
         <Route path="/try"          element={<TryOnPage />} />
         <Route path="/try-body"     element={<TryOnBodyPage />} />
-        <Route path="/qr-generator" element={<QRGenerator />} />
+        <Route path="/qr-generator" element={<QrGenerator />} />
       </Routes>
     </BrowserRouter>
   );
