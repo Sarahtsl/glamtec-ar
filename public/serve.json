@@ -2,6 +2,9 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/((?!models|models-usdz|assets|ar-product.html).*)", "destination": "/index.html" }
+    { "source": "/try", "destination": "/index.html" },
+    { "source": "/try-body", "destination": "/index.html" },
+    { "source": "/qr-generator", "destination": "/index.html" },
+    { "source": "/generate-3d", "destination": "/index.html" }
   ]
 }
