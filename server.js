@@ -17,7 +17,7 @@ app.get('/ar-product.html', (req, res) => {
 });
 
 // Toutes les autres routes → index.html (React SPA)
-app.get('*', (req, res) => {
+app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
