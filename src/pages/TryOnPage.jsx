@@ -67,15 +67,21 @@ function GlassesFaceTracked({ faceData, config, frameColor }) {
   }, [frameColor, clonedScene]);
 
   useFrame(() => {
-    if (!faceData || !group.current) return;
-    group.current.position.set(faceData.x, faceData.y, faceData.z);
-    group.current.rotation.set(
-      faceData.rx,
-      faceData.ry + (config.fixedRotationY ?? 0),
-      faceData.rz
-    );
+  if (!faceData || !group.current) return;
+  group.current.position.set(faceData.x, faceData.y, faceData.z);
+  group.current.rotation.set(
+    faceData.rx,
+    faceData.ry + (config.fixedRotationY ?? 0),
+    faceData.rz
+  );
+
+  // ✅ Scale dynamique au lieu de config.scale fixe
+  if (faceData.scale) {
+    group.current.scale.setScalar(faceData.scale);
+  } else {
     group.current.scale.setScalar(config.scale);
-  });
+  }
+});
 
   if (!clonedScene) return null;
   return <group ref={group}><primitive object={clonedScene} /></group>;
@@ -140,38 +146,71 @@ export default function TryOnPage() {
       minTrackingConfidence: 0.7,
     });
 
-    faceMesh.onResults((results) => {
-      if (!results.multiFaceLandmarks?.length) {
-        return;
-      }
-      const lm          = results.multiFaceLandmarks[0];
-      const leftOuter   = lm[33];
-      const rightOuter  = lm[263];
-      const leftEyeTop  = lm[159];
-      const rightEyeTop = lm[386];
-      const noseBridge  = lm[168];
-      const cx      = (leftOuter.x + rightOuter.x) / 2;
-      const eyeDist = Math.abs(rightOuter.x - leftOuter.x);
-      const cy      = (leftEyeTop.y + rightEyeTop.y) / 2 + eyeDist * selected.offsetY;
-      const rotZ = -Math.atan2(rightOuter.y - leftOuter.y, rightOuter.x - leftOuter.x);
-      const rotY = (noseBridge.x - 0.5) * -Math.PI * 0.6;
-      const rotX = (noseBridge.y - 0.5) * Math.PI * 0.15;
-      const newData = {
-        x: -(cx - 0.5) * 4, y: -(cy - 0.5) * 4,
-        z: noseBridge.z * -1, rx: rotX, ry: rotY, rz: rotZ,
-      };
-      setFaceData((prev) => {
-        if (!prev) return newData;
-        return {
-          x:  lerp(prev.x,  newData.x,  0.3),
-          y:  lerp(prev.y,  newData.y,  0.3),
-          z:  lerp(prev.z,  newData.z,  0.3),
-          rx: lerp(prev.rx, newData.rx, 0.3),
-          ry: lerp(prev.ry, newData.ry, 0.3),
-          rz: lerp(prev.rz, newData.rz, 0.3),
-        };
-      });
-    });
+  faceMesh.onResults((results) => {
+  if (!results.multiFaceLandmarks?.length) return;
+  const lm = results.multiFaceLandmarks[0];
+
+  // ─── Yeux (existants) ───────────────────────
+  const leftOuter  = lm[33];
+  const rightOuter = lm[263];
+
+  // ─── NOUVEAUX : Oreilles + tempes ───────────
+  const earLeft    = lm[234];   // oreille gauche
+  const earRight   = lm[454];   // oreille droite
+  // ─── Nez + front ────────────────────────────
+  const noseBridge = lm[168];
+  const noseTop    = lm[6];     // pont du nez (haut)
+
+  // ─── Centre X/Y précis (entre les 2 yeux) ───
+  const cx = (leftOuter.x + rightOuter.x) / 2;
+
+  // ─── Y basé sur pont du nez (plus stable) ───
+  const cy = noseTop.y;
+
+  // ─── Rotations ──────────────────────────────
+  const rotZ = -Math.atan2(
+    rightOuter.y - leftOuter.y,
+    rightOuter.x - leftOuter.x
+  );
+  const rotY = (noseBridge.x - 0.5) * -Math.PI * 0.6;
+  const rotX = (noseBridge.y - 0.5) * Math.PI * 0.15;
+
+  // ─── Scale DYNAMIQUE selon largeur du visage ─
+  // Plus le visage est proche → plus la distance inter-oreilles est grande
+  const faceWidth  = Math.abs(earRight.x - earLeft.x);   // 0.0 → 1.0
+  const eyeWidth   = Math.abs(rightOuter.x - leftOuter.x);
+
+  // Ratio naturel lunettes/visage ≈ 0.85 des oreilles
+  const dynamicScale = faceWidth * selected.scale * 0.85;
+
+  const newData = {
+    x:  -(cx - 0.5) * 4,
+    y:  -(cy - 0.5) * 4 - (eyeWidth * selected.offsetY * 2),
+    z:  noseBridge.z * -1,
+    rx: rotX,
+    ry: rotY,
+    rz: rotZ,
+    scale: dynamicScale,   // ← NOUVEAU : scale calculé
+    // Données oreilles pour debug/futur usage
+    earL: { x: earLeft.x,  y: earLeft.y  },
+    earR: { x: earRight.x, y: earRight.y },
+  };
+
+  setFaceData((prev) => {
+    if (!prev) return newData;
+    return {
+      x:     lerp(prev.x,     newData.x,     0.3),
+      y:     lerp(prev.y,     newData.y,     0.3),
+      z:     lerp(prev.z,     newData.z,     0.3),
+      rx:    lerp(prev.rx,    newData.rx,    0.3),
+      ry:    lerp(prev.ry,    newData.ry,    0.3),
+      rz:    lerp(prev.rz,    newData.rz,    0.3),
+      scale: lerp(prev.scale ?? newData.scale, newData.scale, 0.2), // lissage scale
+      earL:  newData.earL,
+      earR:  newData.earR,
+    };
+  });
+});
 
     // Pause quand l'onglet est caché
     const handleVisibility = () => {
