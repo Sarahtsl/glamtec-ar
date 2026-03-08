@@ -66,7 +66,7 @@ function GlassesFaceTracked({ faceData, config, frameColor }) {
     applyColor(clonedScene, frameColor);
   }, [frameColor, clonedScene]);
 
-  useFrame(() => {
+useFrame(() => {
   if (!faceData || !group.current) return;
   group.current.position.set(faceData.x, faceData.y, faceData.z);
   group.current.rotation.set(
@@ -75,12 +75,9 @@ function GlassesFaceTracked({ faceData, config, frameColor }) {
     faceData.rz
   );
 
-  // ✅ Scale dynamique au lieu de config.scale fixe
-  if (faceData.scale) {
-    group.current.scale.setScalar(faceData.scale);
-  } else {
-    group.current.scale.setScalar(config.scale);
-  }
+  // ✅ Scale original du modèle × facteur distance visage
+  const distanceFactor = faceData.scale ?? 1;
+  group.current.scale.setScalar(config.scale * distanceFactor);
 });
 
   if (!clonedScene) return null;
@@ -181,7 +178,7 @@ export default function TryOnPage() {
   const eyeWidth   = Math.abs(rightOuter.x - leftOuter.x);
 
   // Ratio naturel lunettes/visage ≈ 0.85 des oreilles
-  const dynamicScale = faceWidth * selected.scale * 0.85;
+  const dynamicScale = faceWidth / 0.5 ;
 
   const newData = {
     x:  -(cx - 0.5) * 4,
