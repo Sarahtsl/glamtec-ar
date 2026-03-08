@@ -1,12 +1,6 @@
 import { useState } from "react";
 import QRCode from "qrcode";
-
-// ══════════════════════════════════════════
-// Change cette URL vers ton domaine déployé
-// Ex: "https://ar.glamtec.ma"
-// En dev: "http://localhost:5173"
-// ══════════════════════════════════════════
-const BASE_URL = "https://glamtec-ar-production.up.railway.app/";
+const BASE_URL = "https://glamtec-ar-production.up.railway.app";
 
 const PRODUCTS = [
   { id: "gaming-chair", name: "Gaming Chair",      model: "Gaming_Chair.usdz" },
