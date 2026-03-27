@@ -19,7 +19,7 @@ const AR_MODELS = [
   { id: "male_tshirt",      file: "standard_t-shirt.glb",                     label: "T-Shirt Basique",    icon: "👕", category: "Vêtements" },
   { id: "oversized_tshirt", file: "t-shirt_polo_lengan_pendek.glb",                      label: "shirt_polo_lengan_pendek",   icon: "👕", category: "Vêtements" },
   { id: "tshirt",           file: "t_shirt.glb",                                label: "T-Shirt",            icon: "👕", category: "Vêtements" }, 
-  { id: "tshirt",           file: "male_basic_t_shirt.glb",                                label: "male_basic_t_shirt",            icon: "👕", category: "Vêtements" },
+  { id: "t_shirt",           file: "male_basic_t_shirt.glb",                                label: "male_basic_t_shirt",            icon: "👕", category: "Vêtements" },
 ];
 
 function buildArUrl(file, label) {
