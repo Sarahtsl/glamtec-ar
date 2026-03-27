@@ -16,9 +16,10 @@ const AR_MODELS = [
   { id: "wooden_table",     file: "wooden_table._practical_model_-_yadira.glb", label: "Table en Bois",      icon: "🪵", category: "Tables" },
   { id: "makeup_dresser",   file: "makeup_dresser_white.glb",                   label: "Coiffeuse Blanche",  icon: "🪞", category: "Mobilier" },
   { id: "makeup_table",     file: "makeup_table--low_poly.glb",                 label: "Table Maquillage",   icon: "🪞", category: "Mobilier" },
-  { id: "male_tshirt",      file: "male_basic_t_shirt.glb",                     label: "T-Shirt Basique",    icon: "👕", category: "Vêtements" },
-  { id: "oversized_tshirt", file: "oversized_t-shirt.glb",                      label: "T-Shirt Oversize",   icon: "👕", category: "Vêtements" },
-  { id: "tshirt",           file: "t_shirt.glb",                                label: "T-Shirt",            icon: "👕", category: "Vêtements" },
+  { id: "male_tshirt",      file: "standard_t-shirt.glb",                     label: "T-Shirt Basique",    icon: "👕", category: "Vêtements" },
+  { id: "oversized_tshirt", file: "t-shirt_polo_lengan_pendek.glb",                      label: "shirt_polo_lengan_pendek",   icon: "👕", category: "Vêtements" },
+  { id: "tshirt",           file: "t_shirt.glb",                                label: "T-Shirt",            icon: "👕", category: "Vêtements" }, 
+  { id: "tshirt",           file: "male_basic_t_shirt.glb",                                label: "male_basic_t_shirt",            icon: "👕", category: "Vêtements" },
 ];
 
 function buildArUrl(file, label) {

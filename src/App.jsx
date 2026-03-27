@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import TryOnPage from "./pages/TryOnPage";
 import TryOnBodyPage from "./pages/TryOnBodyPage";
-import QrGenerator from "./pages/Qrgenerator";
+import QrGenerator from "./pages/QrGenerator"; 
+import FaceFilterPage from "./pages/FaceFilterPage"; 
 
 /* ══════════════════════════════════════════════
    HOME PAGE
@@ -351,7 +352,6 @@ function Home() {
                 ))}
               </div>
               <div className="g-pcard-btns">
-                <Link to="/try-body" className="g-pbtn-main">Viewer 3D →</Link>
                 <Link to="/qr-generator" className="g-pbtn-gold">📲 QR Codes</Link>
               </div>
             </div>
@@ -412,9 +412,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/"             element={<Home />} />
-        <Route path="/try"          element={<TryOnPage />} />
-        <Route path="/try-body"     element={<TryOnBodyPage />} />
-        <Route path="/qr-generator" element={<QrGenerator />} />
+        <Route path="/try"          element={<FaceFilterPage />} /> 
+        <Route path="/qr-generator" element={<QrGenerator />} />  
       </Routes>
     </BrowserRouter>
   );
