@@ -5,13 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Face Filter AR 3D — GlamTec</title>
 
+  <!-- MediaPipe -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+  <!-- Three.js r128 + GLTFLoader -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
     body {
       background: #08080f;
       font-family: 'Segoe UI', system-ui, sans-serif;
@@ -22,63 +26,197 @@
       padding: 24px 16px;
       gap: 20px;
     }
-    header { display: flex; align-items: center; gap: 10px; }
-    header h1 { font-size: 15px; font-weight: 400; color: rgba(255,255,255,0.4); letter-spacing: .18em; text-transform: uppercase; }
-    header .dot { width: 6px; height: 6px; border-radius: 50%; background: #8b7cf8; box-shadow: 0 0 8px #8b7cf8; }
 
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    header h1 {
+      font-size: 15px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    header .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #8b7cf8;
+      box-shadow: 0 0 8px #8b7cf8;
+    }
+
+    /* ─── Stage ─────────────────────────────────── */
     #stage {
       position: relative;
       width: 640px; height: 480px;
       border-radius: 20px;
       overflow: hidden;
       background: #111;
-      box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 32px 80px rgba(0,0,0,.8);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.06),
+        0 32px 80px rgba(0,0,0,.8);
     }
-    #inputVideo { position: absolute; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-    #threeCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-    #debugCanvas { position: absolute; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity .25s; }
 
+    #inputVideo {
+      position: absolute; width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    /* Three.js canvas superposé — transparent */
+    #threeCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+
+    /* Overlay de debug landmarks */
+    #debugCanvas {
+      position: absolute; width: 100%; height: 100%;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .25s;
+    }
+
+    /* Badge statut */
     #status {
-      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,.65); backdrop-filter: blur(8px);
-      color: #fff; font-size: 12px; padding: 5px 16px; border-radius: 20px;
-      pointer-events: none; white-space: nowrap; transition: opacity .5s;
+      position: absolute;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-size: 12px;
+      padding: 5px 16px;
+      border-radius: 20px;
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity .5s;
       border: 1px solid rgba(255,255,255,.08);
     }
+
+    /* Badge chargement modèle */
     #loadingBadge {
-      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
-      background: rgba(139,124,248,.2); border: 1px solid rgba(139,124,248,.35);
-      color: #c4bbff; font-size: 11px; padding: 4px 14px; border-radius: 20px;
-      pointer-events: none; white-space: nowrap; opacity: 0; transition: opacity .4s;
+      position: absolute;
+      bottom: 14px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(139,124,248,.2);
+      border: 1px solid rgba(139,124,248,.35);
+      color: #c4bbff;
+      font-size: 11px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity .4s;
     }
 
-    #controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 640px; }
+    /* ─── Contrôles filtres ───────────────────────── */
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      max-width: 640px;
+    }
+
     .filter-btn {
-      position: relative; padding: 10px 22px; border-radius: 12px;
-      border: 1.5px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.50); font-size: 13px; font-weight: 500;
-      cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px;
+      position: relative;
+      padding: 10px 22px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.50);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .filter-btn:hover { background: rgba(255,255,255,.09); color: #fff; border-color: rgba(255,255,255,.15); }
-    .filter-btn.active { border-color: #8b7cf8; background: rgba(139,124,248,.15); color: #fff; }
-    .filter-btn .loader-dot { width: 6px; height: 6px; border-radius: 50%; background: #8b7cf8; opacity: 0; transition: opacity .3s; }
-    .filter-btn.loading .loader-dot { opacity: 1; animation: pulse 1s ease-in-out infinite; }
-    @keyframes pulse { 0%,100% { opacity: .3; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.2); } }
+    .filter-btn:hover {
+      background: rgba(255,255,255,.09);
+      color: #fff;
+      border-color: rgba(255,255,255,.15);
+    }
+    .filter-btn.active {
+      border-color: #8b7cf8;
+      background: rgba(139,124,248,.15);
+      color: #fff;
+    }
+    .filter-btn .loader-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #8b7cf8;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .filter-btn.loading .loader-dot {
+      opacity: 1;
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: .3; transform: scale(.8); }
+      50%      { opacity: 1;  transform: scale(1.2); }
+    }
 
+    /* ─── Sliders de calibration ─────────────────── */
     #calibration {
-      display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 640px;
-      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
-      border-radius: 14px; padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 640px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      padding: 16px 20px;
     }
-    #calibration summary { font-size: 12px; color: rgba(255,255,255,.35); cursor: pointer; letter-spacing: .08em; text-transform: uppercase; user-select: none; }
+    #calibration summary {
+      font-size: 12px;
+      color: rgba(255,255,255,.35);
+      cursor: pointer;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      user-select: none;
+    }
     #calibration summary:hover { color: rgba(255,255,255,.6); }
-    .cal-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
-    .cal-row label { font-size: 12px; color: rgba(255,255,255,.4); width: 100px; }
-    .cal-row input[type=range] { flex: 1; accent-color: #8b7cf8; }
-    .cal-row span { font-size: 12px; color: rgba(255,255,255,.45); width: 44px; text-align: right; }
+    .cal-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .cal-row label {
+      font-size: 12px;
+      color: rgba(255,255,255,.4);
+      width: 100px;
+    }
+    .cal-row input[type=range] {
+      flex: 1;
+      accent-color: #8b7cf8;
+    }
+    .cal-row span {
+      font-size: 12px;
+      color: rgba(255,255,255,.45);
+      width: 44px;
+      text-align: right;
+    }
 
-    #hint { font-size: 11px; color: rgba(255,255,255,.18); }
-    kbd { background: rgba(255,255,255,.08); border-radius: 4px; padding: 1px 6px; font-size: 10px; }
+    #hint {
+      font-size: 11px;
+      color: rgba(255,255,255,.18);
+    }
+    kbd {
+      background: rgba(255,255,255,.08);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 10px;
+    }
   </style>
 </head>
 <body>
@@ -98,21 +236,58 @@
 </div>
 
 <div id="controls">
-  <button class="filter-btn active" data-filter="glasses"><span>👓</span> Classiques<span class="loader-dot"></span></button>
-  <button class="filter-btn" data-filter="pink_round_sunglasses"><span>🕶</span> Rondes roses<span class="loader-dot"></span></button>
-  <button class="filter-btn" data-filter="black_glasses"><span>👓</span> Noires<span class="loader-dot"></span></button>
-  <button class="filter-btn" data-filter="balenciaga_sunglasses"><span>🕶</span> Balenciaga<span class="loader-dot"></span></button>
-  <button class="filter-btn" data-filter="prada_vintage_star_glasses"><span>👓</span> Prada<span class="loader-dot"></span></button>
-  <button class="filter-btn" data-filter="white_sunglasses"><span>🕶</span> Blanches<span class="loader-dot"></span></button>
-  <button class="filter-btn" data-filter="none"><span>✕</span> Aucun<span class="loader-dot"></span></button>
+  <button class="filter-btn active" data-filter="glasses">
+    <span>👓</span> Classiques
+    <span class="loader-dot"></span>
+  </button>
+  <button class="filter-btn" data-filter="pink_round_sunglasses">
+    <span>🕶</span> Solaires
+    <span class="loader-dot"></span>
+  </button> 
+   <button class="filter-btn" data-filter="black_glasses">
+    <span>👓</span> Noires
+    <span class="loader-dot"></span>
+  </button>
+    <button class="filter-btn" data-filter="balenciaga_sunglasses">
+      <span>🕶</span> Balenciaga
+      <span class="loader-dot"></span> 
+    </button>
+      <button class="filter-btn" data-filter="prada_vintage_star_glasses">
+        <span>👓</span> Prada
+        <span class="loader-dot"></span>
+      </button>  
+            <button class="filter-btn" data-filter="white_sunglasses">
+              <span>🕶</span> Blanches
+              <span class="loader-dot"></span>
+            </button>
+  <button class="filter-btn" data-filter="none">
+    <span>✕</span> Aucun
+    <span class="loader-dot"></span>
+  </button>
 </div>
 
 <details id="calibration">
   <summary>⚙ Calibration — <span id="cal-model-label">Classiques</span></summary>
-  <div class="cal-row"><label>Échelle</label><input type="range" id="cal-scale" min="-10.0" max="10.0" step="0.05" value="1.0"><span id="val-scale">1.00</span></div>
-  <div class="cal-row"><label>Offset Y</label><input type="range" id="cal-offsetY" min="-0.3" max="0.3" step="0.005" value="0"><span id="val-offsetY">0.00</span></div>
-  <div class="cal-row"><label>Offset Z</label><input type="range" id="cal-offsetZ" min="-0.5" max="0.5" step="0.01" value="0"><span id="val-offsetZ">0.00</span></div>
-  <div class="cal-row"><label>Rotation X</label><input type="range" id="cal-rotX" min="-0.5" max="0.5" step="0.01" value="0"><span id="val-rotX">0.00</span></div>
+  <div class="cal-row">
+    <label>Échelle</label>
+    <input type="range" id="cal-scale" min="-10.0" max="10.0" step="0.05" value="1.0">
+    <span id="val-scale">1.00</span>
+  </div>
+  <div class="cal-row">
+    <label>Offset Y</label>
+    <input type="range" id="cal-offsetY" min="-0.3" max="0.3" step="0.005" value="0">
+    <span id="val-offsetY">0.00</span>
+  </div>
+  <div class="cal-row">
+    <label>Offset Z</label>
+    <input type="range" id="cal-offsetZ" min="-0.5" max="0.5" step="0.01" value="0">
+    <span id="val-offsetZ">0.00</span>
+  </div>
+  <div class="cal-row">
+    <label>Rotation X</label>
+    <input type="range" id="cal-rotX" min="-0.5" max="0.5" step="0.01" value="0">
+    <span id="val-rotX">0.00</span>
+  </div>
   <div class="cal-row">
     <label>Retourner (flipY)</label>
     <label style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer">
@@ -123,7 +298,9 @@
   </div>
   <div class="cal-row" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.06);padding-top:10px">
     <label style="color:rgba(255,255,255,.25)">Sauvegarder</label>
-    <button id="btn-copy-cal" style="flex:1;padding:6px 14px;background:rgba(139,124,248,.15);border:1px solid rgba(139,124,248,.3);color:#c4bbff;border-radius:8px;font-size:12px;cursor:pointer">📋 Copier les valeurs dans le code</button>
+    <button id="btn-copy-cal" style="flex:1;padding:6px 14px;background:rgba(139,124,248,.15);border:1px solid rgba(139,124,248,.3);color:#c4bbff;border-radius:8px;font-size:12px;cursor:pointer">
+      📋 Copier les valeurs dans le code
+    </button>
     <span style="width:44px"></span>
   </div>
   <pre id="cal-output" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:11px;color:#a0e0b0;line-height:1.6;overflow:auto"></pre>
@@ -137,68 +314,67 @@
 ═══════════════════════════════════════════════════════ */
 const W = 640, H = 480;
 
+// Landmarks clés (identiques à la version 2D)
 const LM = {
   R_EYE_OUT: 33,  R_EYE_IN: 133,
   L_EYE_OUT: 263, L_EYE_IN: 362,
   NOSE_TIP:  4,
-  R_EAR: 234, L_EAR: 454,
+  R_EAR:     234, L_EAR: 454,
 };
 
-/* ─── Indices MediaPipe FaceMesh pour le contour du visage ───
-   Ces 36 points forment un contour convexe du visage
-   (silhouette externe + front + mâchoire) */
-const FACE_SILHOUETTE_INDICES = [
-  10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
-  397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
-  172, 58,  132, 93,  234, 127, 162, 21,  54,  103, 67,  109
-];
+// ─── CONFIG PAR MODÈLE ────────────────────────────────
+// Chaque modèle a ses propres réglages indépendants.
+// Modifie "scale" directement ici ou via les sliders — les valeurs sont mémorisées.
 const MODEL_CONFIG = {
   glasses: {
     path: 'models/glasses.glb', label: 'Classiques',
     scale: 0.80, offsetY: -0.010, offsetZ: 0.000, rotX: 0.000, flipY: true,
-  },
-  pink_round_sunglasses: {
-    path: 'models/pink_round_sunglasses.glb', label: 'Rondes roses',
-    scale: 0.95, offsetY: -0.095, offsetZ: 0.050, rotX: -0.130, flipY: true,
-  },
-  black_glasses: {
+  },  pink_round_sunglasses: {
+    path: 'models/pink_round_sunglasses.glb', label: 'Solaires',
+    scale: 1.10, offsetY: -0.105, offsetZ: 0.150, rotX: -0.160, flipY: true,
+  },  black_glasses: {
     path: 'models/black_glasses.glb', label: 'Noires',
-    scale: 0.55, offsetY: -0.015, offsetZ: 0.000, rotX: 0.000, flipY: true,
-  },
-  balenciaga_sunglasses: {
+    scale: 0.60, offsetY: -0.015, offsetZ: 0.000, rotX: 0.000, flipY: true,
+  },  balenciaga_sunglasses: {
     path: 'models/balenciaga_sunglasses.glb', label: 'Balenciaga',
     scale: 6.80, offsetY: 0.020, offsetZ: 0.000, rotX: 0.190, flipY: false,
-  },
-  prada_vintage_star_glasses: {
+  },  prada_vintage_star_glasses: {
     path: 'models/prada_vintage_star_glasses.glb', label: 'Prada',
-    scale: 0.40, offsetY: 0.000, offsetZ: 0.050, rotX: -0.050, flipY: true,
-  },
-  white_sunglasses: {
+    scale: 0.40, offsetY: 0.020, offsetZ: 0.050, rotX: -0.130, flipY: true,
+  },  white_sunglasses: {
     path: 'models/white_sunglasses.glb', label: 'Blanches',
     scale: 1.00, offsetY: -0.125, offsetZ: 0.000, rotX: -0.160, flipY: true,
   },
 };
-
 const MODEL_PATHS = Object.fromEntries(
   Object.entries(MODEL_CONFIG).map(([k,v]) => [k, v.path])
 );
 
+/* ═══════════════════════════════════════════════════════
+   CALIBRATION — pointe vers MODEL_CONFIG[currentFilter]
+   Les sliders lisent/écrivent dedans directement.
+═══════════════════════════════════════════════════════ */
 let CAL = MODEL_CONFIG['glasses'];
+
+// Appliquer les valeurs sauvegardées aux sliders dès le démarrage
+// (appelé après que le DOM est prêt — placé ici, exécuté après le parsing HTML)
 window.addEventListener('DOMContentLoaded', () => { syncSlidersToCAL && syncSlidersToCAL(); });
 
 /* ═══════════════════════════════════════════════════════
    ÉTAT APPLICATION
 ═══════════════════════════════════════════════════════ */
-const video    = document.getElementById('inputVideo');
-const dbgCvs   = document.getElementById('debugCanvas');
-const dctx     = dbgCvs.getContext('2d');
-const statusEl = document.getElementById('status');
-const loadBadge = document.getElementById('loadingBadge');
+const video      = document.getElementById('inputVideo');
+const dbgCvs     = document.getElementById('debugCanvas');
+const dctx       = dbgCvs.getContext('2d');
+const statusEl   = document.getElementById('status');
+const loadBadge  = document.getElementById('loadingBadge');
 
 let currentFilter = 'glasses';
 let debugMode     = false;
 
+// Cache des modèles chargés { filterName: THREE.Group }
 const modelCache = {};
+// Modèle actuellement visible dans la scène
 let activeModel  = null;
 
 /* ═══════════════════════════════════════════════════════
@@ -210,69 +386,35 @@ threeCanvas.height = H;
 
 const renderer = new THREE.WebGLRenderer({
   canvas: threeCanvas,
-  alpha: true,
+  alpha:  true,        // fond transparent → la vidéo reste visible
   antialias: true,
-  stencil: true,
 });
 renderer.setSize(W, H);
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setClearColor(0x000000, 0);
-renderer.autoClear = false;   // ← IMPORTANT : on gère le clear manuellement
+renderer.setClearColor(0x000000, 0);   // transparent
 
-const scene = new THREE.Scene();
+const scene  = new THREE.Scene();
 
+/*
+  Caméra orthographique : beaucoup plus simple à aligner avec MediaPipe
+  que la perspective. Les coords normalisées [-1,1] mappent directement.
+  halfW/halfH définissent l'espace world en unités.
+*/
 const halfW = 1.0;
 const halfH = halfW * (H / W);
 const camera = new THREE.OrthographicCamera(-halfW, halfW, halfH, -halfH, 0.01, 100);
 camera.position.set(0, 0, 5);
 camera.lookAt(0, 0, 0);
 
-const ambient   = new THREE.AmbientLight(0xffffff, 1.6);
+// Éclairage — ambiant fort + directionnel pour révéler les matériaux
+const ambient = new THREE.AmbientLight(0xffffff, 1.6);
 scene.add(ambient);
-const dirLight  = new THREE.DirectionalLight(0xffffff, 1.2);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
 dirLight.position.set(0, 2, 4);
 scene.add(dirLight);
 const fillLight = new THREE.DirectionalLight(0xaabbff, 0.5);
 fillLight.position.set(-2, -1, 2);
 scene.add(fillLight);
-
-/* ═══════════════════════════════════════════════════════
-   SKIN MASK via STENCIL BUFFER — approche correcte
-   ─────────────────────────────────────────────────────
-   Étape 1 (renderOrder 0) : le masque visage
-     → écrit "1" dans le stencil, ne peint rien (colorWrite off)
-   Étape 2 (renderOrder 1) : les lunettes
-     → ne rendent QUE là où stencil == 1 (= à l'intérieur du visage)
-     → les branches qui dépassent hors du visage sont ignorées
-═══════════════════════════════════════════════════════ */
-const FACE_VERTEX_COUNT = FACE_SILHOUETTE_INDICES.length;
-
-const maskGeo = new THREE.BufferGeometry();
-const maskPositions = new Float32Array(FACE_VERTEX_COUNT * 3);
-maskGeo.setAttribute('position', new THREE.BufferAttribute(maskPositions, 3));
-
-const maskIndices = [];
-for (let i = 1; i < FACE_VERTEX_COUNT - 1; i++) {
-  maskIndices.push(0, i, i + 1);
-}
-maskGeo.setIndex(maskIndices);
-
-const maskMat = new THREE.MeshBasicMaterial({
-  colorWrite: false,
-  depthWrite: false,
-  depthTest: false,
-  side: THREE.DoubleSide,
-});
-// Stencil : écrire 1 partout où le masque visage passe
-maskMat.stencilWrite = true;
-maskMat.stencilFunc  = THREE.AlwaysStencilFunc;
-maskMat.stencilRef   = 1;
-maskMat.stencilZPass = THREE.ReplaceStencilOp;
-
-const faceMaskMesh = new THREE.Mesh(maskGeo, maskMat);
-faceMaskMesh.renderOrder = 0;
-faceMaskMesh.frustumCulled = false;
-scene.add(faceMaskMesh);
 
 /* ═══════════════════════════════════════════════════════
    THREE.JS — CHARGEMENT MODÈLES
@@ -292,36 +434,22 @@ function loadModel(filterName) {
       (gltf) => {
         const model = gltf.scene;
 
+        // Centrer le modèle sur son bounding box
         const box = new THREE.Box3().setFromObject(model);
         const center = new THREE.Vector3();
         box.getCenter(center);
-        model.position.sub(center);
+        model.position.sub(center);   // recentre à (0,0,0)
 
+        // Normaliser sur la LARGEUR (X) — les lunettes sont horizontales
+        // → 1 unité world = toute la largeur du modèle
         const size = new THREE.Vector3();
         box.getSize(size);
         const normalizeScale = 1.0 / size.x;
         model.scale.setScalar(normalizeScale);
 
+        // Orientation de base : rotation X = π (modèles souvent exportés à l'envers)
+        // flipY sera géré dynamiquement dans onResults selon MODEL_CONFIG
         model.rotation.x = Math.PI;
-
-        // ─── Stencil : les lunettes ne rendent QUE là où stencil==1 ───
-        // renderOrder 1 = rendues après le masque (qui a écrit le stencil)
-        model.traverse(child => {
-          if (child.isMesh) {
-            child.renderOrder = 1;
-            // Chaque matériau doit tester le stencil
-            const applyStencil = (mat) => {
-              mat.stencilWrite = false;
-              mat.stencilFunc  = THREE.EqualStencilFunc;
-              mat.stencilRef   = 1;
-            };
-            if (Array.isArray(child.material)) {
-              child.material.forEach(applyStencil);
-            } else {
-              applyStencil(child.material);
-            }
-          }
-        });
 
         model.visible = false;
         scene.add(model);
@@ -347,6 +475,10 @@ function loadModel(filterName) {
 }
 
 function switchModel(filterName) {
+  // Sauvegarder les valeurs courantes des sliders dans le config du modèle précédent
+  // (déjà fait en temps réel par bindSlider)
+
+  // Cacher le modèle courant
   if (activeModel) activeModel.visible = false;
 
   if (filterName === 'none') {
@@ -354,19 +486,21 @@ function switchModel(filterName) {
     return;
   }
 
+  // Pointer CAL vers la config du nouveau modèle
   if (MODEL_CONFIG[filterName]) {
     CAL = MODEL_CONFIG[filterName];
-    syncSlidersToCAL();
+    syncSlidersToCAL();   // mettre à jour l'UI avec les valeurs sauvegardées
   }
 
   loadModel(filterName).then((model) => {
     if (!model) return;
-    if (filterName !== currentFilter) return;
+    if (filterName !== currentFilter) return; // changement rapide
     model.visible = true;
     activeModel   = model;
   });
 }
 
+/* Sync les sliders vers les valeurs CAL du modèle courant */
 function syncSlidersToCAL() {
   const s = (id, val, dec) => {
     const el = document.getElementById('cal-' + id);
@@ -383,12 +517,21 @@ function syncSlidersToCAL() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   GÉOMÉTRIE HELPERS
+   GÉOMÉTRIE — identique à la version 2D
 ═══════════════════════════════════════════════════════ */
 const mid  = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2, z: (a.z+b.z)/2 });
 const dist = (a, b) => Math.hypot(a.x-b.x, a.y-b.y);
-const px   = l => ({ x: (1-l.x)*W, y: l.y*H, z: l.z });
 
+/*
+  px() : landmark → coordonnées écran miroir [0..W, 0..H]
+  (même logique que la version 2D)
+*/
+const px = l => ({ x: (1-l.x)*W, y: l.y*H, z: l.z });
+
+/*
+  screenToWorld() : coordonnées écran → espace world Three.js
+  Caméra ortho : [-halfW..halfW] × [-halfH..halfH]
+*/
 function screenToWorld(sx, sy) {
   return {
     x:  (sx / W) * 2*halfW - halfW,
@@ -397,36 +540,11 @@ function screenToWorld(sx, sy) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MISE À JOUR DU SKIN MASK depuis les landmarks
-   Convertit les 36 points du contour visage en coords world
-   et pousse dans le BufferGeometry du masque.
-═══════════════════════════════════════════════════════ */
-function updateFaceMask(lm, depthZ) {
-  const pos = maskGeo.attributes.position;
-  // Le masque est placé sur le plan du visage (même Z que les lunettes)
-  // depthTest:false → il s'applique indépendamment de la profondeur
-  const maskZ = CAL.offsetZ - depthZ * 0.5;
-
-  for (let i = 0; i < FACE_SILHOUETTE_INDICES.length; i++) {
-    const lmIdx = FACE_SILHOUETTE_INDICES[i];
-    const l = lm[lmIdx];
-    const sx = (1 - l.x) * W;
-    const sy = l.y * H;
-    const w  = screenToWorld(sx, sy);
-    pos.setXYZ(i, w.x, w.y, maskZ);
-  }
-  pos.needsUpdate = true;
-  maskGeo.computeBoundingSphere();
-}
-
-/* ═══════════════════════════════════════════════════════
    MEDIAPIPE — CALLBACK
 ═══════════════════════════════════════════════════════ */
 function onResults(results) {
+  // Vider debug canvas
   dctx.clearRect(0, 0, W, H);
-
-  // Clear color + depth + stencil à chaque frame
-  renderer.clear(true, true, true);
 
   if (!results.multiFaceLandmarks?.length) {
     renderer.render(scene, camera);
@@ -435,6 +553,7 @@ function onResults(results) {
 
   const lm = results.multiFaceLandmarks[0];
 
+  /* Points clés en coords écran miroir */
   const rEyePx = mid(px(lm[LM.R_EYE_OUT]), px(lm[LM.R_EYE_IN]));
   const lEyePx = mid(px(lm[LM.L_EYE_OUT]), px(lm[LM.L_EYE_IN]));
   const nosePx = px(lm[LM.NOSE_TIP]);
@@ -442,21 +561,32 @@ function onResults(results) {
   const lEarPx = px(lm[LM.L_EAR]);
   const ctrPx  = mid(rEyePx, lEyePx);
 
+  // Utiliser la distance oreille-à-oreille comme base de scale
+  // → les branches s'étendent jusqu'aux oreilles comme de vraies lunettes
   const earSpanPx = dist(rEarPx, lEarPx);
+  const eyeWpx    = dist(rEyePx, lEyePx);
+
+  // ── Roll : tilt gauche/droite ──────────────────
   const rollAngle = Math.atan2(lEyePx.y - rEyePx.y, lEyePx.x - rEyePx.x);
 
-  const rEarZ   = lm[LM.R_EAR].z;
-  const lEarZ   = lm[LM.L_EAR].z;
+  // ── Yaw : rotation gauche/droite de la tête ───
+  // On compare la profondeur Z des deux oreilles (coords MediaPipe normalisées)
+  // lm[R_EAR].z < lm[L_EAR].z  → visage tourné vers la droite (oreille D plus proche)
+  // MediaPipe donne z en unités normalisées, négatif = vers la caméra
+  const rEarZ = lm[LM.R_EAR].z;
+  const lEarZ = lm[LM.L_EAR].z;
+  // yawAngle : positif = tourné vers la gauche caméra (droite personne)
+  // On amplifie légèrement (×2.5) car les z MediaPipe sont peu contrastés
   const yawAngle = (rEarZ - lEarZ) * 2.5;
 
+  // ── Profondeur nez ──────────────────────────────
   const depthZ = lm[LM.NOSE_TIP].z;
 
-  /* ─── 1. Mettre à jour le masque de peau ────────── */
-  updateFaceMask(lm, depthZ);
-
-  /* ─── 2. Positionner les lunettes ───────────────── */
+  /* ── Positionner le modèle 3D ────────────────── */
   if (activeModel) {
     const wPos = screenToWorld(ctrPx.x, ctrPx.y);
+
+    // Scale sur earSpan réel (distance oreille→oreille projetée sur l'écran)
     const earSpanWorld = (earSpanPx / W) * 2 * halfW;
     const finalScale   = earSpanWorld * CAL.scale;
 
@@ -465,24 +595,22 @@ function onResults(results) {
       wPos.y + CAL.offsetY,
       CAL.offsetZ - depthZ * 0.5
     );
+
     activeModel.scale.setScalar(finalScale);
 
+    // ── Rotations complètes ──────────────────────
     const flipY = CAL.flipY ? Math.PI : 0;
-    activeModel.rotation.order = 'YXZ';
-    activeModel.rotation.y = flipY + yawAngle;
-    activeModel.rotation.x = Math.PI + CAL.rotX;
-    activeModel.rotation.z = -rollAngle;
+
+    // Ordre important : Three.js applique X→Y→Z (Euler XYZ par défaut)
+    activeModel.rotation.order = 'YXZ';   // Yaw d'abord, puis pitch, puis roll
+    activeModel.rotation.y = flipY + yawAngle;   // yaw tête + éventuel miroir
+    activeModel.rotation.x = Math.PI + CAL.rotX; // pitch (base π + calibration)
+    activeModel.rotation.z = -rollAngle;          // roll tête
   }
 
-  /* ─── 3. Rendu : masque d'abord, lunettes ensuite ─
-     Three.js respecte l'ordre renderOrder automatiquement.
-     Le masque (renderOrder 0) s'exécute avant les lunettes (1),
-     donc son depth buffer est déjà écrit quand les lunettes tentent
-     de rendre leurs pixels → ceux derrière le masque sont rejetés.
-  ─────────────────────────────────────────────────── */
   renderer.render(scene, camera);
 
-  /* ─── Debug landmarks ────────────────────────────── */
+  /* ── Debug landmarks ─────────────────────────── */
   if (debugMode) {
     for (const l of lm) {
       dctx.beginPath();
@@ -490,19 +618,6 @@ function onResults(results) {
       dctx.fillStyle = 'rgba(139,124,248,.45)';
       dctx.fill();
     }
-    // Visualiser le contour du masque en debug
-    dctx.beginPath();
-    for (let i = 0; i < FACE_SILHOUETTE_INDICES.length; i++) {
-      const l  = lm[FACE_SILHOUETTE_INDICES[i]];
-      const sx = (1 - l.x) * W;
-      const sy = l.y * H;
-      if (i === 0) dctx.moveTo(sx, sy); else dctx.lineTo(sx, sy);
-    }
-    dctx.closePath();
-    dctx.strokeStyle = 'rgba(0,255,180,.5)';
-    dctx.lineWidth = 1.5;
-    dctx.stroke();
-
     dbgPt(rEyePx, '#0ff', 'œil D');
     dbgPt(lEyePx, '#0ff', 'œil G');
     dbgPt(nosePx, '#f0f', 'nez');
@@ -519,10 +634,10 @@ const faceMesh = new FaceMesh({
   locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
 });
 faceMesh.setOptions({
-  maxNumFaces: 1,
-  refineLandmarks: true,
+  maxNumFaces:          1,
+  refineLandmarks:      true,
   minDetectionConfidence: 0.5,
-  minTrackingConfidence: 0.5,
+  minTrackingConfidence:  0.5,
 });
 faceMesh.onResults(onResults);
 
@@ -534,10 +649,14 @@ const cam = new Camera(video, {
 cam.start()
   .then(() => {
     setStatus('✓ Caméra prête', 2500);
+    // Précharger le premier modèle
     return loadModel('glasses');
   })
   .then((model) => {
-    if (model) { model.visible = true; activeModel = model; }
+    if (model) {
+      model.visible = true;
+      activeModel   = model;
+    }
   })
   .catch(e => setStatus('Erreur caméra : ' + e.message));
 
@@ -570,20 +689,28 @@ bindSlider('cal-offsetY', 'offsetY', 2);
 bindSlider('cal-offsetZ', 'offsetZ', 2);
 bindSlider('cal-rotX',    'rotX',    2);
 
+// Toggle flipY
 document.getElementById('cal-flipY').addEventListener('change', (e) => {
   CAL.flipY = e.target.checked;
 });
 
+// Mettre à jour le label du modèle dans le titre calibration
 function updateCalLabel() {
   const lbl = document.getElementById('cal-model-label');
   if (lbl && MODEL_CONFIG[currentFilter]) lbl.textContent = MODEL_CONFIG[currentFilter].label;
 }
 
+// Bouton "Copier les valeurs" → génère le bloc MODEL_CONFIG à coller dans le code
 document.getElementById('btn-copy-cal').addEventListener('click', () => {
   const lines = Object.entries(MODEL_CONFIG).map(([k, v]) =>
-    `  ${k}: {\n    path: '${v.path}', label: '${v.label}',\n    scale: ${v.scale.toFixed(2)}, offsetY: ${v.offsetY.toFixed(3)}, offsetZ: ${v.offsetZ.toFixed(3)}, rotX: ${v.rotX.toFixed(3)}, flipY: ${v.flipY},\n  },`
-  ).join('\n');
-  const output = `const MODEL_CONFIG = {\n${lines}\n};`;
+    `  ${k}: {
+    path: '${v.path}', label: '${v.label}',
+    scale: ${v.scale.toFixed(2)}, offsetY: ${v.offsetY.toFixed(3)}, offsetZ: ${v.offsetZ.toFixed(3)}, rotX: ${v.rotX.toFixed(3)}, flipY: ${v.flipY},
+  },`
+  ).join('');
+  const output = `const MODEL_CONFIG = {
+${lines}
+};`;
   const pre = document.getElementById('cal-output');
   pre.textContent = output;
   pre.style.display = 'block';
@@ -603,6 +730,7 @@ document.addEventListener('keydown', e => {
     dbgCvs.style.opacity = debugMode ? '1' : '0';
   }
   if (k === 'r') {
+    // Reset le modèle courant seulement
     CAL.scale = 1.0; CAL.offsetY = 0; CAL.offsetZ = 0; CAL.rotX = 0; CAL.flipY = false;
     syncSlidersToCAL();
   }
@@ -616,11 +744,16 @@ function setStatus(msg, hideAfter) {
   statusEl.style.opacity = '1';
   if (hideAfter) setTimeout(() => statusEl.style.opacity = '0', hideAfter);
 }
-function showLoadBadge(show) { loadBadge.style.opacity = show ? '1' : '0'; }
+
+function showLoadBadge(show) {
+  loadBadge.style.opacity = show ? '1' : '0';
+}
+
 function setBtnLoading(filterName, loading) {
   const btn = document.querySelector(`[data-filter="${filterName}"]`);
   if (btn) btn.classList.toggle('loading', loading);
 }
+
 function dbgPt(p, c, label) {
   dctx.beginPath();
   dctx.arc(p.x, p.y, 5, 0, Math.PI*2);
