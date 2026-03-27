@@ -46,6 +46,108 @@
       box-shadow: 0 0 8px #8b7cf8;
     }
 
+    /* ─── Overlay de chargement global ─────────────── */
+    #preload-overlay {
+      position: fixed;
+      inset: 0;
+      background: #08080f;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      transition: opacity .6s ease;
+    }
+    #preload-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .preload-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .preload-logo .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #8b7cf8;
+      box-shadow: 0 0 12px #8b7cf8;
+      animation: dotPulse 1.4s ease-in-out infinite;
+    }
+    .preload-logo .dot:nth-child(2) { animation-delay: .2s; }
+    .preload-logo h2 {
+      font-size: 18px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+    @keyframes dotPulse {
+      0%,100% { opacity: .3; transform: scale(.8); }
+      50%      { opacity: 1;  transform: scale(1.3); }
+    }
+
+    .preload-bar-wrap {
+      width: 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .preload-bar-bg {
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,.08);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .preload-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6c63d9, #b09eff);
+      border-radius: 3px;
+      transition: width .35s ease;
+      box-shadow: 0 0 8px rgba(139,124,248,.6);
+    }
+    .preload-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .preload-model-name {
+      font-size: 12px;
+      color: rgba(255,255,255,.35);
+      letter-spacing: .06em;
+    }
+    .preload-pct {
+      font-size: 13px;
+      font-weight: 600;
+      color: #8b7cf8;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .preload-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 340px;
+    }
+    .preload-chip {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.2);
+      transition: all .3s;
+    }
+    .preload-chip.done {
+      border-color: rgba(139,124,248,.4);
+      color: #b09eff;
+      background: rgba(139,124,248,.08);
+    }
+
     /* ─── Stage ─────────────────────────────────── */
     #stage {
       position: relative;
@@ -64,7 +166,6 @@
       transform: scaleX(-1);
     }
 
-    /* Three.js canvas superposé — transparent */
     #threeCanvas {
       position: absolute;
       top: 0; left: 0;
@@ -72,7 +173,6 @@
       pointer-events: none;
     }
 
-    /* Overlay de debug landmarks */
     #debugCanvas {
       position: absolute; width: 100%; height: 100%;
       pointer-events: none;
@@ -80,7 +180,6 @@
       transition: opacity .25s;
     }
 
-    /* Badge statut */
     #status {
       position: absolute;
       top: 14px; left: 50%;
@@ -95,23 +194,6 @@
       white-space: nowrap;
       transition: opacity .5s;
       border: 1px solid rgba(255,255,255,.08);
-    }
-
-    /* Badge chargement modèle */
-    #loadingBadge {
-      position: absolute;
-      bottom: 14px; left: 50%;
-      transform: translateX(-50%);
-      background: rgba(139,124,248,.2);
-      border: 1px solid rgba(139,124,248,.35);
-      color: #c4bbff;
-      font-size: 11px;
-      padding: 4px 14px;
-      border-radius: 20px;
-      pointer-events: none;
-      white-space: nowrap;
-      opacity: 0;
-      transition: opacity .4s;
     }
 
     /* ─── Contrôles filtres ───────────────────────── */
@@ -138,7 +220,7 @@
       align-items: center;
       gap: 8px;
     }
-    .filter-btn:hover {
+    .filter-btn:hover:not(:disabled) {
       background: rgba(255,255,255,.09);
       color: #fff;
       border-color: rgba(255,255,255,.15);
@@ -148,20 +230,23 @@
       background: rgba(139,124,248,.15);
       color: #fff;
     }
-    .filter-btn .loader-dot {
+    /* Bouton désactivé = modèle pas encore chargé */
+    .filter-btn:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+    /* Indicateur prêt (petit check vert) */
+    .filter-btn .ready-dot {
       width: 6px; height: 6px;
       border-radius: 50%;
-      background: #8b7cf8;
+      background: #4ade80;
       opacity: 0;
-      transition: opacity .3s;
+      box-shadow: 0 0 5px #4ade80;
+      transition: opacity .4s;
+      flex-shrink: 0;
     }
-    .filter-btn.loading .loader-dot {
+    .filter-btn.model-ready .ready-dot {
       opacity: 1;
-      animation: pulse 1s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%,100% { opacity: .3; transform: scale(.8); }
-      50%      { opacity: 1;  transform: scale(1.2); }
     }
 
     /* ─── Sliders de calibration ─────────────────── */
@@ -221,6 +306,28 @@
 </head>
 <body>
 
+<!-- ═══ OVERLAY PRÉCHARGEMENT ═══════════════════════ -->
+<div id="preload-overlay">
+  <div class="preload-logo">
+    <div class="dot"></div>
+    <h2>GlamTec AR</h2>
+    <div class="dot"></div>
+  </div>
+
+  <div class="preload-bar-wrap">
+    <div class="preload-info">
+      <span class="preload-model-name" id="preload-model-name">Initialisation…</span>
+      <span class="preload-pct" id="preload-pct">0%</span>
+    </div>
+    <div class="preload-bar-bg">
+      <div class="preload-bar-fill" id="preload-bar"></div>
+    </div>
+  </div>
+
+  <div class="preload-list" id="preload-chips"></div>
+</div>
+<!-- ════════════════════════════════════════════════ -->
+
 <header>
   <div class="dot"></div>
   <h1>GlamTec — Face Filter AR 3D</h1>
@@ -232,37 +339,36 @@
   <canvas id="threeCanvas"></canvas>
   <canvas id="debugCanvas" width="640" height="480"></canvas>
   <div id="status">Initialisation…</div>
-  <div id="loadingBadge">Chargement du modèle…</div>
 </div>
 
 <div id="controls">
-  <button class="filter-btn active" data-filter="glasses">
+  <button class="filter-btn active" data-filter="glasses" disabled>
     <span>👓</span> Classiques
-    <span class="loader-dot"></span>
+    <span class="ready-dot"></span>
   </button>
-  <button class="filter-btn" data-filter="pink_round_sunglasses">
+  <button class="filter-btn" data-filter="pink_round_sunglasses" disabled>
     <span>🕶</span> Solaires
-    <span class="loader-dot"></span>
-  </button> 
-   <button class="filter-btn" data-filter="black_glasses">
-    <span>👓</span> Noires
-    <span class="loader-dot"></span>
+    <span class="ready-dot"></span>
   </button>
-    <button class="filter-btn" data-filter="balenciaga_sunglasses">
-      <span>🕶</span> Balenciaga
-      <span class="loader-dot"></span> 
-    </button>
-      <button class="filter-btn" data-filter="prada_vintage_star_glasses">
-        <span>👓</span> Prada
-        <span class="loader-dot"></span>
-      </button>  
-            <button class="filter-btn" data-filter="white_sunglasses">
-              <span>🕶</span> Blanches
-              <span class="loader-dot"></span>
-            </button>
-  <button class="filter-btn" data-filter="none">
+  <button class="filter-btn" data-filter="black_glasses" disabled>
+    <span>👓</span> Noires
+    <span class="ready-dot"></span>
+  </button>
+  <button class="filter-btn" data-filter="balenciaga_sunglasses" disabled>
+    <span>🕶</span> Balenciaga
+    <span class="ready-dot"></span>
+  </button>
+  <button class="filter-btn" data-filter="prada_vintage_star_glasses" disabled>
+    <span>👓</span> Prada
+    <span class="ready-dot"></span>
+  </button>
+  <button class="filter-btn" data-filter="white_sunglasses" disabled>
+    <span>🕶</span> Blanches
+    <span class="ready-dot"></span>
+  </button>
+  <button class="filter-btn model-ready" data-filter="none">
     <span>✕</span> Aucun
-    <span class="loader-dot"></span>
+    <span class="ready-dot"></span>
   </button>
 </div>
 
@@ -314,7 +420,6 @@
 ═══════════════════════════════════════════════════════ */
 const W = 640, H = 480;
 
-// Landmarks clés (identiques à la version 2D)
 const LM = {
   R_EYE_OUT: 33,  R_EYE_IN: 133,
   L_EYE_OUT: 263, L_EYE_IN: 362,
@@ -322,93 +427,73 @@ const LM = {
   R_EAR:     234, L_EAR: 454,
 };
 
-// ─── CONFIG PAR MODÈLE ────────────────────────────────
-// Chaque modèle a ses propres réglages indépendants.
-// Modifie "scale" directement ici ou via les sliders — les valeurs sont mémorisées.
 const MODEL_CONFIG = {
   glasses: {
     path: 'models/glasses.glb', label: 'Classiques',
     scale: 0.80, offsetY: -0.010, offsetZ: 0.000, rotX: 0.000, flipY: true,
-  },  pink_round_sunglasses: {
+  },
+  pink_round_sunglasses: {
     path: 'models/pink_round_sunglasses.glb', label: 'Solaires',
-    scale: 1.10, offsetY: -0.105, offsetZ: 0.150, rotX: -0.160, flipY: true,
-  },  black_glasses: {
+    scale: 0.90, offsetY: -0.090, offsetZ: 0.150, rotX: -0.160, flipY: true,
+  },
+  black_glasses: {
     path: 'models/black_glasses.glb', label: 'Noires',
     scale: 0.60, offsetY: -0.015, offsetZ: 0.000, rotX: 0.000, flipY: true,
-  },  balenciaga_sunglasses: {
+  },
+  balenciaga_sunglasses: {
     path: 'models/balenciaga_sunglasses.glb', label: 'Balenciaga',
     scale: 6.80, offsetY: 0.020, offsetZ: 0.000, rotX: 0.190, flipY: false,
-  },  prada_vintage_star_glasses: {
+  },
+  prada_vintage_star_glasses: {
     path: 'models/prada_vintage_star_glasses.glb', label: 'Prada',
-    scale: 0.40, offsetY: 0.020, offsetZ: 0.050, rotX: -0.130, flipY: true,
-  },  white_sunglasses: {
+    scale: 0.40, offsetY: -0.010, offsetZ: 0.050, rotX: 0.050, flipY: true,
+  },
+  white_sunglasses: {
     path: 'models/white_sunglasses.glb', label: 'Blanches',
     scale: 1.00, offsetY: -0.125, offsetZ: 0.000, rotX: -0.160, flipY: true,
   },
 };
-const MODEL_PATHS = Object.fromEntries(
-  Object.entries(MODEL_CONFIG).map(([k,v]) => [k, v.path])
-);
 
 /* ═══════════════════════════════════════════════════════
-   CALIBRATION — pointe vers MODEL_CONFIG[currentFilter]
-   Les sliders lisent/écrivent dedans directement.
+   CALIBRATION
 ═══════════════════════════════════════════════════════ */
 let CAL = MODEL_CONFIG['glasses'];
 
-// Appliquer les valeurs sauvegardées aux sliders dès le démarrage
-// (appelé après que le DOM est prêt — placé ici, exécuté après le parsing HTML)
 window.addEventListener('DOMContentLoaded', () => { syncSlidersToCAL && syncSlidersToCAL(); });
 
 /* ═══════════════════════════════════════════════════════
-   ÉTAT APPLICATION
+   ÉTAT
 ═══════════════════════════════════════════════════════ */
-const video      = document.getElementById('inputVideo');
-const dbgCvs     = document.getElementById('debugCanvas');
-const dctx       = dbgCvs.getContext('2d');
-const statusEl   = document.getElementById('status');
-const loadBadge  = document.getElementById('loadingBadge');
+const video    = document.getElementById('inputVideo');
+const dbgCvs   = document.getElementById('debugCanvas');
+const dctx     = dbgCvs.getContext('2d');
+const statusEl = document.getElementById('status');
 
 let currentFilter = 'glasses';
 let debugMode     = false;
-
-// Cache des modèles chargés { filterName: THREE.Group }
-const modelCache = {};
-// Modèle actuellement visible dans la scène
-let activeModel  = null;
+const modelCache  = {};
+let activeModel   = null;
 
 /* ═══════════════════════════════════════════════════════
-   THREE.JS — SETUP
+   THREE.JS SETUP
 ═══════════════════════════════════════════════════════ */
 const threeCanvas = document.getElementById('threeCanvas');
 threeCanvas.width  = W;
 threeCanvas.height = H;
 
-const renderer = new THREE.WebGLRenderer({
-  canvas: threeCanvas,
-  alpha:  true,        // fond transparent → la vidéo reste visible
-  antialias: true,
-});
+const renderer = new THREE.WebGLRenderer({ canvas: threeCanvas, alpha: true, antialias: true });
 renderer.setSize(W, H);
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setClearColor(0x000000, 0);   // transparent
+renderer.setClearColor(0x000000, 0);
 
 const scene  = new THREE.Scene();
-
-/*
-  Caméra orthographique : beaucoup plus simple à aligner avec MediaPipe
-  que la perspective. Les coords normalisées [-1,1] mappent directement.
-  halfW/halfH définissent l'espace world en unités.
-*/
-const halfW = 1.0;
-const halfH = halfW * (H / W);
+const halfW  = 1.0;
+const halfH  = halfW * (H / W);
 const camera = new THREE.OrthographicCamera(-halfW, halfW, halfH, -halfH, 0.01, 100);
 camera.position.set(0, 0, 5);
 camera.lookAt(0, 0, 0);
 
-// Éclairage — ambiant fort + directionnel pour révéler les matériaux
-const ambient = new THREE.AmbientLight(0xffffff, 1.6);
-scene.add(ambient);
+scene.add(new THREE.AmbientLight(0xffffff, 1.6));
 const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
 dirLight.position.set(0, 2, 4);
 scene.add(dirLight);
@@ -417,90 +502,144 @@ fillLight.position.set(-2, -1, 2);
 scene.add(fillLight);
 
 /* ═══════════════════════════════════════════════════════
-   THREE.JS — CHARGEMENT MODÈLES
+   PRÉCHARGEMENT DE TOUS LES MODÈLES AU DÉMARRAGE
 ═══════════════════════════════════════════════════════ */
-const loader = new THREE.GLTFLoader();
+const gltfLoader = new THREE.GLTFLoader();
 
-function loadModel(filterName) {
-  if (!MODEL_PATHS[filterName]) return Promise.resolve(null);
-  if (modelCache[filterName])   return Promise.resolve(modelCache[filterName]);
+// Construire les chips dans l'overlay
+const chipsContainer = document.getElementById('preload-chips');
+const filterKeys = Object.keys(MODEL_CONFIG);
+const chipEls = {};
+filterKeys.forEach(key => {
+  const chip = document.createElement('div');
+  chip.className = 'preload-chip';
+  chip.textContent = MODEL_CONFIG[key].label;
+  chip.id = 'chip-' + key;
+  chipsContainer.appendChild(chip);
+  chipEls[key] = chip;
+});
 
-  return new Promise((resolve, reject) => {
-    showLoadBadge(true);
-    setBtnLoading(filterName, true);
+const barFill    = document.getElementById('preload-bar');
+const pctLabel   = document.getElementById('preload-pct');
+const modelLabel = document.getElementById('preload-model-name');
+const overlay    = document.getElementById('preload-overlay');
 
-    loader.load(
-      MODEL_PATHS[filterName],
+let loadedCount = 0;
+const total = filterKeys.length;
+
+/**
+ * Charge un modèle GLB en arrière-plan, met à jour la barre de progression.
+ * Retourne une Promise qui se résout toujours (même en cas d'erreur).
+ */
+function preloadModel(filterName) {
+  return new Promise((resolve) => {
+    const cfg = MODEL_CONFIG[filterName];
+    modelLabel.textContent = `Chargement : ${cfg.label}…`;
+
+    gltfLoader.load(
+      cfg.path,
       (gltf) => {
         const model = gltf.scene;
 
-        // Centrer le modèle sur son bounding box
+        // Centrer + normaliser
         const box = new THREE.Box3().setFromObject(model);
         const center = new THREE.Vector3();
         box.getCenter(center);
-        model.position.sub(center);   // recentre à (0,0,0)
-
-        // Normaliser sur la LARGEUR (X) — les lunettes sont horizontales
-        // → 1 unité world = toute la largeur du modèle
+        model.position.sub(center);
         const size = new THREE.Vector3();
         box.getSize(size);
-        const normalizeScale = 1.0 / size.x;
-        model.scale.setScalar(normalizeScale);
-
-        // Orientation de base : rotation X = π (modèles souvent exportés à l'envers)
-        // flipY sera géré dynamiquement dans onResults selon MODEL_CONFIG
+        model.scale.setScalar(1.0 / size.x);
         model.rotation.x = Math.PI;
-
         model.visible = false;
         scene.add(model);
         modelCache[filterName] = model;
 
-        showLoadBadge(false);
-        setBtnLoading(filterName, false);
-        resolve(model);
+        // Marquer le bouton et le chip comme prêts
+        const btn = document.querySelector(`[data-filter="${filterName}"]`);
+        if (btn) {
+          btn.removeAttribute('disabled');
+          btn.classList.add('model-ready');
+        }
+        chipEls[filterName]?.classList.add('done');
+
+        loadedCount++;
+        const pct = Math.round((loadedCount / total) * 100);
+        barFill.style.width = pct + '%';
+        pctLabel.textContent = pct + '%';
+
+        // Dès le 1er modèle prêt : on peut déjà activer la caméra/app
+        if (loadedCount === 1 && filterName === 'glasses') {
+          model.visible = true;
+          activeModel = model;
+        }
+
+        // Tous chargés → cacher l'overlay après un court délai
+        if (loadedCount === total) {
+          modelLabel.textContent = '✓ Tous les modèles sont prêts !';
+          setTimeout(() => {
+            overlay.classList.add('hidden');
+            setStatus('✓ Prêt', 2000);
+          }, 600);
+        }
+
+        resolve();
       },
       (xhr) => {
-        const pct = Math.round(xhr.loaded / xhr.total * 100);
-        loadBadge.textContent = `Chargement… ${pct}%`;
+        // Progression interne à ce fichier (optionnel, on affiche juste le compte global)
+        if (xhr.total > 0) {
+          const filePct = Math.round(xhr.loaded / xhr.total * 100);
+          modelLabel.textContent = `${cfg.label}… ${filePct}%`;
+        }
       },
       (err) => {
-        console.error('GLTFLoader error:', err);
-        showLoadBadge(false);
-        setBtnLoading(filterName, false);
-        setStatus('⚠ Modèle introuvable : ' + MODEL_PATHS[filterName]);
-        reject(err);
+        console.warn('Modèle introuvable :', cfg.path, err);
+        // On considère ce modèle comme "chargé" (avec erreur) pour ne pas bloquer la progression
+        loadedCount++;
+        const pct = Math.round((loadedCount / total) * 100);
+        barFill.style.width = pct + '%';
+        pctLabel.textContent = pct + '%';
+        chipEls[filterName] && (chipEls[filterName].style.opacity = '.25');
+        if (loadedCount === total) {
+          modelLabel.textContent = 'Chargement terminé (certains modèles manquants)';
+          setTimeout(() => overlay.classList.add('hidden'), 600);
+        }
+        resolve(); // on ne rejette pas pour ne pas bloquer Promise.all
       }
     );
   });
 }
 
-function switchModel(filterName) {
-  // Sauvegarder les valeurs courantes des sliders dans le config du modèle précédent
-  // (déjà fait en temps réel par bindSlider)
-
-  // Cacher le modèle courant
-  if (activeModel) activeModel.visible = false;
-
-  if (filterName === 'none') {
-    activeModel = null;
-    return;
+/**
+ * Lance le préchargement séquentiel de tous les modèles.
+ * Séquentiel (au lieu de Promise.all) pour éviter de saturer la bande passante.
+ */
+async function preloadAllModels() {
+  for (const key of filterKeys) {
+    await preloadModel(key);
   }
-
-  // Pointer CAL vers la config du nouveau modèle
-  if (MODEL_CONFIG[filterName]) {
-    CAL = MODEL_CONFIG[filterName];
-    syncSlidersToCAL();   // mettre à jour l'UI avec les valeurs sauvegardées
-  }
-
-  loadModel(filterName).then((model) => {
-    if (!model) return;
-    if (filterName !== currentFilter) return; // changement rapide
-    model.visible = true;
-    activeModel   = model;
-  });
 }
 
-/* Sync les sliders vers les valeurs CAL du modèle courant */
+/* ═══════════════════════════════════════════════════════
+   SWITCH MODÈLE (instantané car tout est déjà en cache)
+═══════════════════════════════════════════════════════ */
+function switchModel(filterName) {
+  if (activeModel) activeModel.visible = false;
+  if (filterName === 'none') { activeModel = null; return; }
+
+  if (MODEL_CONFIG[filterName]) {
+    CAL = MODEL_CONFIG[filterName];
+    syncSlidersToCAL();
+  }
+
+  const model = modelCache[filterName];
+  if (model) {
+    model.visible = true;
+    activeModel   = model;
+  }
+  // Si le modèle n'est pas encore en cache (rare), on attend
+  // mais grâce au préchargement ce cas ne devrait pas arriver
+}
+
 function syncSlidersToCAL() {
   const s = (id, val, dec) => {
     const el = document.getElementById('cal-' + id);
@@ -517,21 +656,12 @@ function syncSlidersToCAL() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   GÉOMÉTRIE — identique à la version 2D
+   GÉOMÉTRIE
 ═══════════════════════════════════════════════════════ */
-const mid  = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2, z: (a.z+b.z)/2 });
+const mid  = (a, b) => ({ x:(a.x+b.x)/2, y:(a.y+b.y)/2, z:(a.z+b.z)/2 });
 const dist = (a, b) => Math.hypot(a.x-b.x, a.y-b.y);
+const px   = l => ({ x:(1-l.x)*W, y:l.y*H, z:l.z });
 
-/*
-  px() : landmark → coordonnées écran miroir [0..W, 0..H]
-  (même logique que la version 2D)
-*/
-const px = l => ({ x: (1-l.x)*W, y: l.y*H, z: l.z });
-
-/*
-  screenToWorld() : coordonnées écran → espace world Three.js
-  Caméra ortho : [-halfW..halfW] × [-halfH..halfH]
-*/
 function screenToWorld(sx, sy) {
   return {
     x:  (sx / W) * 2*halfW - halfW,
@@ -540,20 +670,16 @@ function screenToWorld(sx, sy) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MEDIAPIPE — CALLBACK
+   MEDIAPIPE CALLBACK
 ═══════════════════════════════════════════════════════ */
 function onResults(results) {
-  // Vider debug canvas
   dctx.clearRect(0, 0, W, H);
-
   if (!results.multiFaceLandmarks?.length) {
     renderer.render(scene, camera);
     return;
   }
 
   const lm = results.multiFaceLandmarks[0];
-
-  /* Points clés en coords écran miroir */
   const rEyePx = mid(px(lm[LM.R_EYE_OUT]), px(lm[LM.R_EYE_IN]));
   const lEyePx = mid(px(lm[LM.L_EYE_OUT]), px(lm[LM.L_EYE_IN]));
   const nosePx = px(lm[LM.NOSE_TIP]);
@@ -561,56 +687,30 @@ function onResults(results) {
   const lEarPx = px(lm[LM.L_EAR]);
   const ctrPx  = mid(rEyePx, lEyePx);
 
-  // Utiliser la distance oreille-à-oreille comme base de scale
-  // → les branches s'étendent jusqu'aux oreilles comme de vraies lunettes
   const earSpanPx = dist(rEarPx, lEarPx);
-  const eyeWpx    = dist(rEyePx, lEyePx);
-
-  // ── Roll : tilt gauche/droite ──────────────────
   const rollAngle = Math.atan2(lEyePx.y - rEyePx.y, lEyePx.x - rEyePx.x);
-
-  // ── Yaw : rotation gauche/droite de la tête ───
-  // On compare la profondeur Z des deux oreilles (coords MediaPipe normalisées)
-  // lm[R_EAR].z < lm[L_EAR].z  → visage tourné vers la droite (oreille D plus proche)
-  // MediaPipe donne z en unités normalisées, négatif = vers la caméra
   const rEarZ = lm[LM.R_EAR].z;
   const lEarZ = lm[LM.L_EAR].z;
-  // yawAngle : positif = tourné vers la gauche caméra (droite personne)
-  // On amplifie légèrement (×2.5) car les z MediaPipe sont peu contrastés
   const yawAngle = (rEarZ - lEarZ) * 2.5;
-
-  // ── Profondeur nez ──────────────────────────────
   const depthZ = lm[LM.NOSE_TIP].z;
 
-  /* ── Positionner le modèle 3D ────────────────── */
   if (activeModel) {
     const wPos = screenToWorld(ctrPx.x, ctrPx.y);
-
-    // Scale sur earSpan réel (distance oreille→oreille projetée sur l'écran)
     const earSpanWorld = (earSpanPx / W) * 2 * halfW;
     const finalScale   = earSpanWorld * CAL.scale;
 
-    activeModel.position.set(
-      wPos.x,
-      wPos.y + CAL.offsetY,
-      CAL.offsetZ - depthZ * 0.5
-    );
-
+    activeModel.position.set(wPos.x, wPos.y + CAL.offsetY, CAL.offsetZ - depthZ * 0.5);
     activeModel.scale.setScalar(finalScale);
 
-    // ── Rotations complètes ──────────────────────
     const flipY = CAL.flipY ? Math.PI : 0;
-
-    // Ordre important : Three.js applique X→Y→Z (Euler XYZ par défaut)
-    activeModel.rotation.order = 'YXZ';   // Yaw d'abord, puis pitch, puis roll
-    activeModel.rotation.y = flipY + yawAngle;   // yaw tête + éventuel miroir
-    activeModel.rotation.x = Math.PI + CAL.rotX; // pitch (base π + calibration)
-    activeModel.rotation.z = -rollAngle;          // roll tête
+    activeModel.rotation.order = 'YXZ';
+    activeModel.rotation.y = flipY + yawAngle;
+    activeModel.rotation.x = Math.PI + CAL.rotX;
+    activeModel.rotation.z = -rollAngle;
   }
 
   renderer.render(scene, camera);
 
-  /* ── Debug landmarks ─────────────────────────── */
   if (debugMode) {
     for (const l of lm) {
       dctx.beginPath();
@@ -628,43 +728,37 @@ function onResults(results) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MEDIAPIPE — INIT
+   MEDIAPIPE INIT + DÉMARRAGE PRÉCHARGEMENT EN PARALLÈLE
 ═══════════════════════════════════════════════════════ */
 const faceMesh = new FaceMesh({
   locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
 });
 faceMesh.setOptions({
-  maxNumFaces:          1,
-  refineLandmarks:      true,
+  maxNumFaces: 1,
+  refineLandmarks: true,
   minDetectionConfidence: 0.5,
   minTrackingConfidence:  0.5,
 });
 faceMesh.onResults(onResults);
 
+// Caméra et préchargement lancés en parallèle
 const cam = new Camera(video, {
   onFrame: async () => { await faceMesh.send({ image: video }); },
   width: W, height: H,
 });
 
-cam.start()
-  .then(() => {
-    setStatus('✓ Caméra prête', 2500);
-    // Précharger le premier modèle
-    return loadModel('glasses');
-  })
-  .then((model) => {
-    if (model) {
-      model.visible = true;
-      activeModel   = model;
-    }
-  })
-  .catch(e => setStatus('Erreur caméra : ' + e.message));
+// Lancer les deux en parallèle : caméra ET préchargement
+Promise.all([
+  cam.start().catch(e => setStatus('Erreur caméra : ' + e.message)),
+  preloadAllModels(),
+]);
 
 /* ═══════════════════════════════════════════════════════
-   UI — BOUTONS FILTRES
+   UI — BOUTONS
 ═══════════════════════════════════════════════════════ */
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if (btn.disabled) return;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
@@ -674,7 +768,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 /* ═══════════════════════════════════════════════════════
-   UI — SLIDERS CALIBRATION
+   UI — SLIDERS
 ═══════════════════════════════════════════════════════ */
 function bindSlider(id, key, decimals = 2) {
   const slider = document.getElementById(id);
@@ -689,33 +783,23 @@ bindSlider('cal-offsetY', 'offsetY', 2);
 bindSlider('cal-offsetZ', 'offsetZ', 2);
 bindSlider('cal-rotX',    'rotX',    2);
 
-// Toggle flipY
-document.getElementById('cal-flipY').addEventListener('change', (e) => {
-  CAL.flipY = e.target.checked;
-});
+document.getElementById('cal-flipY').addEventListener('change', e => { CAL.flipY = e.target.checked; });
 
-// Mettre à jour le label du modèle dans le titre calibration
 function updateCalLabel() {
   const lbl = document.getElementById('cal-model-label');
   if (lbl && MODEL_CONFIG[currentFilter]) lbl.textContent = MODEL_CONFIG[currentFilter].label;
 }
 
-// Bouton "Copier les valeurs" → génère le bloc MODEL_CONFIG à coller dans le code
 document.getElementById('btn-copy-cal').addEventListener('click', () => {
   const lines = Object.entries(MODEL_CONFIG).map(([k, v]) =>
-    `  ${k}: {
-    path: '${v.path}', label: '${v.label}',
-    scale: ${v.scale.toFixed(2)}, offsetY: ${v.offsetY.toFixed(3)}, offsetZ: ${v.offsetZ.toFixed(3)}, rotX: ${v.rotX.toFixed(3)}, flipY: ${v.flipY},
-  },`
-  ).join('');
-  const output = `const MODEL_CONFIG = {
-${lines}
-};`;
+    `  ${k}: {\n    path: '${v.path}', label: '${v.label}',\n    scale: ${v.scale.toFixed(2)}, offsetY: ${v.offsetY.toFixed(3)}, offsetZ: ${v.offsetZ.toFixed(3)}, rotX: ${v.rotX.toFixed(3)}, flipY: ${v.flipY},\n  },`
+  ).join('\n');
+  const output = `const MODEL_CONFIG = {\n${lines}\n};`;
   const pre = document.getElementById('cal-output');
   pre.textContent = output;
   pre.style.display = 'block';
   navigator.clipboard?.writeText(output).then(() => {
-    document.getElementById('btn-copy-cal').textContent = '✓ Copié dans le presse-papier !';
+    document.getElementById('btn-copy-cal').textContent = '✓ Copié !';
     setTimeout(() => { document.getElementById('btn-copy-cal').textContent = '📋 Copier les valeurs dans le code'; }, 2500);
   });
 });
@@ -725,35 +809,18 @@ ${lines}
 ═══════════════════════════════════════════════════════ */
 document.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
-  if (k === 'd') {
-    debugMode = !debugMode;
-    dbgCvs.style.opacity = debugMode ? '1' : '0';
-  }
-  if (k === 'r') {
-    // Reset le modèle courant seulement
-    CAL.scale = 1.0; CAL.offsetY = 0; CAL.offsetZ = 0; CAL.rotX = 0; CAL.flipY = false;
-    syncSlidersToCAL();
-  }
+  if (k === 'd') { debugMode = !debugMode; dbgCvs.style.opacity = debugMode ? '1' : '0'; }
+  if (k === 'r') { CAL.scale=1; CAL.offsetY=0; CAL.offsetZ=0; CAL.rotX=0; CAL.flipY=false; syncSlidersToCAL(); }
 });
 
 /* ═══════════════════════════════════════════════════════
-   HELPERS UI
+   HELPERS
 ═══════════════════════════════════════════════════════ */
 function setStatus(msg, hideAfter) {
   statusEl.textContent = msg;
   statusEl.style.opacity = '1';
   if (hideAfter) setTimeout(() => statusEl.style.opacity = '0', hideAfter);
 }
-
-function showLoadBadge(show) {
-  loadBadge.style.opacity = show ? '1' : '0';
-}
-
-function setBtnLoading(filterName, loading) {
-  const btn = document.querySelector(`[data-filter="${filterName}"]`);
-  if (btn) btn.classList.toggle('loading', loading);
-}
-
 function dbgPt(p, c, label) {
   dctx.beginPath();
   dctx.arc(p.x, p.y, 5, 0, Math.PI*2);
