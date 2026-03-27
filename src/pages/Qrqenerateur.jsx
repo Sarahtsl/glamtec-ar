@@ -26,7 +26,7 @@ function buildArUrl(file, label) {
   return `${window.location.origin}/ar-product.html?model=${encodeURIComponent(file)}&title=${encodeURIComponent(label)}`;
 }
 
-export default function QrGenerator() {
+export default function Qrqenerateur() {
   const [selected, setSelected]           = useState(null);
   const [qrDataUrl, setQrDataUrl]         = useState(null);
   const [toast, setToast]                 = useState("");

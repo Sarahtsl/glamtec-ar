@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import TryOnPage from "./pages/TryOnPage";
 import TryOnBodyPage from "./pages/TryOnBodyPage";
-import QrGenerator from "./pages/Qrqenerator"; 
+import QrGenerator from "./pages/Qrqenerateur"; 
 import FaceFilterPage from "./pages/FaceFilterPage"; 
 
 /* ══════════════════════════════════════════════
