@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import QrGenerator from "./pages/QrGenerator"; 
 import FaceFilterPage from "./pages/FaceFilterPage"; 
-
+import TryOnPage from "./pages/TryOnPage"; 
 /* ══════════════════════════════════════════════
    HOME PAGE
 ══════════════════════════════════════════════ */
