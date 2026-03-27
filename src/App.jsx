@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import TryOnPage from "./pages/TryOnPage";
+import TryOnBodyPage from "./pages/TryOnBodyPage";
 import QrGenerator from "./pages/QrGenerator"; 
 import FaceFilterPage from "./pages/FaceFilterPage"; 
-import TryOnPage from "./pages/TryOnPage"; 
+
 /* ══════════════════════════════════════════════
    HOME PAGE
 ══════════════════════════════════════════════ */
@@ -236,6 +238,7 @@ function Home() {
 
           <div className="g-btn-group">
             <Link to="/try" className="g-btn-primary">👓 Lunettes AR</Link>
+            <Link to="/try-body" className="g-btn-ghost">👕 Vêtements</Link>
           </div>
 
           <div className="g-stats">
@@ -349,6 +352,7 @@ function Home() {
                 ))}
               </div>
               <div className="g-pcard-btns">
+                <Link to="/try-body" className="g-pbtn-main">Viewer 3D →</Link>
                 <Link to="/qr-generator" className="g-pbtn-gold">📲 QR Codes</Link>
               </div>
             </div>
@@ -390,6 +394,7 @@ function Home() {
         <div className="g-footer-links">
           {[
             { to: "/try",          l: "AR Lunettes"  },
+            { to: "/try-body",     l: "AR Vêtements" },
             { to: "/qr-generator", l: "QR Codes"     },
           ].map(({ to, l }) => (
             <Link key={to} to={to} className="g-footer-a">{l}</Link>
@@ -408,8 +413,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/"             element={<Home />} />
-        <Route path="/try"          element={<FaceFilterPage />} /> 
-        <Route path="/qr-generator" element={<QrGenerator />} />  
+        <Route path="/try"          element={<TryOnPage />} /> 
+        <Route path="/try-body"     element={<TryOnBodyPage />} />
+        <Route path="/qr-generator" element={<QrGenerator />} /> 
+         <Route path="/face-filter"  element={<FaceFilterPage />} /> 
       </Routes>
     </BrowserRouter>
   );
