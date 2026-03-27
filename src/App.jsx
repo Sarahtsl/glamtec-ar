@@ -236,7 +236,6 @@ function Home() {
 
           <div className="g-btn-group">
             <Link to="/try" className="g-btn-primary">👓 Lunettes AR</Link>
-            <Link to="/try-body" className="g-btn-ghost">👕 Vêtements</Link>
           </div>
 
           <div className="g-stats">
@@ -391,7 +390,6 @@ function Home() {
         <div className="g-footer-links">
           {[
             { to: "/try",          l: "AR Lunettes"  },
-            { to: "/try-body",     l: "AR Vêtements" },
             { to: "/qr-generator", l: "QR Codes"     },
           ].map(({ to, l }) => (
             <Link key={to} to={to} className="g-footer-a">{l}</Link>
