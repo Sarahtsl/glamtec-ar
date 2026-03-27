@@ -415,7 +415,7 @@ function App() {
         <Route path="/"             element={<Home />} />
         <Route path="/try"          element={<FaceFilterPage />} /> 
         <Route path="/try-body"     element={<TryOnBodyPage />} />
-        <Route path="/qr-generator" element={<Qrqenerateur />} /> 
+        <Route path="/qr-generator" element={<QrGenerator />} /> 
       </Routes>
     </BrowserRouter>
   );
