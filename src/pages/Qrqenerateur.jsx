@@ -16,7 +16,6 @@ const AR_MODELS = [
   { id: "wooden_table",     file: "wooden_table._practical_model_-_yadira.glb", label: "Table en Bois",      icon: "🪵", category: "Tables" },
   { id: "makeup_dresser",   file: "makeup_dresser_white.glb",                   label: "Coiffeuse Blanche",  icon: "🪞", category: "Mobilier" },
   { id: "makeup_table",     file: "makeup_table--low_poly.glb",                 label: "Table Maquillage",   icon: "🪞", category: "Mobilier" }, 
-{ id: "standard_tshirt",   file: "standard_t-shirt.glb",           label: "T-Shirt Standard",     icon: "👕", category: "Vêtements" },
 { id: "tshirt",            file: "t_shirt.glb",                    label: "T-Shirt",              icon: "👕", category: "Vêtements" },
 ];
 
