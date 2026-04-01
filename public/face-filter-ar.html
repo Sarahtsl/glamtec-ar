@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Face Filter AR 3D — GlamTec</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
   <!-- MediaPipe -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
@@ -14,364 +16,353 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
   <style>
+    :root {
+      --bg:           #07070e;
+      --surface:      rgba(255,255,255,0.03);
+      --surface2:     rgba(255,255,255,0.055);
+      --border:       rgba(255,255,255,0.07);
+      --border2:      rgba(255,255,255,0.12);
+      --text:         rgba(255,255,255,0.88);
+      --muted:        rgba(255,255,255,0.32);
+      --accent-glass: #8b7cf8;
+      --accent-hat:   #c9a96e;
+      --accent-lip:   #d4547a;
+    }
+
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
     body {
-      background: #08080f;
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      font-family: 'DM Sans', system-ui, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      padding: 24px 16px;
+      padding: 28px 16px 48px;
       gap: 20px;
+      overflow-x: hidden;
     }
 
-    header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    header h1 {
-      font-size: 15px;
-      font-weight: 400;
-      color: rgba(255,255,255,0.4);
-      letter-spacing: .18em;
-      text-transform: uppercase;
-    }
-    header .dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #8b7cf8;
-      box-shadow: 0 0 8px #8b7cf8;
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
     }
 
-    /* ─── Overlay de chargement global ─────────────── */
+    /* ─── PRELOAD ─────────────────────────────── */
     #preload-overlay {
-      position: fixed;
-      inset: 0;
-      background: #08080f;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      transition: opacity .6s ease;
+      position: fixed; inset: 0; background: var(--bg);
+      z-index: 9999; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 36px;
+      transition: opacity .8s ease;
     }
-    #preload-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+    #preload-overlay.hidden { opacity: 0; pointer-events: none; }
 
-    .preload-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .preload-brand { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .preload-brand h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px; font-weight: 300; color: var(--text);
+      letter-spacing: .22em; text-transform: uppercase;
     }
-    .preload-logo .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #8b7cf8;
-      box-shadow: 0 0 12px #8b7cf8;
-      animation: dotPulse 1.4s ease-in-out infinite;
-    }
-    .preload-logo .dot:nth-child(2) { animation-delay: .2s; }
-    .preload-logo h2 {
-      font-size: 18px;
-      font-weight: 300;
-      color: rgba(255,255,255,0.6);
-      letter-spacing: .22em;
-      text-transform: uppercase;
-    }
-    @keyframes dotPulse {
-      0%,100% { opacity: .3; transform: scale(.8); }
-      50%      { opacity: 1;  transform: scale(1.3); }
-    }
+    .preload-brand span { font-size: 10px; color: var(--muted); letter-spacing: .35em; text-transform: uppercase; }
 
-    .preload-bar-wrap {
-      width: 340px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .preload-bar-bg {
-      width: 100%;
-      height: 3px;
-      background: rgba(255,255,255,.08);
-      border-radius: 3px;
-      overflow: hidden;
-    }
+    .preload-bar-wrap { width: 300px; display: flex; flex-direction: column; gap: 10px; }
+    .preload-bar-bg { width: 100%; height: 1px; background: rgba(255,255,255,.07); border-radius: 1px; overflow: hidden; }
     .preload-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #6c63d9, #b09eff);
-      border-radius: 3px;
-      transition: width .35s ease;
-      box-shadow: 0 0 8px rgba(139,124,248,.6);
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent-glass), var(--accent-lip));
+      transition: width .35s ease; box-shadow: 0 0 10px rgba(212,84,122,.4);
     }
-    .preload-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .preload-model-name {
-      font-size: 12px;
-      color: rgba(255,255,255,.35);
-      letter-spacing: .06em;
-    }
-    .preload-pct {
-      font-size: 13px;
-      font-weight: 600;
-      color: #8b7cf8;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .preload-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      max-width: 340px;
-    }
+    .preload-info { display: flex; justify-content: space-between; align-items: center; }
+    .preload-model-name { font-size: 11px; color: var(--muted); letter-spacing: .05em; }
+    .preload-pct { font-size: 12px; font-weight: 500; color: var(--accent-lip); font-variant-numeric: tabular-nums; }
+    .preload-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: 320px; }
     .preload-chip {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      border: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.2);
-      transition: all .3s;
+      padding: 3px 10px; border-radius: 20px; font-size: 10px;
+      border: 1px solid rgba(255,255,255,.06); color: rgba(255,255,255,.15); transition: all .3s;
     }
-    .preload-chip.done {
-      border-color: rgba(139,124,248,.4);
-      color: #b09eff;
-      background: rgba(139,124,248,.08);
-    }
+    .preload-chip.done { border-color: rgba(212,84,122,.3); color: var(--accent-lip); background: rgba(212,84,122,.06); }
 
-    /* ─── Stage ─────────────────────────────────── */
+    /* ─── HEADER ──────────────────────────────── */
+    header { display: flex; align-items: center; gap: 14px; z-index: 1; }
+    .brand-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px; font-weight: 400; color: var(--text);
+      letter-spacing: .14em; text-transform: uppercase;
+    }
+    .brand-sep { width: 1px; height: 16px; background: var(--border); }
+    .brand-sub { font-size: 10px; color: var(--muted); letter-spacing: .28em; text-transform: uppercase; }
+
+    /* ─── STAGE ───────────────────────────────── */
     #stage {
-      position: relative;
-      width: 640px; height: 480px;
-      border-radius: 20px;
-      overflow: hidden;
-      background: #111;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.06),
-        0 32px 80px rgba(0,0,0,.8);
+      position: relative; width: 640px; height: 480px;
+      border-radius: 18px; overflow: hidden; background: #0c0c14;
+      box-shadow: 0 0 0 1px var(--border), 0 48px 120px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
+      z-index: 1;
     }
-
-    #inputVideo {
-      position: absolute; width: 100%; height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
-
-    #threeCanvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-    }
-
-    #debugCanvas {
-      position: absolute; width: 100%; height: 100%;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .25s;
-    }
+    #inputVideo { position: absolute; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #threeCanvas { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+    #lipCanvas   { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+    #debugCanvas { position: absolute; width:100%; height:100%; pointer-events:none; opacity:0; transition:opacity .25s; }
 
     #status {
-      position: absolute;
-      top: 14px; left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.65);
-      backdrop-filter: blur(8px);
-      color: #fff;
-      font-size: 12px;
-      padding: 5px 16px;
-      border-radius: 20px;
-      pointer-events: none;
-      white-space: nowrap;
-      transition: opacity .5s;
-      border: 1px solid rgba(255,255,255,.08);
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.7); backdrop-filter: blur(10px);
+      color: var(--text); font-size: 11px; letter-spacing: .06em;
+      padding: 5px 18px; border-radius: 20px;
+      pointer-events: none; white-space: nowrap; transition: opacity .5s;
+      border: 1px solid var(--border);
     }
+    #category-badge {
+      position: absolute; top: 14px; right: 14px;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+      border: 1px solid; transition: all .3s;
+    }
+    #category-badge.glasses { color: var(--accent-glass); border-color: rgba(139,124,248,.3); background: rgba(139,124,248,.08); }
+    #category-badge.hat     { color: var(--accent-hat);   border-color: rgba(201,169,110,.3); background: rgba(201,169,110,.08); }
+    #category-badge.lip     { color: var(--accent-lip);   border-color: rgba(212,84,122,.3);  background: rgba(212,84,122,.08); }
+    #category-badge.none    { color: var(--muted);         border-color: var(--border);        background: transparent; }
 
-    /* ─── Contrôles filtres ───────────────────────── */
-    #controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      max-width: 640px;
+    /* ─── TABS ────────────────────────────────── */
+    #tabs {
+      display: flex; gap: 2px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 4px; z-index: 1;
     }
+    .tab-btn {
+      padding: 9px 22px; border-radius: 11px; border: none;
+      background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active[data-tab="glasses"]  { background: rgba(139,124,248,.14); color: #c4bbff; border: 1px solid rgba(139,124,248,.28); }
+    .tab-btn.active[data-tab="hats"]     { background: rgba(201,169,110,.12); color: var(--accent-hat); border: 1px solid rgba(201,169,110,.28); }
+    .tab-btn.active[data-tab="lipstick"] { background: rgba(212,84,122,.12);  color: #f0a0bc; border: 1px solid rgba(212,84,122,.3); }
+    .tab-btn.active[data-tab="none-tab"] { background: rgba(255,255,255,.06); color: var(--text); border: 1px solid var(--border); }
+
+    /* ─── FILTER PANELS ───────────────────────── */
+    .filter-panel { display: none; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 640px; z-index: 1; }
+    .filter-panel.active { display: flex; }
 
     .filter-btn {
-      position: relative;
-      padding: 10px 22px;
-      border-radius: 12px;
-      border: 1.5px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.50);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
+      position: relative; padding: 10px 20px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px;
+      cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px;
+    }
+    .filter-btn:hover:not(:disabled) { background: rgba(255,255,255,.07); color: var(--text); border-color: var(--border2); transform: translateY(-1px); }
+    .filter-btn:disabled { opacity: .28; cursor: not-allowed; }
+    .filter-btn.active[data-category="glasses"] { border-color: rgba(139,124,248,.5); background: rgba(139,124,248,.12); color: #c4bbff; }
+    .filter-btn.active[data-category="hat"]     { border-color: rgba(201,169,110,.5); background: rgba(201,169,110,.10); color: var(--accent-hat); }
+
+    .ready-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #4ade80; opacity: 0; box-shadow: 0 0 5px #4ade80;
+      transition: opacity .4s; flex-shrink: 0;
+    }
+    .filter-btn.model-ready .ready-dot { opacity: 1; }
+
+    /* ─── LIPSTICK PANEL ──────────────────────── */
+    #panel-lipstick { flex-direction: column; align-items: center; gap: 18px; }
+    #panel-lipstick.active { display: flex; }
+
+    .lip-colors-section { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .lip-section-title { font-size: 10px; color: var(--muted); letter-spacing: .18em; text-transform: uppercase; }
+    .lip-color-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 580px; }
+
+    .lip-color-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: transform .15s; }
+    .lip-color-btn:hover { transform: scale(1.1); }
+    .lip-color-btn.active .lip-swatch {
+      box-shadow: 0 0 0 2.5px var(--bg), 0 0 0 4.5px var(--swatch-color);
+      transform: scale(1.08);
+    }
+    .lip-swatch {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--swatch-color);
+      border: 1px solid rgba(255,255,255,.12);
       transition: all .2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
-    .filter-btn:hover:not(:disabled) {
-      background: rgba(255,255,255,.09);
-      color: #fff;
-      border-color: rgba(255,255,255,.15);
-    }
-    .filter-btn.active {
-      border-color: #8b7cf8;
-      background: rgba(139,124,248,.15);
-      color: #fff;
-    }
-    /* Bouton désactivé = modèle pas encore chargé */
-    .filter-btn:disabled {
-      opacity: .35;
-      cursor: not-allowed;
-    }
-    /* Indicateur prêt (petit check vert) */
-    .filter-btn .ready-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #4ade80;
-      opacity: 0;
-      box-shadow: 0 0 5px #4ade80;
-      transition: opacity .4s;
-      flex-shrink: 0;
-    }
-    .filter-btn.model-ready .ready-dot {
-      opacity: 1;
+    .lip-color-name { font-size: 9px; color: var(--muted); letter-spacing: .03em; white-space: nowrap; }
+
+    .lip-controls-row {
+      display: flex; gap: 20px; align-items: flex-start;
+      width: 100%; max-width: 560px;
+      flex-wrap: wrap; justify-content: center;
     }
 
-    /* ─── Sliders de calibration ─────────────────── */
+    .lip-opacity-row {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 16px; flex: 1; min-width: 200px;
+    }
+    .lip-opacity-row label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .lip-opacity-row input[type=range] { flex: 1; accent-color: var(--accent-lip); }
+    .lip-opacity-row span { font-size: 12px; color: rgba(255,255,255,.4); width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
+
+    .lip-finish-wrap {
+      display: flex; flex-direction: column; gap: 8px; align-items: center;
+    }
+    .lip-finish-title { font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; }
+    .lip-finish-row { display: flex; gap: 6px; }
+    .finish-btn {
+      padding: 7px 18px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 12px;
+      cursor: pointer; transition: all .2s;
+    }
+    .finish-btn:hover { color: var(--text); border-color: var(--border2); }
+    .finish-btn.active { border-color: rgba(212,84,122,.5); background: rgba(212,84,122,.12); color: #f0a0bc; }
+
+    /* ─── CALIBRATION ─────────────────────────── */
     #calibration {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-      max-width: 640px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 14px;
-      padding: 16px 20px;
+      width: 100%; max-width: 640px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 22px; z-index: 1;
     }
-    #calibration summary {
-      font-size: 12px;
-      color: rgba(255,255,255,.35);
-      cursor: pointer;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      user-select: none;
-    }
+    #calibration summary { font-size: 11px; color: var(--muted); cursor: pointer; letter-spacing: .1em; text-transform: uppercase; user-select: none; }
     #calibration summary:hover { color: rgba(255,255,255,.6); }
-    .cal-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 4px;
-    }
-    .cal-row label {
-      font-size: 12px;
-      color: rgba(255,255,255,.4);
-      width: 100px;
-    }
-    .cal-row input[type=range] {
-      flex: 1;
-      accent-color: #8b7cf8;
-    }
-    .cal-row span {
-      font-size: 12px;
-      color: rgba(255,255,255,.45);
-      width: 44px;
-      text-align: right;
-    }
+    .cal-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    .cal-row label { font-size: 12px; color: var(--muted); width: 100px; }
+    .cal-row input[type=range] { flex: 1; accent-color: var(--accent-hat); }
+    .cal-row span { font-size: 12px; color: rgba(255,255,255,.4); width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
 
-    #hint {
-      font-size: 11px;
-      color: rgba(255,255,255,.18);
-    }
-    kbd {
-      background: rgba(255,255,255,.08);
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-size: 10px;
+    #hint { font-size: 10px; color: rgba(255,255,255,.13); letter-spacing: .04em; z-index: 1; }
+    kbd { background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+
+    @media (max-width: 680px) {
+      #stage { width: 100%; height: 300px; }
+      #tabs { flex-wrap: wrap; }
     }
   </style>
 </head>
 <body>
 
-<!-- ═══ OVERLAY PRÉCHARGEMENT ═══════════════════════ -->
+<!-- PRELOAD -->
 <div id="preload-overlay">
-  <div class="preload-logo">
-    <div class="dot"></div>
-    <h2>GlamTec AR</h2>
-    <div class="dot"></div>
+  <div class="preload-brand">
+    <h2>GlamTec</h2>
+    <span>AR Virtual Try-On</span>
   </div>
-
   <div class="preload-bar-wrap">
     <div class="preload-info">
       <span class="preload-model-name" id="preload-model-name">Initialisation…</span>
       <span class="preload-pct" id="preload-pct">0%</span>
     </div>
-    <div class="preload-bar-bg">
-      <div class="preload-bar-fill" id="preload-bar"></div>
-    </div>
+    <div class="preload-bar-bg"><div class="preload-bar-fill" id="preload-bar"></div></div>
   </div>
-
   <div class="preload-list" id="preload-chips"></div>
 </div>
-<!-- ════════════════════════════════════════════════ -->
 
+<!-- HEADER -->
 <header>
-  <div class="dot"></div>
-  <h1>GlamTec — Face Filter AR 3D</h1>
-  <div class="dot"></div>
+  <span class="brand-name">GlamTec</span>
+  <div class="brand-sep"></div>
+  <span class="brand-sub">AR Try-On Studio</span>
 </header>
 
+<!-- STAGE -->
 <div id="stage">
   <video id="inputVideo" autoplay muted playsinline></video>
   <canvas id="threeCanvas"></canvas>
+  <canvas id="lipCanvas"   width="640" height="480"></canvas>
   <canvas id="debugCanvas" width="640" height="480"></canvas>
   <div id="status">Initialisation…</div>
+  <div id="category-badge" class="none">—</div>
 </div>
 
-<div id="controls">
-  <button class="filter-btn active" data-filter="glasses" disabled>
+<!-- TABS -->
+<div id="tabs">
+  <button class="tab-btn active" data-tab="glasses">👓 Lunettes</button>
+  <button class="tab-btn" data-tab="hats">🎩 Chapeaux</button>
+  <button class="tab-btn" data-tab="lipstick">💄 Rouge à lèvres</button>
+  <button class="tab-btn" data-tab="none-tab">✕ Aucun</button>
+</div>
+
+
+<!-- ═══ PANEL LUNETTES ════════════════════════════ -->
+<div class="filter-panel active" id="panel-glasses">
+  <button class="filter-btn active" data-filter="glasses" data-category="glasses" disabled>
     <span>👓</span> Classiques
     <span class="ready-dot"></span>
   </button>
-  <button class="filter-btn" data-filter="pink_round_sunglasses" disabled>
+  <button class="filter-btn" data-filter="pink_round_sunglasses" data-category="glasses" disabled>
     <span>🕶</span> Solaires
     <span class="ready-dot"></span>
   </button>
-  <button class="filter-btn" data-filter="black_glasses" disabled>
+  <button class="filter-btn" data-filter="black_glasses" data-category="glasses" disabled>
     <span>👓</span> Noires
     <span class="ready-dot"></span>
   </button>
-  <button class="filter-btn" data-filter="balenciaga_sunglasses" disabled>
+  <button class="filter-btn" data-filter="balenciaga_sunglasses" data-category="glasses" disabled>
     <span>🕶</span> Balenciaga
     <span class="ready-dot"></span>
   </button>
-  <button class="filter-btn" data-filter="prada_vintage_star_glasses" disabled>
+  <button class="filter-btn" data-filter="prada_vintage_star_glasses" data-category="glasses" disabled>
     <span>👓</span> Prada
     <span class="ready-dot"></span>
   </button>
-  <button class="filter-btn" data-filter="white_sunglasses" disabled>
+  <button class="filter-btn" data-filter="white_sunglasses" data-category="glasses" disabled>
     <span>🕶</span> Blanches
-    <span class="ready-dot"></span>
-  </button>
-  <button class="filter-btn model-ready" data-filter="none">
-    <span>✕</span> Aucun
     <span class="ready-dot"></span>
   </button>
 </div>
 
+<!-- ═══ PANEL CHAPEAUX ════════════════════════════ -->
+<div class="filter-panel" id="panel-hats">
+  <button class="filter-btn" data-filter="cowboy_hat_free" data-category="hat" disabled>
+    <span>🤠</span> Cowboy
+    <span class="ready-dot"></span>
+  </button>
+  <button class="filter-btn" data-filter="bucket_hat" data-category="hat" disabled>
+    <span>🪣</span> Bucket
+    <span class="ready-dot"></span>
+  </button>
+  <button class="filter-btn" data-filter="luffy_hat" data-category="hat" disabled>
+    <span>🏴‍☠️</span> Luffy
+    <span class="ready-dot"></span>
+  </button>
+  <button class="filter-btn" data-filter="hat_01" data-category="hat" disabled>
+    <span>🎩</span> Hat 01
+    <span class="ready-dot"></span>
+  </button>
+</div>
+
+<!-- PANEL ROUGE À LÈVRES -->
+<div class="filter-panel" id="panel-lipstick">
+  <div class="lip-colors-section">
+    <span class="lip-section-title">Rouges &amp; Roses</span>
+    <div class="lip-color-grid" id="lip-grid-red"></div>
+  </div>
+  <div class="lip-colors-section">
+    <span class="lip-section-title">Nudes &amp; Naturels</span>
+    <div class="lip-color-grid" id="lip-grid-nude"></div>
+  </div>
+  <div class="lip-colors-section">
+    <span class="lip-section-title">Bold &amp; Intenses</span>
+    <div class="lip-color-grid" id="lip-grid-bold"></div>
+  </div>
+  <div class="lip-controls-row">
+    <div class="lip-opacity-row">
+      <label>Intensité</label>
+      <input type="range" id="lip-opacity" min="0.2" max="1.0" step="0.05" value="0.72">
+      <span id="val-lip-opacity">72%</span>
+    </div>
+    <div class="lip-finish-wrap">
+      <span class="lip-finish-title">Finish</span>
+      <div class="lip-finish-row">
+        <button class="finish-btn active" data-finish="matte">Mat</button>
+        <button class="finish-btn" data-finish="glossy">Brillant</button>
+        <button class="finish-btn" data-finish="satin">Satin</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CALIBRATION -->
 <details id="calibration">
   <summary>⚙ Calibration — <span id="cal-model-label">Classiques</span></summary>
   <div class="cal-row">
@@ -381,7 +372,7 @@
   </div>
   <div class="cal-row">
     <label>Offset Y</label>
-    <input type="range" id="cal-offsetY" min="-0.3" max="0.3" step="0.005" value="0">
+    <input type="range" id="cal-offsetY" min="-0.5" max="0.5" step="0.005" value="0">
     <span id="val-offsetY">0.00</span>
   </div>
   <div class="cal-row">
@@ -391,445 +382,563 @@
   </div>
   <div class="cal-row">
     <label>Rotation X</label>
-    <input type="range" id="cal-rotX" min="-0.5" max="0.5" step="0.01" value="0">
+    <input type="range" id="cal-rotX" min="-1.0" max="1.0" step="0.01" value="0">
     <span id="val-rotX">0.00</span>
   </div>
   <div class="cal-row">
-    <label>Retourner (flipY)</label>
+    <label>Retourner</label>
     <label style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer">
-      <input type="checkbox" id="cal-flipY" style="accent-color:#8b7cf8;width:16px;height:16px">
-      <span style="font-size:12px;color:rgba(255,255,255,.4)">Face opposée → cocher pour retourner</span>
+      <input type="checkbox" id="cal-flipY" style="accent-color:var(--accent-hat);width:15px;height:15px">
+      <span style="font-size:12px;color:var(--muted)">Activer flipY</span>
     </label>
     <span style="width:44px"></span>
   </div>
-  <div class="cal-row" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.06);padding-top:10px">
-    <label style="color:rgba(255,255,255,.25)">Sauvegarder</label>
-    <button id="btn-copy-cal" style="flex:1;padding:6px 14px;background:rgba(139,124,248,.15);border:1px solid rgba(139,124,248,.3);color:#c4bbff;border-radius:8px;font-size:12px;cursor:pointer">
-      📋 Copier les valeurs dans le code
+  <div class="cal-row" style="margin-top:8px;border-top:1px solid var(--border);padding-top:12px">
+    <label style="color:rgba(255,255,255,.2)">Export</label>
+    <button id="btn-copy-cal" style="flex:1;padding:7px 14px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.25);color:var(--accent-hat);border-radius:8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">
+      📋 Copier les valeurs
     </button>
     <span style="width:44px"></span>
   </div>
-  <pre id="cal-output" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:11px;color:#a0e0b0;line-height:1.6;overflow:auto"></pre>
+  <pre id="cal-output" style="display:none;margin-top:10px;padding:12px 16px;background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:10px;font-size:11px;color:#a0e0b0;line-height:1.7;overflow:auto"></pre>
 </details>
 
 <p id="hint">Touche <kbd>D</kbd> debug landmarks · <kbd>R</kbd> reset calibration</p>
 
 <script>
-/* ═══════════════════════════════════════════════════════
+/* ════════════════════════════════════════════
    CONSTANTES
-═══════════════════════════════════════════════════════ */
+════════════════════════════════════════════ */
 const W = 640, H = 480;
 
 const LM = {
-  R_EYE_OUT: 33,  R_EYE_IN: 133,
-  L_EYE_OUT: 263, L_EYE_IN: 362,
-  NOSE_TIP:  4,
-  R_EAR:     234, L_EAR: 454,
+  R_EYE_OUT:33, R_EYE_IN:133, L_EYE_OUT:263, L_EYE_IN:362,
+  NOSE_TIP:4, R_EAR:234, L_EAR:454,
+  FOREHEAD_TOP:10, R_TEMPLE:162, L_TEMPLE:389, TOP_HEAD:151,
 };
+
+// Contours des lèvres MediaPipe FaceMesh (refineLandmarks:true requis)
+const LIP_UPPER_OUTER = [61,185,40,39,37,0,267,269,270,409,291];
+const LIP_LOWER_OUTER = [291,375,321,405,314,17,84,181,91,146,61];
+const LIP_UPPER_INNER = [78,191,80,81,82,13,312,311,310,415,308];
+const LIP_LOWER_INNER = [308,324,318,402,317,14,87,178,88,95,78];
+
+/* ════════════════════════════════════════════
+   PALETTES COULEURS
+════════════════════════════════════════════ */
+const LIP_PALETTES = {
+  red: [
+    {name:'Rouge Classic', hex:'#c0392b'}, {name:'Coral Vif',      hex:'#e05c40'},
+    {name:'Rose Framboise',hex:'#d4547a'}, {name:'Fuchsia',        hex:'#c0235e'},
+    {name:'Rose Bonbon',   hex:'#e8799e'}, {name:'Pivoine',        hex:'#b5294a'},
+    {name:'Saumon',        hex:'#e8836b'}, {name:'Cerise',         hex:'#a01535'},
+  ],
+  nude: [
+    {name:'Nude Pêche',    hex:'#d4956a'}, {name:'Beige Rosé',     hex:'#c9856e'},
+    {name:'Praline',       hex:'#b8704a'}, {name:'Caramel',        hex:'#c4834f'},
+    {name:'Bois de Rose',  hex:'#bc7b78'}, {name:'Terre Cuite',    hex:'#b5614a'},
+    {name:'Rose Nude',     hex:'#d4a09a'}, {name:'Cappuccino',     hex:'#a0614e'},
+  ],
+  bold: [
+    {name:'Bordeaux',      hex:'#7b1c2e'}, {name:'Prune',          hex:'#6b2c5a'},
+    {name:'Aubergine',     hex:'#4a1540'}, {name:'Brun Chocolat',  hex:'#5c2515'},
+    {name:'Vamp',          hex:'#8b1025'}, {name:'Mûre',           hex:'#6e2060'},
+    {name:'Terracotta',    hex:'#8b3a25'}, {name:'Noir Profond',   hex:'#1a0a12'},
+  ],
+};
+
+/* ════════════════════════════════════════════
+   MODEL CONFIG
+════════════════════════════════════════════ */
 
 const MODEL_CONFIG = {
   glasses: {
-    path: 'models/glasses.glb', label: 'Classiques',
+    path: 'models/glasses.glb', label: 'Classiques', type: 'glasses',
     scale: 0.80, offsetY: -0.010, offsetZ: 0.000, rotX: 0.000, flipY: true,
   },
   pink_round_sunglasses: {
-    path: 'models/pink_round_sunglasses.glb', label: 'Solaires',
+    path: 'models/pink_round_sunglasses.glb', label: 'Solaires', type: 'glasses',
     scale: 0.90, offsetY: -0.090, offsetZ: 0.150, rotX: -0.160, flipY: true,
   },
   black_glasses: {
-    path: 'models/black_glasses.glb', label: 'Noires',
+    path: 'models/black_glasses.glb', label: 'Noires', type: 'glasses',
     scale: 0.60, offsetY: -0.015, offsetZ: 0.000, rotX: 0.000, flipY: true,
   },
   balenciaga_sunglasses: {
-    path: 'models/balenciaga_sunglasses.glb', label: 'Balenciaga',
+    path: 'models/balenciaga_sunglasses.glb', label: 'Balenciaga', type: 'glasses',
     scale: 6.80, offsetY: 0.020, offsetZ: 0.000, rotX: 0.190, flipY: false,
   },
   prada_vintage_star_glasses: {
-    path: 'models/prada_vintage_star_glasses.glb', label: 'Prada',
+    path: 'models/prada_vintage_star_glasses.glb', label: 'Prada', type: 'glasses',
     scale: 0.40, offsetY: -0.010, offsetZ: 0.050, rotX: 0.050, flipY: true,
   },
   white_sunglasses: {
-    path: 'models/white_sunglasses.glb', label: 'Blanches',
+    path: 'models/white_sunglasses.glb', label: 'Blanches', type: 'glasses',
     scale: 1.00, offsetY: -0.125, offsetZ: 0.000, rotX: -0.160, flipY: true,
+  },
+  cowboy_hat_free: {
+    path: 'models/cowboy_hat_free.glb', label: 'Cowboy', type: 'hat',
+    scale: 0.05, offsetY: 0.010, offsetZ: 0.000, rotX: 0.000, flipY: false,
+  },
+  bucket_hat: {
+    path: 'models/bucket_hat.glb', label: 'Bucket', type: 'hat',
+    scale: 1.80, offsetY: -0.025, offsetZ: 0.000, rotX: 0.000, flipY: false,
+  },
+  luffy_hat: {
+    path: 'models/luffy_hat.glb', label: 'Luffy', type: 'hat',
+    scale: 1.20, offsetY: 0.040, offsetZ: 0.000, rotX: 0.000, flipY: false,
+  },
+  hat_01: {
+    path: 'models/hat_01.glb', label: 'Hat 01', type: 'hat',
+    scale: 0.45, offsetY: 0.105, offsetZ: 0.000, rotX: 0.000, flipY: false,
   },
 };
 
-/* ═══════════════════════════════════════════════════════
-   CALIBRATION
-═══════════════════════════════════════════════════════ */
-let CAL = MODEL_CONFIG['glasses'];
-
-window.addEventListener('DOMContentLoaded', () => { syncSlidersToCAL && syncSlidersToCAL(); });
-
-/* ═══════════════════════════════════════════════════════
-   ÉTAT
-═══════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════
+   ÉTAT GLOBAL
+════════════════════════════════════════════ */
 const video    = document.getElementById('inputVideo');
 const dbgCvs   = document.getElementById('debugCanvas');
 const dctx     = dbgCvs.getContext('2d');
+const lipCvs   = document.getElementById('lipCanvas');
+const lctx     = lipCvs.getContext('2d');
 const statusEl = document.getElementById('status');
+const catBadge = document.getElementById('category-badge');
 
 let currentFilter = 'glasses';
+let currentTab    = 'glasses';
 let debugMode     = false;
 const modelCache  = {};
 let activeModel   = null;
+let CAL           = {...MODEL_CONFIG['glasses']};
 
-/* ═══════════════════════════════════════════════════════
-   THREE.JS SETUP
-═══════════════════════════════════════════════════════ */
+// Lipstick state
+let lipActive  = false;
+let lipColor   = '#c0392b';
+let lipOpacity = 0.72;
+let lipFinish  = 'matte';
+
+/* ════════════════════════════════════════════
+   THREE.JS
+════════════════════════════════════════════ */
 const threeCanvas = document.getElementById('threeCanvas');
-threeCanvas.width  = W;
-threeCanvas.height = H;
+threeCanvas.width = W; threeCanvas.height = H;
 
-const renderer = new THREE.WebGLRenderer({ canvas: threeCanvas, alpha: true, antialias: true });
+const renderer = new THREE.WebGLRenderer({canvas:threeCanvas, alpha:true, antialias:true});
 renderer.setSize(W, H);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0x000000, 0);
 
-const scene  = new THREE.Scene();
-const halfW  = 1.0;
-const halfH  = halfW * (H / W);
+const scene = new THREE.Scene();
+const halfW = 1.0, halfH = halfW * (H/W);
 const camera = new THREE.OrthographicCamera(-halfW, halfW, halfH, -halfH, 0.01, 100);
-camera.position.set(0, 0, 5);
-camera.lookAt(0, 0, 0);
+camera.position.set(0, 0, 5); camera.lookAt(0, 0, 0);
 
-scene.add(new THREE.AmbientLight(0xffffff, 1.6));
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-dirLight.position.set(0, 2, 4);
-scene.add(dirLight);
-const fillLight = new THREE.DirectionalLight(0xaabbff, 0.5);
-fillLight.position.set(-2, -1, 2);
-scene.add(fillLight);
+scene.add(new THREE.AmbientLight(0xffffff, 1.8));
+const dl = new THREE.DirectionalLight(0xffffff, 1.2); dl.position.set(0,2,4); scene.add(dl);
+const fl = new THREE.DirectionalLight(0xaabbff, 0.5); fl.position.set(-2,-1,2); scene.add(fl);
+const tl = new THREE.DirectionalLight(0xfff5e0, 0.4); tl.position.set(0,5,2); scene.add(tl);
 
-/* ═══════════════════════════════════════════════════════
-   PRÉCHARGEMENT DE TOUS LES MODÈLES AU DÉMARRAGE
-═══════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════
+   PRÉCHARGEMENT
+════════════════════════════════════════════ */
 const gltfLoader = new THREE.GLTFLoader();
-
-// Construire les chips dans l'overlay
-const chipsContainer = document.getElementById('preload-chips');
 const filterKeys = Object.keys(MODEL_CONFIG);
-const chipEls = {};
+const chipEls    = {};
+
 filterKeys.forEach(key => {
   const chip = document.createElement('div');
   chip.className = 'preload-chip';
   chip.textContent = MODEL_CONFIG[key].label;
-  chip.id = 'chip-' + key;
-  chipsContainer.appendChild(chip);
+  document.getElementById('preload-chips').appendChild(chip);
   chipEls[key] = chip;
 });
-
-const barFill    = document.getElementById('preload-bar');
-const pctLabel   = document.getElementById('preload-pct');
-const modelLabel = document.getElementById('preload-model-name');
-const overlay    = document.getElementById('preload-overlay');
 
 let loadedCount = 0;
 const total = filterKeys.length;
 
-/**
- * Charge un modèle GLB en arrière-plan, met à jour la barre de progression.
- * Retourne une Promise qui se résout toujours (même en cas d'erreur).
- */
-function preloadModel(filterName) {
-  return new Promise((resolve) => {
-    const cfg = MODEL_CONFIG[filterName];
-    modelLabel.textContent = `Chargement : ${cfg.label}…`;
-
-    gltfLoader.load(
-      cfg.path,
-      (gltf) => {
-        const model = gltf.scene;
-
-        // Centrer + normaliser
-        const box = new THREE.Box3().setFromObject(model);
-        const center = new THREE.Vector3();
-        box.getCenter(center);
-        model.position.sub(center);
-        const size = new THREE.Vector3();
-        box.getSize(size);
-        model.scale.setScalar(1.0 / size.x);
-        model.rotation.x = Math.PI;
-        model.visible = false;
-        scene.add(model);
-        modelCache[filterName] = model;
-
-        // Marquer le bouton et le chip comme prêts
-        const btn = document.querySelector(`[data-filter="${filterName}"]`);
-        if (btn) {
-          btn.removeAttribute('disabled');
-          btn.classList.add('model-ready');
-        }
-        chipEls[filterName]?.classList.add('done');
-
+function preloadModel(name) {
+  return new Promise(resolve => {
+    const cfg = MODEL_CONFIG[name];
+    document.getElementById('preload-model-name').textContent = cfg.label + '…';
+    gltfLoader.load(cfg.path,
+      gltf => {
+        const m = gltf.scene;
+        const box = new THREE.Box3().setFromObject(m);
+        const c = new THREE.Vector3(); box.getCenter(c); m.position.sub(c);
+        const s = new THREE.Vector3(); box.getSize(s); m.scale.setScalar(1/s.x);
+        m.rotation.x = Math.PI; m.visible = false; scene.add(m);
+        modelCache[name] = m;
+        const btn = document.querySelector(`[data-filter="${name}"]`);
+        if (btn) { btn.removeAttribute('disabled'); btn.classList.add('model-ready'); }
+        chipEls[name]?.classList.add('done');
         loadedCount++;
-        const pct = Math.round((loadedCount / total) * 100);
-        barFill.style.width = pct + '%';
-        pctLabel.textContent = pct + '%';
-
-        // Dès le 1er modèle prêt : on peut déjà activer la caméra/app
-        if (loadedCount === 1 && filterName === 'glasses') {
-          model.visible = true;
-          activeModel = model;
+        const pct = Math.round(loadedCount/total*100);
+        document.getElementById('preload-bar').style.width = pct + '%';
+        document.getElementById('preload-pct').textContent = pct + '%';
+        if (loadedCount===1 && name==='glasses') { m.visible=true; activeModel=m; }
+        if (loadedCount===total) {
+          document.getElementById('preload-model-name').textContent = '✓ Prêt';
+          setTimeout(() => { document.getElementById('preload-overlay').classList.add('hidden'); setStatus('✓ Prêt',2000); }, 700);
         }
-
-        // Tous chargés → cacher l'overlay après un court délai
-        if (loadedCount === total) {
-          modelLabel.textContent = '✓ Tous les modèles sont prêts !';
-          setTimeout(() => {
-            overlay.classList.add('hidden');
-            setStatus('✓ Prêt', 2000);
-          }, 600);
-        }
-
         resolve();
       },
-      (xhr) => {
-        // Progression interne à ce fichier (optionnel, on affiche juste le compte global)
-        if (xhr.total > 0) {
-          const filePct = Math.round(xhr.loaded / xhr.total * 100);
-          modelLabel.textContent = `${cfg.label}… ${filePct}%`;
-        }
-      },
-      (err) => {
-        console.warn('Modèle introuvable :', cfg.path, err);
-        // On considère ce modèle comme "chargé" (avec erreur) pour ne pas bloquer la progression
+      xhr => { if(xhr.total>0) document.getElementById('preload-model-name').textContent = `${cfg.label} ${Math.round(xhr.loaded/xhr.total*100)}%`; },
+      () => {
         loadedCount++;
-        const pct = Math.round((loadedCount / total) * 100);
-        barFill.style.width = pct + '%';
-        pctLabel.textContent = pct + '%';
-        chipEls[filterName] && (chipEls[filterName].style.opacity = '.25');
-        if (loadedCount === total) {
-          modelLabel.textContent = 'Chargement terminé (certains modèles manquants)';
-          setTimeout(() => overlay.classList.add('hidden'), 600);
-        }
-        resolve(); // on ne rejette pas pour ne pas bloquer Promise.all
+        const pct = Math.round(loadedCount/total*100);
+        document.getElementById('preload-bar').style.width = pct + '%';
+        document.getElementById('preload-pct').textContent = pct + '%';
+        if (chipEls[name]) chipEls[name].style.opacity = '.18';
+        if (loadedCount===total) setTimeout(() => document.getElementById('preload-overlay').classList.add('hidden'), 700);
+        resolve();
       }
     );
   });
 }
 
-/**
- * Lance le préchargement séquentiel de tous les modèles.
- * Séquentiel (au lieu de Promise.all) pour éviter de saturer la bande passante.
- */
-async function preloadAllModels() {
-  for (const key of filterKeys) {
-    await preloadModel(key);
-  }
-}
+async function preloadAllModels() { for (const k of filterKeys) await preloadModel(k); }
 
-/* ═══════════════════════════════════════════════════════
-   SWITCH MODÈLE (instantané car tout est déjà en cache)
-═══════════════════════════════════════════════════════ */
-function switchModel(filterName) {
+/* ════════════════════════════════════════════
+   SWITCH MODÈLE
+════════════════════════════════════════════ */
+function switchModel(name) {
   if (activeModel) activeModel.visible = false;
-  if (filterName === 'none') { activeModel = null; return; }
+  lipActive = false;
+  lctx.clearRect(0,0,W,H);
 
-  if (MODEL_CONFIG[filterName]) {
-    CAL = MODEL_CONFIG[filterName];
+  if (name === 'none')     { activeModel=null; updateBadge('none','—'); return; }
+  if (name === 'lipstick') { activeModel=null; lipActive=true; updateBadge('lip','💄 Rouge à lèvres'); return; }
+
+  if (MODEL_CONFIG[name]) {
+    CAL = {...MODEL_CONFIG[name]};
     syncSlidersToCAL();
+    updateBadge(MODEL_CONFIG[name].type, MODEL_CONFIG[name].type==='glasses'?'👓 Lunettes':'🎩 Chapeau');
   }
-
-  const model = modelCache[filterName];
-  if (model) {
-    model.visible = true;
-    activeModel   = model;
-  }
-  // Si le modèle n'est pas encore en cache (rare), on attend
-  // mais grâce au préchargement ce cas ne devrait pas arriver
+  const m = modelCache[name];
+  if (m) { m.visible=true; activeModel=m; }
 }
+
+function updateBadge(cls, txt) { catBadge.className=cls; catBadge.textContent=txt; }
 
 function syncSlidersToCAL() {
-  const s = (id, val, dec) => {
-    const el = document.getElementById('cal-' + id);
-    const lb = document.getElementById('val-' + id);
-    if (el) el.value = val;
-    if (lb) lb.textContent = val.toFixed(dec);
+  const set = (id,val,dec) => {
+    const el=document.getElementById('cal-'+id), lb=document.getElementById('val-'+id);
+    if(el) el.value=val; if(lb) lb.textContent=parseFloat(val).toFixed(dec);
   };
-  s('scale',   CAL.scale,   2);
-  s('offsetY', CAL.offsetY, 2);
-  s('offsetZ', CAL.offsetZ, 2);
-  s('rotX',    CAL.rotX,    2);
-  const flipEl = document.getElementById('cal-flipY');
-  if (flipEl) flipEl.checked = CAL.flipY;
+  set('scale',CAL.scale,2); set('offsetY',CAL.offsetY,2);
+  set('offsetZ',CAL.offsetZ,2); set('rotX',CAL.rotX,2);
+  const flip=document.getElementById('cal-flipY'); if(flip) flip.checked=CAL.flipY;
+  const lbl=document.getElementById('cal-model-label'); if(lbl) lbl.textContent=CAL.label||'—';
 }
 
-/* ═══════════════════════════════════════════════════════
-   GÉOMÉTRIE
-═══════════════════════════════════════════════════════ */
-const mid  = (a, b) => ({ x:(a.x+b.x)/2, y:(a.y+b.y)/2, z:(a.z+b.z)/2 });
-const dist = (a, b) => Math.hypot(a.x-b.x, a.y-b.y);
-const px   = l => ({ x:(1-l.x)*W, y:l.y*H, z:l.z });
-
-function screenToWorld(sx, sy) {
-  return {
-    x:  (sx / W) * 2*halfW - halfW,
-    y: -(sy / H) * 2*halfH + halfH,
-  };
+/* ════════════════════════════════════════════
+   DESSIN LÈVRES (Canvas 2D)
+════════════════════════════════════════════ */
+function hexToRgb(hex) {
+  return { r:parseInt(hex.slice(1,3),16), g:parseInt(hex.slice(3,5),16), b:parseInt(hex.slice(5,7),16) };
 }
 
-/* ═══════════════════════════════════════════════════════
+function traceLipPath(ctx, outerPts, innerPts) {
+  ctx.beginPath();
+  ctx.moveTo(outerPts[0].x, outerPts[0].y);
+  for (let i=1; i<outerPts.length; i++) {
+    const p=outerPts[i-1], c=outerPts[i];
+    ctx.quadraticCurveTo(p.x, p.y, (p.x+c.x)/2, (p.y+c.y)/2);
+  }
+  ctx.lineTo(outerPts[outerPts.length-1].x, outerPts[outerPts.length-1].y);
+  const rev = [...innerPts].reverse();
+  for (let i=0; i<rev.length; i++) {
+    const p = i===0 ? outerPts[outerPts.length-1] : rev[i-1];
+    const c = rev[i];
+    ctx.quadraticCurveTo(p.x, p.y, (p.x+c.x)/2, (p.y+c.y)/2);
+  }
+  ctx.closePath();
+}
+
+function fillLip(ctx, pts, r, g, b, a) {
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const x0=Math.min(...xs), x1=Math.max(...xs);
+  const y0=Math.min(...ys), y1=Math.max(...ys);
+  const cx=(x0+x1)/2, cy=(y0+y1)/2;
+
+  if (lipFinish==='matte') {
+    ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+    ctx.fill();
+
+  } else if (lipFinish==='glossy') {
+    ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+    ctx.fill();
+    const gl = ctx.createRadialGradient(cx, y0+(cy-y0)*.3, 0, cx, y0+(cy-y0)*.3, (x1-x0)*.45);
+    gl.addColorStop(0, 'rgba(255,255,255,0.6)');
+    gl.addColorStop(.5,'rgba(255,255,255,0.18)');
+    gl.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gl; ctx.fill();
+
+  } else { // satin
+    const grad = ctx.createLinearGradient(cx, y0, cx, y1);
+    grad.addColorStop(0,   `rgba(${Math.min(r+45,255)},${Math.min(g+22,255)},${Math.min(b+22,255)},${a})`);
+    grad.addColorStop(.5,  `rgba(${r},${g},${b},${a})`);
+    grad.addColorStop(1,   `rgba(${Math.max(r-30,0)},${Math.max(g-15,0)},${Math.max(b-15,0)},${a})`);
+    ctx.fillStyle = grad; ctx.fill();
+    const ref = ctx.createRadialGradient(cx, y0+(cy-y0)*.38, 0, cx, y0+(cy-y0)*.38, (x1-x0)*.32);
+    ref.addColorStop(0,'rgba(255,255,255,0.3)'); ref.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = ref; ctx.fill();
+  }
+}
+
+function drawLips(lm) {
+  lctx.clearRect(0,0,W,H);
+  if (!lipActive) return;
+
+  // Convertir landmark → pixel (mirroir horizontal)
+  const lp = i => ({ x:(1-lm[i].x)*W, y:lm[i].y*H });
+  const {r,g,b} = hexToRgb(lipColor);
+  const a = lipOpacity;
+
+  // Lèvre supérieure
+  lctx.save();
+  const upperOuter = LIP_UPPER_OUTER.map(lp);
+  const upperInner = LIP_UPPER_INNER.map(lp);
+  traceLipPath(lctx, upperOuter, upperInner);
+  fillLip(lctx, upperOuter, r, g, b, a);
+  lctx.restore();
+
+  // Lèvre inférieure
+  lctx.save();
+  const lowerOuter = LIP_LOWER_OUTER.map(lp);
+  const lowerInner = LIP_LOWER_INNER.map(lp);
+  traceLipPath(lctx, lowerOuter, lowerInner);
+  fillLip(lctx, lowerOuter, r, g, b, a);
+  lctx.restore();
+}
+
+/* ════════════════════════════════════════════
    MEDIAPIPE CALLBACK
-═══════════════════════════════════════════════════════ */
+════════════════════════════════════════════ */
+const mid  = (a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2});
+const dist = (a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const px   = l=>({x:(1-l.x)*W,y:l.y*H,z:l.z});
+const s2w  = (sx,sy)=>({x:(sx/W)*2*halfW-halfW, y:-(sy/H)*2*halfH+halfH});
+
 function onResults(results) {
-  dctx.clearRect(0, 0, W, H);
+  dctx.clearRect(0,0,W,H);
   if (!results.multiFaceLandmarks?.length) {
-    renderer.render(scene, camera);
+    lctx.clearRect(0,0,W,H);
+    renderer.render(scene,camera);
     return;
   }
 
   const lm = results.multiFaceLandmarks[0];
-  const rEyePx = mid(px(lm[LM.R_EYE_OUT]), px(lm[LM.R_EYE_IN]));
-  const lEyePx = mid(px(lm[LM.L_EYE_OUT]), px(lm[LM.L_EYE_IN]));
-  const nosePx = px(lm[LM.NOSE_TIP]);
-  const rEarPx = px(lm[LM.R_EAR]);
-  const lEarPx = px(lm[LM.L_EAR]);
-  const ctrPx  = mid(rEyePx, lEyePx);
 
+  // Orientation commune
+  const rEarPx    = px(lm[LM.R_EAR]);
+  const lEarPx    = px(lm[LM.L_EAR]);
   const earSpanPx = dist(rEarPx, lEarPx);
-  const rollAngle = Math.atan2(lEyePx.y - rEyePx.y, lEyePx.x - rEyePx.x);
-  const rEarZ = lm[LM.R_EAR].z;
-  const lEarZ = lm[LM.L_EAR].z;
-  const yawAngle = (rEarZ - lEarZ) * 2.5;
-  const depthZ = lm[LM.NOSE_TIP].z;
+  const rollAngle = Math.atan2(lEarPx.y-rEarPx.y, lEarPx.x-rEarPx.x);
+  const yawAngle  = (lm[LM.R_EAR].z - lm[LM.L_EAR].z) * 2.5;
+  const depthZ    = lm[LM.NOSE_TIP].z;
 
-  if (activeModel) {
-    const wPos = screenToWorld(ctrPx.x, ctrPx.y);
-    const earSpanWorld = (earSpanPx / W) * 2 * halfW;
-    const finalScale   = earSpanWorld * CAL.scale;
+  // Lèvres
+  drawLips(lm);
 
-    activeModel.position.set(wPos.x, wPos.y + CAL.offsetY, CAL.offsetZ - depthZ * 0.5);
-    activeModel.scale.setScalar(finalScale);
-
+  // Modèles 3D
+  if (activeModel && MODEL_CONFIG[currentFilter]) {
+    const cfg = MODEL_CONFIG[currentFilter];
+    const earW = (earSpanPx/W)*2*halfW;
     const flipY = CAL.flipY ? Math.PI : 0;
-    activeModel.rotation.order = 'YXZ';
-    activeModel.rotation.y = flipY + yawAngle;
-    activeModel.rotation.x = Math.PI + CAL.rotX;
-    activeModel.rotation.z = -rollAngle;
+
+    if (cfg.type === 'glasses') {
+      const ctr = mid(
+        mid(px(lm[LM.R_EYE_OUT]), px(lm[LM.R_EYE_IN])),
+        mid(px(lm[LM.L_EYE_OUT]), px(lm[LM.L_EYE_IN]))
+      );
+      const w = s2w(ctr.x, ctr.y);
+      activeModel.position.set(w.x, w.y+CAL.offsetY, CAL.offsetZ-depthZ*.5);
+      activeModel.scale.setScalar(earW*CAL.scale);
+      activeModel.rotation.order='YXZ';
+      activeModel.rotation.y=flipY+yawAngle;
+      activeModel.rotation.x=Math.PI+CAL.rotX;
+      activeModel.rotation.z=-rollAngle;
+
+    } else if (cfg.type === 'hat') {
+      const anchor = mid(px(lm[LM.FOREHEAD_TOP]), px(lm[LM.TOP_HEAD]));
+      const w = s2w(anchor.x, anchor.y);
+      const templeW = (dist(px(lm[LM.R_TEMPLE]),px(lm[LM.L_TEMPLE]))/W)*2*halfW;
+      activeModel.position.set(w.x, w.y+CAL.offsetY, CAL.offsetZ-depthZ*.3);
+      activeModel.scale.setScalar(templeW*CAL.scale);
+      activeModel.rotation.order='YXZ';
+      activeModel.rotation.y=flipY+yawAngle;
+      activeModel.rotation.x=Math.PI+CAL.rotX;
+      activeModel.rotation.z=-rollAngle;
+    }
   }
 
   renderer.render(scene, camera);
 
   if (debugMode) {
-    for (const l of lm) {
-      dctx.beginPath();
-      dctx.arc((1-l.x)*W, l.y*H, 1.2, 0, Math.PI*2);
-      dctx.fillStyle = 'rgba(139,124,248,.45)';
-      dctx.fill();
-    }
-    dbgPt(rEyePx, '#0ff', 'œil D');
-    dbgPt(lEyePx, '#0ff', 'œil G');
-    dbgPt(nosePx, '#f0f', 'nez');
-    dbgPt(ctrPx,  '#ff0', 'centre');
-    dbgPt(rEarPx, '#f90', 'oreille D');
-    dbgPt(lEarPx, '#f90', 'oreille G');
+    lm.forEach(l => {
+      dctx.beginPath(); dctx.arc((1-l.x)*W,l.y*H,1.2,0,Math.PI*2);
+      dctx.fillStyle='rgba(139,124,248,.3)'; dctx.fill();
+    });
+    [...LIP_UPPER_OUTER,...LIP_LOWER_OUTER].forEach(i => {
+      dctx.beginPath(); dctx.arc((1-lm[i].x)*W,lm[i].y*H,3,0,Math.PI*2);
+      dctx.fillStyle='#f472b6'; dctx.fill();
+    });
+    dbgPt(px(lm[LM.FOREHEAD_TOP]),'#ffaa00','front');
+    dbgPt(rEarPx,'#f90','oreille D'); dbgPt(lEarPx,'#f90','oreille G');
   }
 }
 
-/* ═══════════════════════════════════════════════════════
-   MEDIAPIPE INIT + DÉMARRAGE PRÉCHARGEMENT EN PARALLÈLE
-═══════════════════════════════════════════════════════ */
-const faceMesh = new FaceMesh({
-  locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
-});
-faceMesh.setOptions({
-  maxNumFaces: 1,
-  refineLandmarks: true,
-  minDetectionConfidence: 0.5,
-  minTrackingConfidence:  0.5,
-});
+/* ════════════════════════════════════════════
+   MEDIAPIPE INIT
+════════════════════════════════════════════ */
+const faceMesh = new FaceMesh({ locateFile: f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` });
+faceMesh.setOptions({ maxNumFaces:1, refineLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5 });
 faceMesh.onResults(onResults);
 
-// Caméra et préchargement lancés en parallèle
-const cam = new Camera(video, {
-  onFrame: async () => { await faceMesh.send({ image: video }); },
-  width: W, height: H,
+const cam = new Camera(video, { onFrame: async()=>{ await faceMesh.send({image:video}); }, width:W, height:H });
+Promise.all([ cam.start().catch(e=>setStatus('Erreur caméra: '+e.message)), preloadAllModels() ]);
+
+/* ════════════════════════════════════════════
+   UI — PALETTE COULEURS
+════════════════════════════════════════════ */
+function buildGrid(gridId, palette) {
+  const grid = document.getElementById(gridId);
+  palette.forEach((item, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'lip-color-btn' + (i===0 && gridId==='lip-grid-red' ? ' active' : '');
+    btn.innerHTML = `<div class="lip-swatch" style="--swatch-color:${item.hex}"></div><span class="lip-color-name">${item.name}</span>`;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lip-color-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      lipColor = item.hex;
+    });
+    grid.appendChild(btn);
+  });
+}
+buildGrid('lip-grid-red',  LIP_PALETTES.red);
+buildGrid('lip-grid-nude', LIP_PALETTES.nude);
+buildGrid('lip-grid-bold', LIP_PALETTES.bold);
+lipColor = LIP_PALETTES.red[0].hex;
+
+/* ════════════════════════════════════════════
+   UI — FINISH
+════════════════════════════════════════════ */
+document.querySelectorAll('.finish-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.finish-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    lipFinish = btn.dataset.finish;
+  });
 });
 
-// Lancer les deux en parallèle : caméra ET préchargement
-Promise.all([
-  cam.start().catch(e => setStatus('Erreur caméra : ' + e.message)),
-  preloadAllModels(),
-]);
+/* ════════════════════════════════════════════
+   UI — OPACITÉ
+════════════════════════════════════════════ */
+document.getElementById('lip-opacity').addEventListener('input', e => {
+  lipOpacity = parseFloat(e.target.value);
+  document.getElementById('val-lip-opacity').textContent = Math.round(lipOpacity*100)+'%';
+});
 
-/* ═══════════════════════════════════════════════════════
-   UI — BOUTONS
-═══════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════
+   UI — ONGLETS
+════════════════════════════════════════════ */
+document.querySelectorAll('.tab-btn').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.filter-panel').forEach(p=>p.classList.remove('active'));
+    const cal = document.getElementById('calibration');
+    const name = tab.dataset.tab;
+
+    if (name==='none-tab') {
+      cal.style.display='none'; currentFilter='none'; currentTab='none';
+      document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+      switchModel('none'); return;
+    }
+    if (name==='lipstick') {
+      document.getElementById('panel-lipstick').classList.add('active');
+      cal.style.display='none'; currentFilter='lipstick'; currentTab='lipstick';
+      switchModel('lipstick'); return;
+    }
+
+    cal.style.display='';
+    document.getElementById(`panel-${name}`).classList.add('active');
+    currentTab = name;
+    const first = document.querySelector(`#panel-${name} .filter-btn.model-ready`);
+    if (first) {
+      document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+      first.classList.add('active');
+      currentFilter = first.dataset.filter;
+      switchModel(currentFilter);
+    }
+  });
+});
+
+/* ════════════════════════════════════════════
+   UI — BOUTONS FILTRES
+════════════════════════════════════════════ */
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.disabled) return;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
     switchModel(currentFilter);
-    updateCalLabel();
   });
 });
 
-/* ═══════════════════════════════════════════════════════
-   UI — SLIDERS
-═══════════════════════════════════════════════════════ */
-function bindSlider(id, key, decimals = 2) {
-  const slider = document.getElementById(id);
-  const label  = document.getElementById('val-' + id.replace('cal-', ''));
-  slider.addEventListener('input', () => {
-    CAL[key] = parseFloat(slider.value);
-    if (label) label.textContent = CAL[key].toFixed(decimals);
+/* ════════════════════════════════════════════
+   UI — SLIDERS CALIBRATION
+════════════════════════════════════════════ */
+['scale','offsetY','offsetZ','rotX'].forEach(key => {
+  const el = document.getElementById('cal-'+key);
+  const lb = document.getElementById('val-'+key);
+  el?.addEventListener('input', () => {
+    CAL[key] = parseFloat(el.value);
+    if (MODEL_CONFIG[currentFilter]) MODEL_CONFIG[currentFilter][key] = CAL[key];
+    if (lb) lb.textContent = CAL[key].toFixed(2);
   });
-}
-bindSlider('cal-scale',   'scale',   2);
-bindSlider('cal-offsetY', 'offsetY', 2);
-bindSlider('cal-offsetZ', 'offsetZ', 2);
-bindSlider('cal-rotX',    'rotX',    2);
-
-document.getElementById('cal-flipY').addEventListener('change', e => { CAL.flipY = e.target.checked; });
-
-function updateCalLabel() {
-  const lbl = document.getElementById('cal-model-label');
-  if (lbl && MODEL_CONFIG[currentFilter]) lbl.textContent = MODEL_CONFIG[currentFilter].label;
-}
-
+});
+document.getElementById('cal-flipY').addEventListener('change', e => {
+  CAL.flipY=e.target.checked;
+  if(MODEL_CONFIG[currentFilter]) MODEL_CONFIG[currentFilter].flipY=CAL.flipY;
+});
 document.getElementById('btn-copy-cal').addEventListener('click', () => {
-  const lines = Object.entries(MODEL_CONFIG).map(([k, v]) =>
-    `  ${k}: {\n    path: '${v.path}', label: '${v.label}',\n    scale: ${v.scale.toFixed(2)}, offsetY: ${v.offsetY.toFixed(3)}, offsetZ: ${v.offsetZ.toFixed(3)}, rotX: ${v.rotX.toFixed(3)}, flipY: ${v.flipY},\n  },`
+  const lines = Object.entries(MODEL_CONFIG).map(([k,v])=>
+    `  ${k}:{path:'${v.path}',label:'${v.label}',type:'${v.type}',scale:${v.scale.toFixed(2)},offsetY:${v.offsetY.toFixed(3)},offsetZ:${v.offsetZ.toFixed(3)},rotX:${v.rotX.toFixed(3)},flipY:${v.flipY}},`
   ).join('\n');
-  const output = `const MODEL_CONFIG = {\n${lines}\n};`;
+  const out = `const MODEL_CONFIG = {\n${lines}\n};`;
   const pre = document.getElementById('cal-output');
-  pre.textContent = output;
-  pre.style.display = 'block';
-  navigator.clipboard?.writeText(output).then(() => {
-    document.getElementById('btn-copy-cal').textContent = '✓ Copié !';
-    setTimeout(() => { document.getElementById('btn-copy-cal').textContent = '📋 Copier les valeurs dans le code'; }, 2500);
+  pre.textContent=out; pre.style.display='block';
+  navigator.clipboard?.writeText(out).then(()=>{
+    document.getElementById('btn-copy-cal').textContent='✓ Copié !';
+    setTimeout(()=>{ document.getElementById('btn-copy-cal').textContent='📋 Copier les valeurs'; },2500);
   });
 });
 
-/* ═══════════════════════════════════════════════════════
+/* ════════════════════════════════════════════
    CLAVIER
-═══════════════════════════════════════════════════════ */
+════════════════════════════════════════════ */
 document.addEventListener('keydown', e => {
-  const k = e.key.toLowerCase();
-  if (k === 'd') { debugMode = !debugMode; dbgCvs.style.opacity = debugMode ? '1' : '0'; }
-  if (k === 'r') { CAL.scale=1; CAL.offsetY=0; CAL.offsetZ=0; CAL.rotX=0; CAL.flipY=false; syncSlidersToCAL(); }
+  if (e.key.toLowerCase()==='d') { debugMode=!debugMode; dbgCvs.style.opacity=debugMode?'1':'0'; }
+  if (e.key.toLowerCase()==='r') { CAL.scale=1;CAL.offsetY=0;CAL.offsetZ=0;CAL.rotX=0;CAL.flipY=false; syncSlidersToCAL(); }
 });
 
-/* ═══════════════════════════════════════════════════════
+/* ════════════════════════════════════════════
    HELPERS
-═══════════════════════════════════════════════════════ */
-function setStatus(msg, hideAfter) {
-  statusEl.textContent = msg;
-  statusEl.style.opacity = '1';
-  if (hideAfter) setTimeout(() => statusEl.style.opacity = '0', hideAfter);
+════════════════════════════════════════════ */
+function setStatus(msg, hide) {
+  statusEl.textContent=msg; statusEl.style.opacity='1';
+  if (hide) setTimeout(()=>statusEl.style.opacity='0', hide);
 }
-function dbgPt(p, c, label) {
-  dctx.beginPath();
-  dctx.arc(p.x, p.y, 5, 0, Math.PI*2);
-  dctx.fillStyle = c;
-  dctx.fill();
-  dctx.font = '11px monospace';
-  dctx.fillStyle = c;
-  dctx.fillText(label, p.x+8, p.y-3);
+function dbgPt(p,c,lbl) {
+  dctx.beginPath(); dctx.arc(p.x,p.y,5,0,Math.PI*2); dctx.fillStyle=c; dctx.fill();
+  dctx.font='10px monospace'; dctx.fillStyle=c; dctx.fillText(lbl,p.x+8,p.y-3);
 }
+
+window.addEventListener('DOMContentLoaded', () => { CAL={...MODEL_CONFIG['glasses']}; syncSlidersToCAL(); });
 </script>
 </body>
 </html>
