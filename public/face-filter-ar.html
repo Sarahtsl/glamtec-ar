@@ -133,7 +133,20 @@
     #toggle-side-btn:hover { background: var(--white); border-color: var(--border2); color: var(--text); }
     #toggle-side-btn svg { transition: transform .3s; }
 
-    #toggle-side-btn {
+    /* ── MAIN LAYOUT ────────────────────────────── */
+    #app-body {
+      flex:1;
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      padding: 28px;
+      max-width: 1300px;
+      margin: 0 auto;
+      width: 100%;
+      transition: flex-direction .3s;
+    }
+    /* Bouton commun topbar */
+#toggle-side-btn {
   display: flex; align-items: center; gap: 7px;
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -161,18 +174,6 @@
 #back-btn:hover { background: var(--accent-light); border-color: rgba(200,115,74,.35); color: var(--accent); }
 #back-btn svg { transition: transform .2s; }
 #back-btn:hover svg { transform: translateX(-2px); }
-    /* ── MAIN LAYOUT ────────────────────────────── */
-    #app-body {
-      flex:1;
-      display: flex;
-      align-items: flex-start;
-      gap: 0;
-      padding: 28px;
-      max-width: 1300px;
-      margin: 0 auto;
-      width: 100%;
-      transition: flex-direction .3s;
-    }
 
     /* ── SIDE PANEL ─────────────────────────────── */
     #side-panel {
@@ -444,7 +445,6 @@
   </div>
   <div class="preload-list" id="preload-chips"></div>
 </div>
-
 <!-- TOPBAR -->
 <div id="topbar">
   <span class="brand-logo">Glam<em>Tec</em></span>
@@ -545,6 +545,14 @@
           <span class="ready-dot"></span>
           <span class="ficon">🎩</span> Hat 01
         </button>
+        <button class="filter-btn" data-filter="stitch_ears_hat" data-category="hat" disabled>
+          <span class="ready-dot"></span>
+          <span class="ficon">🎩</span> stitch_ears_hat
+        </button> 
+        <button class="filter-btn" data-filter="eve_ears_hat" data-category="hat" disabled>
+          <span class="ready-dot"></span>
+          <span class="ficon">🧙‍♀️</span> eve_ears_hat
+        </button>
       </div>
     </div>
 
@@ -589,7 +597,7 @@
         </div>
         <div class="cal-row">
           <label>Offset Y</label>
-          <input type="range" id="cal-offsetY" min="-0.5" max="0.5" step="0.005" value="0">
+          <input type="range" id="cal-offsetY" min="-0.5" max="3" step="0.005" value="0">
           <span id="val-offsetY">0.00</span>
         </div>
         <div class="cal-row">
@@ -709,11 +717,14 @@ const MODEL_CONFIG = {
   balenciaga_sunglasses:{path:'models/balenciaga_sunglasses.glb',label:'Balenciaga',type:'glasses',scale:6.80,offsetY:0.020,offsetZ:0.000,rotX:0.190,flipY:false},
   prada_vintage_star_glasses:{path:'models/prada_vintage_star_glasses.glb',label:'Prada',type:'glasses',scale:0.40,offsetY:-0.010,offsetZ:0.050,rotX:0.050,flipY:true},
   white_sunglasses:{path:'models/white_sunglasses.glb',label:'Blanches',type:'glasses',scale:1.00,offsetY:-0.105,offsetZ:-0.040,rotX:-0.050,flipY:true},
-  cowboy_hat_free:{path:'models/cowboy_hat_free.glb',label:'Cowboy',type:'hat',scale:0.05,offsetY:0.025,offsetZ:0.000,rotX:0.000,flipY:false},
+  cowboy_hat_free:{path:'models/cowboy_hat_free.glb',label:'Cowboy',type:'hat',scale:0.05,offsetY:0.025,offsetZ:0.000,rotX:0.260,flipY:false},
   bucket_hat:{path:'models/bucket_hat.glb',label:'Bucket',type:'hat',scale:1.60,offsetY:-0.080,offsetZ:0.000,rotX:0.000,flipY:false},
   luffy_hat:{path:'models/luffy_hat.glb',label:'Luffy',type:'hat',scale:1.20,offsetY:0.040,offsetZ:0.000,rotX:0.000,flipY:false},
-  hat_01:{path:'models/hat_01.glb',label:'Hat 01',type:'hat',scale:0.45,offsetY:0.120,offsetZ:0.000,rotX:0.000,flipY:false},
+  hat_01:{path:'models/hat_01.glb',label:'Hat 01',type:'hat',scale:0.45,offsetY:0.120,offsetZ:0.000,rotX:0.180,flipY:false},
+  stitch_ears_hat:{path:'models/stitch_ears_hat.glb',label:'Stitch Ears',type:'hat',scale:0.17,offsetY:0.645,offsetZ:0.000,rotX:-0.350,flipY:true},
+  eve_ears_hat:{path:'models/eve_ears_hat.glb',label:'Eve Ears',type:'hat',scale:0.17,offsetY:0.645,offsetZ:-0.170,rotX:-0.190,flipY:true},
 };
+
 /* ════════════════════════════════════════════
    ÉTAT
 ════════════════════════════════════════════ */
