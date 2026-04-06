@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import TryOnPage from "./pages/TryOnPage";
 import TryOnBodyPage from "./pages/TryOnBodyPage";
 import QrGenerator from "./pages/Qrqenerateur"; 
-import FaceFilterPage from "./pages/FaceFilterPage"; 
+import FaceFilterPage from "./pages/FaceFilterPage";  
+import ArGenerator from "./pages/ArGenerator";
 
 /* ══════════════════════════════════════════════
    HOME PAGE
@@ -416,6 +417,7 @@ function App() {
         <Route path="/try"          element={<FaceFilterPage />} /> 
         <Route path="/try-body"     element={<TryOnBodyPage />} />
         <Route path="/qr-generator" element={<QrGenerator />} /> 
+        <Route path="/ar-generator" element={<ArGenerator />} /> 
       </Routes>
     </BrowserRouter>
   );
