@@ -1,4 +1,6 @@
-import { uploadToSupabase, saveModelToDB } from './supabaseClient.js';
+/* eslint-env node */
+import { uploadToSupabase, saveModelToDB } from './supabaseClient.js'; 
+
 
 const TRIPO_BASE = 'https://api.tripo3d.ai/v2/openapi';
 
