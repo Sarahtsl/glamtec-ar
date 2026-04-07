@@ -143,31 +143,7 @@
     .loader-progress { width: 160px; height: 2px; background: rgba(124,109,250,0.15); border-radius: 2px; overflow: hidden; }
     .loader-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accentB)); border-radius: 2px; width: 0%; transition: width 0.3s; }
 
-    /* ── BOUTON IOS QUICKLOOK DIRECT (fallback <a rel="ar">) ── */
-    #iosDirectBtn {
-      display: none; /* affiché uniquement sur iOS si nécessaire */
-      position: fixed;
-      /* FIX iPhone : safe area */
-      bottom: calc(24px + var(--safe-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      padding: 16px 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accentB));
-      border: none;
-      border-radius: 60px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
-      color: #fff;
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 8px 40px rgba(124,109,250,0.5);
-      text-decoration: none;
-      align-items: center;
-      gap: 10px;
-    }
-
+   
     /* ── ERREUR ── */
     #errorState {
       display: none; position: fixed; inset: 0; background: var(--bg); z-index: 40;
@@ -291,15 +267,7 @@
   <div class="hint-pill">Glissez pour tourner · Pincez pour zoomer</div>
 </model-viewer>
 
-<!--
-  BOUTON IOS DIRECT (fallback) :
-  <a rel="ar href="fichier.usdz"> déclenche QuickLook nativement sur iOS Safari.
-  Affiché uniquement sur iOS si usdzUrl est disponible.
--->
-<a id="iosDirectBtn" rel="ar" href="#">
-  <span>📷</span>
-  <span>Ouvrir en AR (QuickLook)</span>
-</a>
+
 
 <script>
   const params     = new URLSearchParams(window.location.search);
@@ -316,7 +284,6 @@
   const loaderText    = document.getElementById("loaderText");
   const platformBadge = document.getElementById("platformBadge");
   const arBtnText     = document.getElementById("arBtnText");
-  const iosDirectBtn  = document.getElementById("iosDirectBtn");
 
   // ── Détecter plateforme ─────────────────────────────────────────
   const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -380,14 +347,6 @@
     if (isIOS) {
       const iosSrc = usdzUrl || glbUrl;
       viewer.setAttribute("ios-src", iosSrc);
-    }
-
-    viewer.style.display = "block";
-
-    // ── Bouton iOS direct (rel="ar") ──────────────────────────────
-    if (isIOS && usdzUrl) {
-      iosDirectBtn.href = usdzUrl;
-      iosDirectBtn.style.display = "flex";
     }
 
     // ── Events model-viewer ───────────────────────────────────────
