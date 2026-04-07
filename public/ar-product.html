@@ -143,7 +143,6 @@
     .loader-progress { width: 160px; height: 2px; background: rgba(124,109,250,0.15); border-radius: 2px; overflow: hidden; }
     .loader-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accentB)); border-radius: 2px; width: 0%; transition: width 0.3s; }
 
-   
     /* ── ERREUR ── */
     #errorState {
       display: none; position: fixed; inset: 0; background: var(--bg); z-index: 40;
@@ -233,6 +232,13 @@
   <button class="btn-dismiss" id="dismissNoAr">Voir en 3D →</button>
 </div>
 
+<!--
+  MODEL-VIEWER
+  ar-modes="webxr scene-viewer quick-look"
+  - quick-look   = iOS Safari QuickLook (USDZ)
+  - scene-viewer = Android Chrome AR
+  - webxr        = fallback WebXR
+-->
 <model-viewer
   id="viewer"
   ar
@@ -259,9 +265,6 @@
 
   <div class="hint-pill">Glissez pour tourner · Pincez pour zoomer</div>
 </model-viewer>
-
-
-
 <script>
   const params     = new URLSearchParams(window.location.search);
   const modelParam = params.get("model");
@@ -341,6 +344,8 @@
       const iosSrc = usdzUrl || glbUrl;
       viewer.setAttribute("ios-src", iosSrc);
     }
+
+    viewer.style.display = "block";
 
     // ── Events model-viewer ───────────────────────────────────────
     viewer.addEventListener("progress", e => {
