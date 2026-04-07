@@ -9,83 +9,213 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono&display=swap');
     * { margin:0; padding:0; box-sizing:border-box; }
-    :root { --accent:#7c6dfa; --accentB:#fa6d9f; --bg:#07080f; --text:#eeeef5; --muted:rgba(255,255,255,0.45); }
-    html,body { height:100%; width:100%; background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; overflow:hidden; }
+    :root {
+      --accent:#7c6dfa; --accentB:#fa6d9f;
+      --bg:#07080f; --text:#eeeef5; --muted:rgba(255,255,255,0.45);
+      /* Safe area helpers */
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top:    env(safe-area-inset-top,    0px);
+      --safe-left:   env(safe-area-inset-left,   0px);
+      --safe-right:  env(safe-area-inset-right,  0px);
+    }
+    html, body {
+      height: 100%; width: 100%;
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Mono', monospace;
+    }
 
+    /* ── TOPBAR ── */
     .topbar {
-      position:fixed; top:0;left:0;right:0; z-index:20; height:56px;
-      display:flex; align-items:center; justify-content:space-between; padding:0 20px;
-      background:rgba(7,8,15,0.88); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,0.06);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+      /* Hauteur fixe + safe area top pour les iPhones avec encoche / Dynamic Island */
+      height: calc(56px + var(--safe-top));
+      padding-top: var(--safe-top);
+      display: flex; align-items: center; justify-content: space-between;
+      padding-left: calc(20px + var(--safe-left));
+      padding-right: calc(20px + var(--safe-right));
+      background: rgba(7,8,15,0.88); backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .topbar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; background:linear-gradient(135deg,var(--accent),var(--accentB)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .topbar-name { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:2px; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .topbar-badge { font-size:0.6rem; padding:3px 10px; border-radius:20px; letter-spacing:1px; }
-    .badge-ios     { background:rgba(0,200,120,0.12); border:1px solid rgba(0,200,120,0.3); color:#00c878; }
-    .badge-android { background:rgba(0,180,255,0.12); border:1px solid rgba(0,180,255,0.3); color:#00b4ff; }
-    .badge-unknown { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--muted); }
+    .topbar-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem;
+      background: linear-gradient(135deg, var(--accent), var(--accentB));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .topbar-name {
+      font-size: 0.68rem; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 2px; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .topbar-badge { font-size: 0.6rem; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; }
+    .badge-ios     { background: rgba(0,200,120,0.12); border: 1px solid rgba(0,200,120,0.3); color: #00c878; }
+    .badge-android { background: rgba(0,180,255,0.12); border: 1px solid rgba(0,180,255,0.3); color: #00b4ff; }
+    .badge-unknown { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--muted); }
 
-    model-viewer { width:100vw; height:100vh; background:radial-gradient(ellipse at 50% 40%,#1a1830 0%,#07080f 70%); }
+    /* ── MODEL VIEWER ── */
+    model-viewer {
+      width: 100vw;
+      height: 100vh;
+      /* Padding bas pour que le contenu interne ne passe pas sous la barre Safari */
+      padding-bottom: var(--safe-bottom);
+      background: radial-gradient(ellipse at 50% 40%, #1a1830 0%, #07080f 70%);
+    }
 
+    /* ── BOUTON AR (slot natif model-viewer) ── */
     .ar-btn {
-      position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
-      padding:16px 36px; background:linear-gradient(135deg,var(--accent),var(--accentB));
-      border:none; border-radius:60px; font-family:'Syne',sans-serif; font-weight:800;
-      font-size:1rem; color:#fff; cursor:pointer; letter-spacing:0.5px;
-      box-shadow:0 8px 40px rgba(124,109,250,0.5);
-      display:flex; align-items:center; gap:10px; white-space:nowrap;
-      animation:floatBtn 3s ease-in-out infinite;
-    }
-    @keyframes floatBtn { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-7px)} }
+      position: absolute;
+      /* FIX iPhone : on ajoute la safe area au bottom fixe */
+      bottom: calc(24px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
 
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accentB));
+      border: none;
+      border-radius: 60px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #fff;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      box-shadow: 0 8px 40px rgba(124,109,250,0.5);
+
+      /* L'animation ne déplace PAS le bouton vers le bas — uniquement vers le haut */
+      animation: floatBtn 3s ease-in-out infinite;
+    }
+
+    @keyframes floatBtn {
+      0%, 100% { transform: translateX(-50%) translateY(0px);  }
+      50%       { transform: translateX(-50%) translateY(-6px); }
+    }
+
+    /* ── HINT PILL ── */
     .hint-pill {
-      position:absolute; top:68px; left:50%; transform:translateX(-50%);
-      background:rgba(0,0,0,0.6); backdrop-filter:blur(10px);
-      border:1px solid rgba(255,255,255,0.08); border-radius:50px;
-      padding:8px 18px; font-size:0.68rem; color:var(--muted); white-space:nowrap;
-      pointer-events:none; animation:hintFade 5s forwards; animation-delay:1.5s; opacity:0;
+      position: absolute;
+      /* FIX iPhone : au-dessus du bouton AR + safe area */
+      bottom: calc(100px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-size: 0.68rem;
+      color: var(--muted);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      animation: hintFade 5s forwards;
+      animation-delay: 1.5s;
     }
-    @keyframes hintFade { 0%{opacity:0;transform:translateX(-50%) translateY(-6px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 80%{opacity:1} 100%{opacity:0} }
+    @keyframes hintFade {
+      0%   { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+      15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
 
+    /* ── LOADING OVERLAY ── */
     #loadingOverlay {
-      position:fixed; inset:0; background:var(--bg); z-index:30;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      gap:20px; transition:opacity 0.5s;
+      position: fixed; inset: 0; background: var(--bg); z-index: 30;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; transition: opacity 0.5s;
     }
-    #loadingOverlay.hide { opacity:0; pointer-events:none; }
-    .loader-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem; background:linear-gradient(135deg,var(--accent),var(--accentB)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .loader-ring { width:52px;height:52px; border:3px solid rgba(124,109,250,0.15); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .loader-text { font-size:0.7rem; color:var(--muted); letter-spacing:3px; text-transform:uppercase; }
-    .loader-progress { width:160px;height:2px; background:rgba(124,109,250,0.15); border-radius:2px; overflow:hidden; }
-    .loader-bar { height:100%; background:linear-gradient(90deg,var(--accent),var(--accentB)); border-radius:2px; width:0%; transition:width 0.3s; }
+    #loadingOverlay.hide { opacity: 0; pointer-events: none; }
+    .loader-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem;
+      background: linear-gradient(135deg, var(--accent), var(--accentB));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .loader-ring {
+      width: 52px; height: 52px;
+      border: 3px solid rgba(124,109,250,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { font-size: 0.7rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; }
+    .loader-progress { width: 160px; height: 2px; background: rgba(124,109,250,0.15); border-radius: 2px; overflow: hidden; }
+    .loader-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accentB)); border-radius: 2px; width: 0%; transition: width 0.3s; }
 
+    /* ── BOUTON IOS QUICKLOOK DIRECT (fallback <a rel="ar">) ── */
+    #iosDirectBtn {
+      display: none; /* affiché uniquement sur iOS si nécessaire */
+      position: fixed;
+      /* FIX iPhone : safe area */
+      bottom: calc(24px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      padding: 16px 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accentB));
+      border: none;
+      border-radius: 60px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 8px 40px rgba(124,109,250,0.5);
+      text-decoration: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── ERREUR ── */
     #errorState {
-      display:none; position:fixed; inset:0; background:var(--bg); z-index:40;
-      flex-direction:column; align-items:center; justify-content:center;
-      gap:16px; padding:32px; text-align:center;
+      display: none; position: fixed; inset: 0; background: var(--bg); z-index: 40;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; padding: 32px; text-align: center;
+      /* FIX iPhone : padding bas pour que le bouton ne passe pas sous la barre */
+      padding-bottom: calc(32px + var(--safe-bottom));
     }
-    #errorState .err-icon { font-size:52px; }
-    #errorState h2 { font-family:'Syne',sans-serif; font-size:1.3rem; }
-    #errorState p  { font-size:0.75rem; color:var(--muted); line-height:1.8; max-width:300px; }
-    #errorState a  { margin-top:8px; padding:12px 28px; border-radius:50px; background:linear-gradient(135deg,var(--accent),var(--accentB)); color:#fff; text-decoration:none; font-family:'Syne',sans-serif; font-weight:700; font-size:0.85rem; }
+    #errorState .err-icon { font-size: 52px; }
+    #errorState h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; }
+    #errorState p  { font-size: 0.75rem; color: var(--muted); line-height: 1.8; max-width: 300px; }
+    #errorState a  {
+      margin-top: 8px; padding: 12px 28px; border-radius: 50px;
+      background: linear-gradient(135deg, var(--accent), var(--accentB));
+      color: #fff; text-decoration: none;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
+    }
 
+    /* ── NO AR STATE ── */
     #noArState {
-      display:none; position:fixed; inset:0; background:var(--bg); z-index:35;
-      flex-direction:column; align-items:center; justify-content:center;
-      gap:18px; padding:32px; text-align:center;
+      display: none; position: fixed; inset: 0; background: var(--bg); z-index: 35;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px;
+      padding: 32px;
+      /* FIX iPhone */
+      padding-bottom: calc(32px + var(--safe-bottom));
+      padding-top: calc(32px + var(--safe-top));
+      text-align: center;
     }
-    #noArState .na-icon { font-size:52px; }
-    #noArState h2 { font-family:'Syne',sans-serif; font-size:1.2rem; line-height:1.4; }
-    #noArState p  { font-size:0.72rem; color:var(--muted); line-height:1.9; max-width:300px; }
-    .req-list { background:rgba(124,109,250,0.08); border:1px solid rgba(124,109,250,0.2); border-radius:12px; padding:16px 20px; text-align:left; font-size:0.7rem; color:var(--muted); line-height:2.1; max-width:300px; width:100%; }
-    .req-list strong { color:var(--text); }
-    .btn-dismiss { padding:12px 32px; border-radius:50px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-family:'DM Mono',monospace; font-size:0.8rem; cursor:pointer; }
-    .btn-dismiss:hover { background:rgba(124,109,250,0.1); }
+    #noArState .na-icon { font-size: 52px; }
+    #noArState h2 { font-family: 'Syne', sans-serif; font-size: 1.2rem; line-height: 1.4; }
+    #noArState p  { font-size: 0.72rem; color: var(--muted); line-height: 1.9; max-width: 300px; }
+    .req-list {
+      background: rgba(124,109,250,0.08); border: 1px solid rgba(124,109,250,0.2);
+      border-radius: 12px; padding: 16px 20px; text-align: left;
+      font-size: 0.7rem; color: var(--muted); line-height: 2.1; max-width: 300px; width: 100%;
+    }
+    .req-list strong { color: var(--text); }
+    .btn-dismiss {
+      padding: 12px 32px; border-radius: 50px; border: 1px solid var(--accent);
+      background: transparent; color: var(--accent);
+      font-family: 'DM Mono', monospace; font-size: 0.8rem; cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
+<!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-logo">AR·VIEWER</div>
   <div style="display:flex;align-items:center;gap:10px;">
@@ -94,6 +224,7 @@
   </div>
 </div>
 
+<!-- LOADING -->
 <div id="loadingOverlay">
   <div class="loader-logo">AR·VIEWER</div>
   <div class="loader-ring"></div>
@@ -101,17 +232,19 @@
   <div class="loader-progress"><div class="loader-bar" id="loaderBar"></div></div>
 </div>
 
+<!-- ERREUR -->
 <div id="errorState">
   <div class="err-icon">⚠️</div>
   <h2>Modèle introuvable</h2>
-  <p>Le fichier GLB est introuvable sur le serveur.<br>Vérifiez que le modèle est bien dans <code>/public/models/</code></p>
-  <a href="/qr-generator">← Retour au générateur</a>
+  <p>Le fichier 3D est introuvable.<br>Vérifiez que le modèle a bien été généré.</p>
+  <a href="/ar-generator">← Générer un modèle</a>
 </div>
 
+<!-- AR NON DISPO -->
 <div id="noArState">
   <div class="na-icon">📱</div>
   <h2>AR non disponible<br>sur cet appareil</h2>
-  <p>Votre appareil ou navigateur ne supporte pas la Réalité Augmentée.</p>
+  <p>Votre navigateur ne supporte pas la Réalité Augmentée.</p>
   <div class="req-list">
     <strong>🍎 iOS — QuickLook :</strong><br>
     ✅ iPhone 12+ · iOS 14+<br>
@@ -121,9 +254,16 @@
     ✅ Chrome 79+
   </div>
   <p style="font-size:0.67rem;color:var(--muted);">Vous pouvez quand même visualiser le modèle en 3D.</p>
-  <button class="btn-dismiss" id="dismissNoAr">Voir en 3D seulement →</button>
+  <button class="btn-dismiss" id="dismissNoAr">Voir en 3D →</button>
 </div>
 
+<!--
+  MODEL-VIEWER
+  ar-modes="webxr scene-viewer quick-look"
+  - quick-look   = iOS Safari QuickLook (USDZ)
+  - scene-viewer = Android Chrome AR
+  - webxr        = fallback WebXR
+-->
 <model-viewer
   id="viewer"
   ar
@@ -139,16 +279,32 @@
   shadow-softness="0.9"
   style="display:none;"
 >
+  <!--
+    SLOT ar-button : géré par model-viewer, déclenche QuickLook sur iOS
+    et Scene Viewer sur Android.
+  -->
   <button slot="ar-button" class="ar-btn">
-    <span>📱</span>
-    <span>Voir en Réalité Augmentée</span>
+    <span>📷</span>
+    <span id="arBtnText">Voir en Réalité Augmentée</span>
   </button>
+
   <div class="hint-pill">Glissez pour tourner · Pincez pour zoomer</div>
 </model-viewer>
+
+<!--
+  BOUTON IOS DIRECT (fallback) :
+  <a rel="ar href="fichier.usdz"> déclenche QuickLook nativement sur iOS Safari.
+  Affiché uniquement sur iOS si usdzUrl est disponible.
+-->
+<a id="iosDirectBtn" rel="ar" href="#">
+  <span>📷</span>
+  <span>Ouvrir en AR (QuickLook)</span>
+</a>
 
 <script>
   const params     = new URLSearchParams(window.location.search);
   const modelParam = params.get("model");
+  const iosParam   = params.get("ios_model");
   const titleParam = params.get("title");
 
   const viewer        = document.getElementById("viewer");
@@ -159,66 +315,82 @@
   const loaderBar     = document.getElementById("loaderBar");
   const loaderText    = document.getElementById("loaderText");
   const platformBadge = document.getElementById("platformBadge");
+  const arBtnText     = document.getElementById("arBtnText");
+  const iosDirectBtn  = document.getElementById("iosDirectBtn");
 
-  // ── Détecter la plateforme ──────────────────────────────────────
+  // ── Détecter plateforme ─────────────────────────────────────────
   const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isAndroid = /Android/.test(navigator.userAgent);
 
   if (isIOS) {
     platformBadge.textContent = "🍎 iOS · QuickLook";
-    platformBadge.className = "topbar-badge badge-ios";
-    loaderText.textContent = "Chargement · iOS QuickLook prêt…";
+    platformBadge.className   = "topbar-badge badge-ios";
+    loaderText.textContent    = "Chargement · iOS QuickLook…";
+    arBtnText.textContent     = "Voir dans ma pièce";
   } else if (isAndroid) {
     platformBadge.textContent = "🤖 Android · Scene Viewer";
-    platformBadge.className = "topbar-badge badge-android";
-    loaderText.textContent = "Chargement · Android AR prêt…";
+    platformBadge.className   = "topbar-badge badge-android";
+    loaderText.textContent    = "Chargement · Android AR…";
+    arBtnText.textContent     = "Voir dans ma pièce";
   } else {
     platformBadge.textContent = "💻 Desktop · 3D Viewer";
-    platformBadge.className = "topbar-badge badge-unknown";
+    platformBadge.className   = "topbar-badge badge-unknown";
   }
 
-  // ── Résoudre URL ────────────────────────────────────────────────
-  function resolveUrl(param) {
+  // ── Résoudre URLs ───────────────────────────────────────────────
+  function toAbsolute(param) {
     if (!param) return null;
     if (param.startsWith("http://") || param.startsWith("https://")) return param;
-    return `/models/${param}`;
+    return `${window.location.origin}/models/${param}`;
   }
 
-  // ── Résoudre USDZ (même nom, dossier models-usdz) ───────────────
-  function resolveUsdzUrl(param) {
-    if (!param) return null;
-    const base = param
-      .replace(/\.glb$/i, ".usdz")
-      .replace(/\.gltf$/i, ".usdz");
-    if (base.startsWith("http://") || base.startsWith("https://")) return base;
-    return `/models-usdz/${base}`;
+  function resolveUsdz() {
+    if (iosParam) return toAbsolute(iosParam);
+    if (modelParam) {
+      const base = modelParam.split("/").pop()
+        .replace(/\.glb$/i, ".usdz")
+        .replace(/\.gltf$/i, ".usdz");
+      return `${window.location.origin}/models-usdz/${base}`;
+    }
+    return null;
   }
 
-  const modelUrl = resolveUrl(modelParam);
-  const usdzUrl  = resolveUsdzUrl(modelParam);
+  const glbUrl  = toAbsolute(modelParam);
+  const usdzUrl = resolveUsdz();
 
+  // ── Titre ───────────────────────────────────────────────────────
   const title = titleParam
     ? decodeURIComponent(titleParam)
-    : (modelParam || "").replace(/\.(glb|gltf)$/i, "").replace(/_/g, " ");
+    : (modelParam || "").split("/").pop().replace(/\.(glb|gltf|usdz)$/i, "").replace(/[_-]/g, " ");
 
-  document.title = title ? `${title} — AR Viewer` : "AR Viewer";
+  document.title       = title ? `${title} — AR Viewer` : "AR Viewer";
   topTitle.textContent = title || "Modèle AR";
 
-  if (!modelUrl) {
+  // ── Pas de modèle → erreur ──────────────────────────────────────
+  if (!glbUrl) {
     overlay.classList.add("hide");
     errState.style.display = "flex";
-  } else {
-    // GLB pour Android / WebXR
-    viewer.setAttribute("src", modelUrl);
-    viewer.setAttribute("alt", title);
 
-    // USDZ pour iOS QuickLook (seulement si iOS)
-    if (isIOS && usdzUrl) {
-      viewer.setAttribute("ios-src", usdzUrl);
+  } else {
+
+    // ── Charger model-viewer ──────────────────────────────────────
+    viewer.setAttribute("src", glbUrl);
+    viewer.setAttribute("alt", title || "Modèle AR");
+
+    if (isIOS) {
+      const iosSrc = usdzUrl || glbUrl;
+      viewer.setAttribute("ios-src", iosSrc);
     }
 
     viewer.style.display = "block";
 
+    // ── Bouton iOS direct (rel="ar") ──────────────────────────────
+    if (isIOS && usdzUrl) {
+      iosDirectBtn.href = usdzUrl;
+      iosDirectBtn.style.display = "flex";
+    }
+
+    // ── Events model-viewer ───────────────────────────────────────
     viewer.addEventListener("progress", e => {
       loaderBar.style.width = Math.round(e.detail.totalProgress * 100) + "%";
     });
@@ -234,9 +406,14 @@
     });
 
     viewer.addEventListener("ar-status", e => {
+      console.log("ar-status:", e.detail.status);
       if (e.detail.status === "failed") {
         noArState.style.display = "flex";
       }
+    });
+
+    viewer.addEventListener("ar-tracking", e => {
+      console.log("ar-tracking:", e.detail.status);
     });
   }
 
