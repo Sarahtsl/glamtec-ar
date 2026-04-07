@@ -13,9 +13,14 @@ export async function uploadToSupabase(buffer, fileName, bucket) {
     .replace(/[^a-zA-Z0-9._-]/g, '-')
     .toLowerCase();
 
+  // ✅ ContentType correct selon le format du fichier
+  const contentType = fileName.endsWith('.usdz')
+    ? 'model/vnd.usdz+zip'
+    : 'model/gltf-binary';
+
   const { error } = await supabase.storage
     .from(bucket)
-    .upload(cleanName, buffer, { upsert: true, contentType: 'model/gltf-binary' });
+    .upload(cleanName, buffer, { upsert: true, contentType });
 
   if (error) throw new Error('Supabase upload error: ' + error.message);
 
