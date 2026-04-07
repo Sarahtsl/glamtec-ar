@@ -10,8 +10,15 @@ const STEPS = {
   ERROR:      'error',
 };
 
-function buildArUrl(glbUrl, title) {
-  return `${window.location.origin}/ar-product.html?model=${encodeURIComponent(glbUrl)}&title=${encodeURIComponent(title)}`;
+// ✅ CORRIGÉ — on passe maintenant glb_url ET usdz_url
+function buildArUrl(glbUrl, usdzUrl, title) {
+  let url = `${window.location.origin}/ar-product.html`;
+  url += `?model=${encodeURIComponent(glbUrl)}`;
+  url += `&title=${encodeURIComponent(title)}`;
+  if (usdzUrl) {
+    url += `&ios_model=${encodeURIComponent(usdzUrl)}`;
+  }
+  return url;
 }
 
 export default function TripoUpload() {
@@ -46,7 +53,8 @@ export default function TripoUpload() {
       setProgress('Génération du QR code...');
       setStep(STEPS.GENERATING);
 
-      const url = buildArUrl(model.glb_url, name);
+      // ✅ On utilise glb_url ET usdz_url retournés par l'API
+      const url = buildArUrl(model.glb_url, model.usdz_url, name);
       const qr  = await QRCode.toDataURL(url, {
         width: 260, margin: 2,
         color: { dark: '#0f2557', light: '#ffffff' },
@@ -107,19 +115,7 @@ export default function TripoUpload() {
         .tu-card-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 700; color: var(--navy); }
         .tu-card-body { padding: 20px; }
 
-       .tu-drop { 
-  border: 2px dashed var(--border); 
-  border-radius: 10px; 
-  padding: 36px 20px; 
-  text-align: center; 
-  cursor: pointer; 
-  transition: all 0.2s; 
-  margin-bottom: 16px; 
-  background: var(--cream);
-  position: relative;
-  display: block;
-  width: 100%;
-}
+        .tu-drop { border: 2px dashed var(--border); border-radius: 10px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; background: var(--cream); position: relative; display: block; width: 100%; }
         .tu-drop:hover { border-color: var(--navy); background: #f0f4ff; }
         .tu-drop-icon { font-size: 32px; margin-bottom: 10px; }
         .tu-drop-text { font-size: 13px; color: var(--muted); line-height: 1.7; }
@@ -182,28 +178,28 @@ export default function TripoUpload() {
             </div>
             <div className="tu-card-body">
 
-             <div 
-  className="tu-drop" 
-  onClick={() => fileRef.current.click()}
->
-  {preview
-    ? <img src={preview} className="tu-preview" alt="preview" />
-    : <>
-        <div className="tu-drop-icon">📷</div>
-        <div className="tu-drop-text">
-          Cliquez pour choisir une image<br />
-          <span style={{fontSize:11}}>JPG, PNG, WEBP — max 10MB</span>
-        </div>
-      </>
-  }
-</div>
-<input 
-  ref={fileRef} 
-  type="file" 
-  accept="image/*" 
-  onChange={onFileChange}
-  style={{display:'none'}} 
-/>
+              <div
+                className="tu-drop"
+                onClick={() => fileRef.current.click()}
+              >
+                {preview
+                  ? <img src={preview} className="tu-preview" alt="preview" />
+                  : <>
+                      <div className="tu-drop-icon">📷</div>
+                      <div className="tu-drop-text">
+                        Cliquez pour choisir une image<br />
+                        <span style={{fontSize:11}}>JPG, PNG, WEBP — max 10MB</span>
+                      </div>
+                    </>
+                }
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={onFileChange}
+                style={{display:'none'}}
+              />
 
               <label className="tu-label" htmlFor="mname">Nom du modèle</label>
               <input
