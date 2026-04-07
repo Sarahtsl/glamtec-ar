@@ -1,29 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import generateRoute from './routes/generate.js';
+import { generateModel } from './tripoController.js';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 3001;
+
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
-// Servir les fichiers .glb générés
-app.use('/models', express.static(join(__dirname, 'uploads')));
+// Route principale : image → 3D → QR
+app.post('/api/generate', generateModel);
 
-app.use('/api', generateRoute);
+// Health check
+app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'GlamTec Backend OK ✅' });
-});
-
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
+  console.log(`Backend running on http://localhost:${PORT}`);
 });

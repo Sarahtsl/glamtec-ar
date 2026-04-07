@@ -2,9 +2,8 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import TryOnPage from "./pages/TryOnPage";
 import TryOnBodyPage from "./pages/TryOnBodyPage";
 import QrGenerator from "./pages/Qrqenerateur"; 
-import FaceFilterPage from "./pages/FaceFilterPage";  
-import ArGenerator from "./pages/ArGenerator";
-
+import FaceFilterPage from "./pages/FaceFilterPage"; 
+import TripoUpload from './pages/TripoUpload';
 /* ══════════════════════════════════════════════
    HOME PAGE
 ══════════════════════════════════════════════ */
@@ -354,7 +353,7 @@ function Home() {
               </div>
               <div className="g-pcard-btns">
                 <Link to="/try-body" className="g-pbtn-main">Viewer 3D →</Link>
-                <Link to="/qr-generator" className="g-pbtn-gold">📲 QR Codes</Link>
+                <Link to="/generate" className="g-pbtn-gold">📲 QR Codes</Link>
               </div>
             </div>
           </div>
@@ -416,8 +415,8 @@ function App() {
         <Route path="/"             element={<Home />} />
         <Route path="/try"          element={<FaceFilterPage />} /> 
         <Route path="/try-body"     element={<TryOnBodyPage />} />
-        <Route path="/qr-generator" element={<QrGenerator />} /> 
-        <Route path="/ar-generator" element={<ArGenerator />} /> 
+        <Route path="/qr-generator" element={<QrGenerator />} />  
+        <Route path="/generate" element={<TripoUpload />} />
       </Routes>
     </BrowserRouter>
   );

@@ -25,19 +25,6 @@
     .badge-android { background:rgba(0,180,255,0.12); border:1px solid rgba(0,180,255,0.3); color:#00b4ff; }
     .badge-unknown { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--muted); }
 
-    /* Format pills */
-    .format-pills {
-      position:fixed; top:64px; left:50%; transform:translateX(-50%);
-      display:flex; gap:8px; z-index:19;
-    }
-    .pill {
-      font-size:0.58rem; padding:3px 10px; border-radius:20px; letter-spacing:1px;
-      backdrop-filter:blur(10px); white-space:nowrap;
-    }
-    .pill-glb  { background:rgba(0,180,255,0.12); border:1px solid rgba(0,180,255,0.25); color:#00b4ff; }
-    .pill-usdz { background:rgba(0,200,120,0.12); border:1px solid rgba(0,200,120,0.25); color:#00c878; }
-    .pill-off  { opacity:0.35; }
-
     model-viewer { width:100vw; height:100vh; background:radial-gradient(ellipse at 50% 40%,#1a1830 0%,#07080f 70%); }
 
     .ar-btn {
@@ -107,12 +94,6 @@
   </div>
 </div>
 
-<!-- Pills GLB / USDZ -->
-<div class="format-pills" id="formatPills" style="display:none;">
-  <div class="pill pill-glb" id="pillGlb">● GLB · Android</div>
-  <div class="pill pill-usdz" id="pillUsdz">● USDZ · iPhone</div>
-</div>
-
 <div id="loadingOverlay">
   <div class="loader-logo">AR·VIEWER</div>
   <div class="loader-ring"></div>
@@ -123,8 +104,8 @@
 <div id="errorState">
   <div class="err-icon">⚠️</div>
   <h2>Modèle introuvable</h2>
-  <p>Le fichier GLB est introuvable.<br>Vérifiez que le modèle a bien été généré.</p>
-  <a href="/ar-generator">← Générer un modèle</a>
+  <p>Le fichier GLB est introuvable sur le serveur.<br>Vérifiez que le modèle est bien dans <code>/public/models/</code></p>
+  <a href="/qr-generator">← Retour au générateur</a>
 </div>
 
 <div id="noArState">
@@ -160,16 +141,15 @@
 >
   <button slot="ar-button" class="ar-btn">
     <span>📱</span>
-    <span id="arBtnLabel">Voir en Réalité Augmentée</span>
+    <span>Voir en Réalité Augmentée</span>
   </button>
   <div class="hint-pill">Glissez pour tourner · Pincez pour zoomer</div>
 </model-viewer>
 
 <script>
-  const params      = new URLSearchParams(window.location.search);
-  const modelParam  = params.get("model");       // URL du .glb
-  const iosParam    = params.get("ios_model");   // URL du .usdz (optionnel)
-  const titleParam  = params.get("title");
+  const params     = new URLSearchParams(window.location.search);
+  const modelParam = params.get("model");
+  const titleParam = params.get("title");
 
   const viewer        = document.getElementById("viewer");
   const overlay       = document.getElementById("loadingOverlay");
@@ -179,10 +159,6 @@
   const loaderBar     = document.getElementById("loaderBar");
   const loaderText    = document.getElementById("loaderText");
   const platformBadge = document.getElementById("platformBadge");
-  const formatPills   = document.getElementById("formatPills");
-  const pillGlb       = document.getElementById("pillGlb");
-  const pillUsdz      = document.getElementById("pillUsdz");
-  const arBtnLabel    = document.getElementById("arBtnLabel");
 
   // ── Détecter la plateforme ──────────────────────────────────────
   const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -191,68 +167,52 @@
   if (isIOS) {
     platformBadge.textContent = "🍎 iOS · QuickLook";
     platformBadge.className = "topbar-badge badge-ios";
-    loaderText.textContent = "Chargement · iOS QuickLook…";
-    arBtnLabel.textContent = "Voir en AR · QuickLook";
+    loaderText.textContent = "Chargement · iOS QuickLook prêt…";
   } else if (isAndroid) {
     platformBadge.textContent = "🤖 Android · Scene Viewer";
     platformBadge.className = "topbar-badge badge-android";
-    loaderText.textContent = "Chargement · Android AR…";
-    arBtnLabel.textContent = "Voir en AR · Scene Viewer";
+    loaderText.textContent = "Chargement · Android AR prêt…";
   } else {
     platformBadge.textContent = "💻 Desktop · 3D Viewer";
     platformBadge.className = "topbar-badge badge-unknown";
-    arBtnLabel.textContent = "Voir en Réalité Augmentée";
   }
 
-  // ── Titre ───────────────────────────────────────────────────────
-  const title = titleParam
-    ? decodeURIComponent(titleParam)
-    : (modelParam || "").split("/").pop().replace(/\.(glb|gltf|usdz)$/i, "").replace(/[_-]/g, " ");
-
-  document.title = title ? `${title} — AR Viewer` : "AR Viewer";
-  topTitle.textContent = title || "Modèle AR";
-
-  // ── Résoudre les URLs ───────────────────────────────────────────
-  // GLB : URL directe Tripo (https://...) ou fallback /models/
-  function resolveGlb(param) {
+  // ── Résoudre URL ────────────────────────────────────────────────
+  function resolveUrl(param) {
     if (!param) return null;
     if (param.startsWith("http://") || param.startsWith("https://")) return param;
     return `/models/${param}`;
   }
 
-  // USDZ : paramètre ios_model direct, sinon fallback /models-usdz/
-  function resolveUsdz(iosParam, glbParam) {
-    if (iosParam) {
-      if (iosParam.startsWith("http://") || iosParam.startsWith("https://")) return iosParam;
-      return iosParam;
-    }
-    // Fallback legacy : même nom dans /models-usdz/
-    if (!glbParam) return null;
-    const base = glbParam.split("/").pop()
+  // ── Résoudre USDZ (même nom, dossier models-usdz) ───────────────
+  function resolveUsdzUrl(param) {
+    if (!param) return null;
+    const base = param
       .replace(/\.glb$/i, ".usdz")
       .replace(/\.gltf$/i, ".usdz");
+    if (base.startsWith("http://") || base.startsWith("https://")) return base;
     return `/models-usdz/${base}`;
   }
 
-  const glbUrl  = resolveGlb(modelParam);
-  const usdzUrl = resolveUsdz(iosParam, modelParam);
+  const modelUrl = resolveUrl(modelParam);
+  const usdzUrl  = resolveUsdzUrl(modelParam);
 
-  // ── Format pills ────────────────────────────────────────────────
-  formatPills.style.display = "flex";
-  if (!usdzUrl) pillUsdz.classList.add("pill-off");
-  if (isIOS && usdzUrl)    pillUsdz.style.fontWeight = "700";
-  if (isAndroid && glbUrl) pillGlb.style.fontWeight  = "700";
+  const title = titleParam
+    ? decodeURIComponent(titleParam)
+    : (modelParam || "").replace(/\.(glb|gltf)$/i, "").replace(/_/g, " ");
 
-  // ── Charger le viewer ───────────────────────────────────────────
-  if (!glbUrl) {
+  document.title = title ? `${title} — AR Viewer` : "AR Viewer";
+  topTitle.textContent = title || "Modèle AR";
+
+  if (!modelUrl) {
     overlay.classList.add("hide");
     errState.style.display = "flex";
   } else {
-    // GLB pour Android / WebXR / Desktop
-    viewer.setAttribute("src", glbUrl);
+    // GLB pour Android / WebXR
+    viewer.setAttribute("src", modelUrl);
     viewer.setAttribute("alt", title);
 
-    // USDZ pour iOS QuickLook
+    // USDZ pour iOS QuickLook (seulement si iOS)
     if (isIOS && usdzUrl) {
       viewer.setAttribute("ios-src", usdzUrl);
     }
