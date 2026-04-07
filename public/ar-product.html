@@ -257,13 +257,6 @@
   <button class="btn-dismiss" id="dismissNoAr">Voir en 3D →</button>
 </div>
 
-<!--
-  MODEL-VIEWER
-  ar-modes="webxr scene-viewer quick-look"
-  - quick-look   = iOS Safari QuickLook (USDZ)
-  - scene-viewer = Android Chrome AR
-  - webxr        = fallback WebXR
--->
 <model-viewer
   id="viewer"
   ar
@@ -279,10 +272,6 @@
   shadow-softness="0.9"
   style="display:none;"
 >
-  <!--
-    SLOT ar-button : géré par model-viewer, déclenche QuickLook sur iOS
-    et Scene Viewer sur Android.
-  -->
   <button slot="ar-button" class="ar-btn">
     <span>📷</span>
     <span id="arBtnText">Voir en Réalité Augmentée</span>
@@ -290,16 +279,6 @@
 
   <div class="hint-pill">Glissez pour tourner · Pincez pour zoomer</div>
 </model-viewer>
-
-<!--
-  BOUTON IOS DIRECT (fallback) :
-  <a rel="ar href="fichier.usdz"> déclenche QuickLook nativement sur iOS Safari.
-  Affiché uniquement sur iOS si usdzUrl est disponible.
--->
-<a id="iosDirectBtn" rel="ar" href="#">
-  <span>📷</span>
-  <span>Ouvrir en AR (QuickLook)</span>
-</a>
 
 <script>
   const params     = new URLSearchParams(window.location.search);
