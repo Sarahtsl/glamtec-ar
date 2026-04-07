@@ -12,7 +12,6 @@
     :root {
       --accent:#7c6dfa; --accentB:#fa6d9f;
       --bg:#07080f; --text:#eeeef5; --muted:rgba(255,255,255,0.45);
-      /* Safe area helpers */
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-top:    env(safe-area-inset-top,    0px);
       --safe-left:   env(safe-area-inset-left,   0px);
@@ -27,7 +26,6 @@
     /* ── TOPBAR ── */
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-      /* Hauteur fixe + safe area top pour les iPhones avec encoche / Dynamic Island */
       height: calc(56px + var(--safe-top));
       padding-top: var(--safe-top);
       display: flex; align-items: center; justify-content: space-between;
@@ -54,7 +52,6 @@
     model-viewer {
       width: 100vw;
       height: 100vh;
-      /* Padding bas pour que le contenu interne ne passe pas sous la barre Safari */
       padding-bottom: var(--safe-bottom);
       background: radial-gradient(ellipse at 50% 40%, #1a1830 0%, #07080f 70%);
     }
@@ -62,12 +59,10 @@
     /* ── BOUTON AR (slot natif model-viewer) ── */
     .ar-btn {
       position: absolute;
-      /* FIX iPhone : on ajoute la safe area au bottom fixe */
       bottom: calc(24px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
-
       display: flex;
       align-items: center;
       gap: 10px;
@@ -83,11 +78,8 @@
       letter-spacing: 0.5px;
       white-space: nowrap;
       box-shadow: 0 8px 40px rgba(124,109,250,0.5);
-
-      /* L'animation ne déplace PAS le bouton vers le bas — uniquement vers le haut */
       animation: floatBtn 3s ease-in-out infinite;
     }
-
     @keyframes floatBtn {
       0%, 100% { transform: translateX(-50%) translateY(0px);  }
       50%       { transform: translateX(-50%) translateY(-6px); }
@@ -96,7 +88,6 @@
     /* ── HINT PILL ── */
     .hint-pill {
       position: absolute;
-      /* FIX iPhone : au-dessus du bouton AR + safe area */
       bottom: calc(100px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
@@ -143,38 +134,13 @@
     .loader-progress { width: 160px; height: 2px; background: rgba(124,109,250,0.15); border-radius: 2px; overflow: hidden; }
     .loader-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accentB)); border-radius: 2px; width: 0%; transition: width 0.3s; }
 
-    /* ── BOUTON IOS QUICKLOOK DIRECT (fallback <a rel="ar">) ── */
-    #iosDirectBtn {
-      display: none; /* affiché uniquement sur iOS si nécessaire */
-      position: fixed;
-      /* FIX iPhone : safe area */
-      bottom: calc(24px + var(--safe-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      padding: 16px 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accentB));
-      border: none;
-      border-radius: 60px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
-      color: #fff;
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 8px 40px rgba(124,109,250,0.5);
-      text-decoration: none;
-      align-items: center;
-      gap: 10px;
-    }
-
     /* ── ERREUR ── */
     #errorState {
       display: none; position: fixed; inset: 0; background: var(--bg); z-index: 40;
       flex-direction: column; align-items: center; justify-content: center;
-      gap: 16px; padding: 32px; text-align: center;
-      /* FIX iPhone : padding bas pour que le bouton ne passe pas sous la barre */
+      gap: 16px; padding: 32px;
       padding-bottom: calc(32px + var(--safe-bottom));
+      text-align: center;
     }
     #errorState .err-icon { font-size: 52px; }
     #errorState h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; }
@@ -192,7 +158,6 @@
       flex-direction: column; align-items: center; justify-content: center;
       gap: 18px;
       padding: 32px;
-      /* FIX iPhone */
       padding-bottom: calc(32px + var(--safe-bottom));
       padding-top: calc(32px + var(--safe-top));
       text-align: center;
@@ -257,6 +222,7 @@
   <button class="btn-dismiss" id="dismissNoAr">Voir en 3D →</button>
 </div>
 
+<!-- MODEL-VIEWER -->
 <model-viewer
   id="viewer"
   ar
@@ -272,6 +238,7 @@
   shadow-softness="0.9"
   style="display:none;"
 >
+  <!-- Seul bouton AR — slot natif model-viewer -->
   <button slot="ar-button" class="ar-btn">
     <span>📷</span>
     <span id="arBtnText">Voir en Réalité Augmentée</span>
@@ -295,7 +262,6 @@
   const loaderText    = document.getElementById("loaderText");
   const platformBadge = document.getElementById("platformBadge");
   const arBtnText     = document.getElementById("arBtnText");
-  const iosDirectBtn  = document.getElementById("iosDirectBtn");
 
   // ── Détecter plateforme ─────────────────────────────────────────
   const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -352,24 +318,16 @@
 
   } else {
 
-    // ── Charger model-viewer ──────────────────────────────────────
     viewer.setAttribute("src", glbUrl);
     viewer.setAttribute("alt", title || "Modèle AR");
 
-    if (isIOS) {
-      const iosSrc = usdzUrl || glbUrl;
-      viewer.setAttribute("ios-src", iosSrc);
+    // iOS : ios-src pour déclencher QuickLook via model-viewer
+    if (isIOS && usdzUrl) {
+      viewer.setAttribute("ios-src", usdzUrl);
     }
 
     viewer.style.display = "block";
 
-    // ── Bouton iOS direct (rel="ar") ──────────────────────────────
-    if (isIOS && usdzUrl) {
-      iosDirectBtn.href = usdzUrl;
-      iosDirectBtn.style.display = "flex";
-    }
-
-    // ── Events model-viewer ───────────────────────────────────────
     viewer.addEventListener("progress", e => {
       loaderBar.style.width = Math.round(e.detail.totalProgress * 100) + "%";
     });
