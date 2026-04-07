@@ -1,6 +1,6 @@
 import multer from 'multer';
 import fetch from 'node-fetch';
-import { uploadToSupabase, saveModelToDB } from '../Api/supabaseClient.js';
+import { uploadToSupabase, saveModelToDB } from '../api/supabaseClient.js';
 
 const upload = multer({ storage: multer.memoryStorage() });
 const TRIPO_BASE = 'https://api.tripo3d.ai/v2/openapi';
