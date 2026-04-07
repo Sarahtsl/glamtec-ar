@@ -60,38 +60,39 @@
     }
 
     /* ── BOUTON AR (slot natif model-viewer) ── */
-    .ar-btn {
-      position: absolute;
-      /* FIX iPhone : on ajoute la safe area au bottom fixe */
-      bottom: calc(24px + var(--safe-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
+.ar-btn {
+  position: absolute;
 
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 16px 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accentB));
-      border: none;
-      border-radius: 60px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
-      color: #fff;
-      cursor: pointer;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-      box-shadow: 0 8px 40px rgba(124,109,250,0.5);
+  top: calc(80px + var(--safe-top));
+  right: calc(16px + var(--safe-right));
+  left: auto;
+  transform: none;
 
-      /* L'animation ne déplace PAS le bouton vers le bas — uniquement vers le haut */
-      animation: floatBtn 3s ease-in-out infinite;
-    }
+  z-index: 10;
 
-    @keyframes floatBtn {
-      0%, 100% { transform: translateX(-50%) translateY(0px);  }
-      50%       { transform: translateX(-50%) translateY(-6px); }
-    }
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+
+  /* 👉 GLASS EFFECT ICI */
+  backdrop-filter: blur(12px);
+  background: rgba(124,109,250,0.85);
+
+  border: none;
+  border-radius: 60px;
+
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #fff;
+
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 8px 40px rgba(124,109,250,0.5);
+
+  animation: floatBtn 3s ease-in-out infinite;
+}
 
     /* ── HINT PILL ── */
     .hint-pill {
