@@ -5,20 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>AR Viewer</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono&display=swap');
     * { margin:0; padding:0; box-sizing:border-box; }
     :root {
-      --accent: #4F46E5;
-      --accent-hover: #4338CA;
-      --accent-light: #EEF2FF;
-      --accent-text: #312E81;
-      --bg: #FAFAFA;
-      --surface: #FFFFFF;
-      --text: #0F172A;
-      --muted: #64748B;
-      --border: #E2E8F0;
+      --accent:#7c6dfa; --accentB:#fa6d9f;
+      --bg:#07080f; --text:#eeeef5; --muted:rgba(255,255,255,0.45);
+      /* Safe area helpers */
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-top:    env(safe-area-inset-top,    0px);
       --safe-left:   env(safe-area-inset-left,   0px);
@@ -27,115 +21,92 @@
     html, body {
       height: 100%; width: 100%;
       background: var(--bg); color: var(--text);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'DM Mono', monospace;
     }
 
     /* ── TOPBAR ── */
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-      height: calc(60px + var(--safe-top));
+      /* Hauteur fixe + safe area top pour les iPhones avec encoche / Dynamic Island */
+      height: calc(56px + var(--safe-top));
       padding-top: var(--safe-top);
       display: flex; align-items: center; justify-content: space-between;
-      padding-left: calc(24px + var(--safe-left));
-      padding-right: calc(24px + var(--safe-right));
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
+      padding-left: calc(20px + var(--safe-left));
+      padding-right: calc(20px + var(--safe-right));
+      background: rgba(7,8,15,0.88); backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
     .topbar-logo {
-      font-family: 'Inter', sans-serif;
-      font-weight: 900;
-      font-size: 1.1rem;
-      letter-spacing: -0.5px;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .topbar-logo-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      display: inline-block;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem;
+      background: linear-gradient(135deg, var(--accent), var(--accentB));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .topbar-name {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--muted);
-      max-width: 180px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.68rem; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 2px; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .topbar-badge {
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 100px;
-      letter-spacing: 0.3px;
-    }
-    .badge-ios     { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
-    .badge-android { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
-    .badge-unknown { background: var(--accent-light); border: 1px solid #C7D2FE; color: var(--accent-text); }
+    .topbar-badge { font-size: 0.6rem; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; }
+    .badge-ios     { background: rgba(0,200,120,0.12); border: 1px solid rgba(0,200,120,0.3); color: #00c878; }
+    .badge-android { background: rgba(0,180,255,0.12); border: 1px solid rgba(0,180,255,0.3); color: #00b4ff; }
+    .badge-unknown { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--muted); }
 
     /* ── MODEL VIEWER ── */
     model-viewer {
       width: 100vw;
       height: 100vh;
+      /* Padding bas pour que le contenu interne ne passe pas sous la barre Safari */
       padding-bottom: var(--safe-bottom);
-      --poster-color: transparent;
-      background-color: #F8FAFF;
+      background: radial-gradient(ellipse at 50% 40%, #1a1830 0%, #07080f 70%);
     }
 
-    /* ── AR BUTTON ── */
-    .ar-btn {
-      position: absolute;
-      top: calc(76px + var(--safe-top));
-      right: calc(16px + var(--safe-right));
-      left: auto;
-      transform: none;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 22px;
-      background: var(--accent);
-      border: none;
-      border-radius: 100px;
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 0.875rem;
-      color: #fff;
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 4px 24px rgba(79,70,229,0.35);
-      transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
-    }
-    .ar-btn:hover {
-      background: var(--accent-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 32px rgba(79,70,229,0.45);
-    }
-    .ar-btn:active {
-      transform: translateY(0);
-    }
-    .ar-btn svg {
-      width: 16px; height: 16px; flex-shrink: 0;
-    }
+    /* ── BOUTON AR (slot natif model-viewer) ── */
+.ar-btn {
+  position: absolute;
+
+  top: calc(80px + var(--safe-top));
+  right: calc(16px + var(--safe-right));
+  left: auto;
+  transform: none;
+
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+
+  /* 👉 GLASS EFFECT ICI */
+  backdrop-filter: blur(12px);
+  background: rgba(124,109,250,0.85);
+
+  border: none;
+  border-radius: 60px;
+
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #fff;
+
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 8px 40px rgba(124,109,250,0.5);
+
+  animation: floatBtn 3s ease-in-out infinite;
+}
 
     /* ── HINT PILL ── */
     .hint-pill {
       position: absolute;
+      /* FIX iPhone : au-dessus du bouton AR + safe area */
       bottom: calc(100px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 8px 20px;
-      font-size: 0.72rem;
-      font-weight: 500;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-size: 0.68rem;
       color: var(--muted);
       white-space: nowrap;
       pointer-events: none;
@@ -152,236 +123,123 @@
 
     /* ── LOADING OVERLAY ── */
     #loadingOverlay {
-      position: fixed; inset: 0;
-      background: var(--surface);
-      z-index: 30;
+      position: fixed; inset: 0; background: var(--bg); z-index: 30;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 20px; transition: opacity 0.4s;
+      gap: 20px; transition: opacity 0.5s;
     }
     #loadingOverlay.hide { opacity: 0; pointer-events: none; }
     .loader-logo {
-      font-family: 'Inter', sans-serif;
-      font-weight: 900;
-      font-size: 1.4rem;
-      letter-spacing: -0.5px;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .loader-logo-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px; height: 32px;
-      background: var(--accent);
-      border-radius: 8px;
-    }
-    .loader-logo-badge svg {
-      width: 18px; height: 18px;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem;
+      background: linear-gradient(135deg, var(--accent), var(--accentB));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .loader-ring {
-      width: 44px; height: 44px;
-      border: 3px solid var(--border);
+      width: 52px; height: 52px;
+      border: 3px solid rgba(124,109,250,0.15);
       border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
+      border-radius: 50%; animation: spin 1s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loader-text {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-    .loader-progress {
-      width: 180px; height: 3px;
-      background: var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .loader-bar {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 10px;
-      width: 0%;
-      transition: width 0.3s;
-    }
+    .loader-text { font-size: 0.7rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; }
+    .loader-progress { width: 160px; height: 2px; background: rgba(124,109,250,0.15); border-radius: 2px; overflow: hidden; }
+    .loader-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accentB)); border-radius: 2px; width: 0%; transition: width 0.3s; }
 
-    /* ── ERROR STATE ── */
+    /* ── ERREUR ── */
     #errorState {
-      display: none; position: fixed; inset: 0;
-      background: var(--surface); z-index: 40;
+      display: none; position: fixed; inset: 0; background: var(--bg); z-index: 40;
       flex-direction: column; align-items: center; justify-content: center;
       gap: 16px; padding: 32px; text-align: center;
+      /* FIX iPhone : padding bas pour que le bouton ne passe pas sous la barre */
       padding-bottom: calc(32px + var(--safe-bottom));
     }
-    .err-icon-wrap {
-      width: 72px; height: 72px;
-      border-radius: 20px;
-      background: #FEF2F2;
-      border: 1px solid #FECACA;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 8px;
-    }
-    .err-icon-wrap svg { width: 32px; height: 32px; }
-    #errorState h2 {
-      font-family: 'Inter', sans-serif;
-      font-weight: 800;
-      font-size: 1.4rem;
-      color: var(--text);
-      letter-spacing: -0.3px;
-    }
-    #errorState p {
-      font-size: 0.85rem;
-      color: var(--muted);
-      line-height: 1.75;
-      max-width: 300px;
-    }
-    #errorState a {
-      margin-top: 8px; padding: 12px 28px;
-      border-radius: 100px;
-      background: var(--accent);
+    #errorState .err-icon { font-size: 52px; }
+    #errorState h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; }
+    #errorState p  { font-size: 0.75rem; color: var(--muted); line-height: 1.8; max-width: 300px; }
+    #errorState a  {
+      margin-top: 8px; padding: 12px 28px; border-radius: 50px;
+      background: linear-gradient(135deg, var(--accent), var(--accentB));
       color: #fff; text-decoration: none;
-      font-family: 'Inter', sans-serif;
-      font-weight: 700; font-size: 0.875rem;
-      transition: background 0.18s;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
     }
-    #errorState a:hover { background: var(--accent-hover); }
 
     /* ── NO AR STATE ── */
     #noArState {
-      display: none; position: fixed; inset: 0;
-      background: var(--surface); z-index: 35;
+      display: none; position: fixed; inset: 0; background: var(--bg); z-index: 35;
       flex-direction: column; align-items: center; justify-content: center;
-      gap: 16px; padding: 32px; text-align: center;
+      gap: 18px;
+      padding: 32px;
+      /* FIX iPhone */
       padding-bottom: calc(32px + var(--safe-bottom));
       padding-top: calc(32px + var(--safe-top));
+      text-align: center;
     }
-    .na-icon-wrap {
-      width: 72px; height: 72px;
-      border-radius: 20px;
-      background: var(--accent-light);
-      border: 1px solid #C7D2FE;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 8px;
-    }
-    .na-icon-wrap svg { width: 32px; height: 32px; }
-    #noArState h2 {
-      font-family: 'Inter', sans-serif;
-      font-weight: 800; font-size: 1.3rem;
-      letter-spacing: -0.3px; line-height: 1.35;
-      color: var(--text);
-    }
-    #noArState p {
-      font-size: 0.8rem; color: var(--muted);
-      line-height: 1.8; max-width: 300px;
-    }
+    #noArState .na-icon { font-size: 52px; }
+    #noArState h2 { font-family: 'Syne', sans-serif; font-size: 1.2rem; line-height: 1.4; }
+    #noArState p  { font-size: 0.72rem; color: var(--muted); line-height: 1.9; max-width: 300px; }
     .req-list {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px 22px;
-      text-align: left;
-      font-size: 0.75rem;
-      color: var(--muted);
-      line-height: 2.1;
-      max-width: 300px;
-      width: 100%;
+      background: rgba(124,109,250,0.08); border: 1px solid rgba(124,109,250,0.2);
+      border-radius: 12px; padding: 16px 20px; text-align: left;
+      font-size: 0.7rem; color: var(--muted); line-height: 2.1; max-width: 300px; width: 100%;
     }
-    .req-list strong { color: var(--text); font-weight: 700; }
+    .req-list strong { color: var(--text); }
     .btn-dismiss {
-      padding: 12px 32px;
-      border-radius: 100px;
-      border: 1.5px solid var(--accent);
-      background: transparent;
-      color: var(--accent);
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: background 0.18s, color 0.18s;
+      padding: 12px 32px; border-radius: 50px; border: 1px solid var(--accent);
+      background: transparent; color: var(--accent);
+      font-family: 'DM Mono', monospace; font-size: 0.8rem; cursor: pointer;
     }
-    .btn-dismiss:hover {
-      background: var(--accent-light);
-    }
-
-    /* ── Powered badge ── */
-    .powered-pill {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.65rem; font-weight: 500;
-      color: var(--muted);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 4px 12px;
-    }
-    .powered-pill svg { width: 12px; height: 12px; }
   </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="topbar-logo">
-    <span class="topbar-logo-dot"></span>
-    AR Viewer
-  </div>
+  <div class="topbar-logo">AR·VIEWER</div>
   <div style="display:flex;align-items:center;gap:10px;">
-    <div class="topbar-name" id="topTitle">Loading…</div>
+    <div class="topbar-name" id="topTitle">Chargement…</div>
     <div class="topbar-badge" id="platformBadge"></div>
   </div>
 </div>
 
 <!-- LOADING -->
 <div id="loadingOverlay">
-  <div class="loader-logo">
-    <div class="loader-logo-badge">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-      </svg>
-    </div>
-    AR Viewer
-  </div>
+  <div class="loader-logo">AR·VIEWER</div>
   <div class="loader-ring"></div>
-  <div class="loader-text" id="loaderText">Loading model…</div>
+  <div class="loader-text" id="loaderText">Chargement du modèle…</div>
   <div class="loader-progress"><div class="loader-bar" id="loaderBar"></div></div>
 </div>
 
 <!-- ERREUR -->
 <div id="errorState">
-  <div class="err-icon-wrap">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-  </div>
-  <h2>Model not found</h2>
-  <p>The 3D file could not be found.<br>Please make sure the model has been generated.</p>
-  <a href="/ar-generator">← Generate a model</a>
+  <div class="err-icon">⚠️</div>
+  <h2>Modèle introuvable</h2>
+  <p>Le fichier 3D est introuvable.<br>Vérifiez que le modèle a bien été généré.</p>
+  <a href="/ar-generator">← Générer un modèle</a>
 </div>
 
 <!-- AR NON DISPO -->
 <div id="noArState">
-  <div class="na-icon-wrap">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
-    </svg>
-  </div>
-  <h2>AR not available<br>on this device</h2>
-  <p>Your browser does not support Augmented Reality.</p>
+  <div class="na-icon">📱</div>
+  <h2>AR non disponible<br>sur cet appareil</h2>
+  <p>Votre navigateur ne supporte pas la Réalité Augmentée.</p>
   <div class="req-list">
-    <strong>🍎 iOS — QuickLook:</strong><br>
+    <strong>🍎 iOS — QuickLook :</strong><br>
     ✅ iPhone 12+ · iOS 14+<br>
-    ✅ Open in Safari<br><br>
-    <strong>🤖 Android — Scene Viewer:</strong><br>
+    ✅ Ouvrir dans Safari<br><br>
+    <strong>🤖 Android — Scene Viewer :</strong><br>
     ✅ Google Play Services for AR<br>
     ✅ Chrome 79+
   </div>
-  <p style="font-size:0.7rem;color:var(--muted);">You can still view the model in 3D.</p>
-  <button class="btn-dismiss" id="dismissNoAr">View in 3D →</button>
+  <p style="font-size:0.67rem;color:var(--muted);">Vous pouvez quand même visualiser le modèle en 3D.</p>
+  <button class="btn-dismiss" id="dismissNoAr">Voir en 3D →</button>
 </div>
 
+<!--
+  MODEL-VIEWER
+  ar-modes="webxr scene-viewer quick-look"
+  - quick-look   = iOS Safari QuickLook (USDZ)
+  - scene-viewer = Android Chrome AR
+  - webxr        = fallback WebXR
+-->
 <model-viewer
   id="viewer"
   ar
@@ -397,17 +255,17 @@
   shadow-softness="0.9"
   style="display:none;"
 >
+  <!--
+    SLOT ar-button : géré par model-viewer, déclenche QuickLook sur iOS
+    et Scene Viewer sur Android.
+  -->
   <button slot="ar-button" class="ar-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-      <circle cx="12" cy="13" r="4"/>
-    </svg>
-    <span id="arBtnText">View in Augmented Reality</span>
+    <span>📷</span>
+    <span id="arBtnText">Voir en Réalité Augmentée</span>
   </button>
 
-  <div class="hint-pill">Drag to rotate · Pinch to zoom</div>
+  <div class="hint-pill">Glissez pour tourner · Pincez pour zoomer</div>
 </model-viewer>
-
 <script>
   const params     = new URLSearchParams(window.location.search);
   const modelParam = params.get("model");
@@ -424,24 +282,26 @@
   const platformBadge = document.getElementById("platformBadge");
   const arBtnText     = document.getElementById("arBtnText");
 
+  // ── Détecter plateforme ─────────────────────────────────────────
   const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isAndroid = /Android/.test(navigator.userAgent);
 
   if (isIOS) {
-    platformBadge.textContent = "iOS · QuickLook";
+    platformBadge.textContent = "🍎 iOS · QuickLook";
     platformBadge.className   = "topbar-badge badge-ios";
-    loaderText.textContent    = "Loading · iOS QuickLook…";
-    arBtnText.textContent     = "View in my room";
+    loaderText.textContent    = "Chargement · iOS QuickLook…";
+    arBtnText.textContent     = "Voir dans ma pièce";
   } else if (isAndroid) {
-    platformBadge.textContent = "Android · AR";
+    platformBadge.textContent = "🤖 Android · Scene Viewer";
     platformBadge.className   = "topbar-badge badge-android";
-    loaderText.textContent    = "Loading · Android AR…";
-    arBtnText.textContent     = "View in my room";
+    loaderText.textContent    = "Chargement · Android AR…";
+    arBtnText.textContent     = "Voir dans ma pièce";
   } else {
-    platformBadge.textContent = "Desktop · 3D";
+    platformBadge.textContent = "💻 Desktop · 3D Viewer";
     platformBadge.className   = "topbar-badge badge-unknown";
   }
 
+  // ── Résoudre URLs ───────────────────────────────────────────────
   function toAbsolute(param) {
     if (!param) return null;
     if (param.startsWith("http://") || param.startsWith("https://")) return param;
@@ -462,35 +322,56 @@
   const glbUrl  = toAbsolute(modelParam);
   const usdzUrl = resolveUsdz();
 
+  // ── Titre ───────────────────────────────────────────────────────
   const title = titleParam
     ? decodeURIComponent(titleParam)
     : (modelParam || "").split("/").pop().replace(/\.(glb|gltf|usdz)$/i, "").replace(/[_-]/g, " ");
 
   document.title       = title ? `${title} — AR Viewer` : "AR Viewer";
-  topTitle.textContent = title || "AR Model";
+  topTitle.textContent = title || "Modèle AR";
 
+  // ── Pas de modèle → erreur ──────────────────────────────────────
   if (!glbUrl) {
     overlay.classList.add("hide");
     errState.style.display = "flex";
+
   } else {
+
+    // ── Charger model-viewer ──────────────────────────────────────
     viewer.setAttribute("src", glbUrl);
-    viewer.setAttribute("alt", title || "AR Model");
-    if (isIOS) viewer.setAttribute("ios-src", usdzUrl || glbUrl);
+    viewer.setAttribute("alt", title || "Modèle AR");
+
+    if (isIOS) {
+      const iosSrc = usdzUrl || glbUrl;
+      viewer.setAttribute("ios-src", iosSrc);
+    }
+
     viewer.style.display = "block";
 
+    // ── Events model-viewer ───────────────────────────────────────
     viewer.addEventListener("progress", e => {
       loaderBar.style.width = Math.round(e.detail.totalProgress * 100) + "%";
     });
+
     viewer.addEventListener("load", () => {
       loaderBar.style.width = "100%";
       setTimeout(() => overlay.classList.add("hide"), 400);
     });
+
     viewer.addEventListener("error", () => {
       overlay.classList.add("hide");
       errState.style.display = "flex";
     });
+
     viewer.addEventListener("ar-status", e => {
-      if (e.detail.status === "failed") noArState.style.display = "flex";
+      console.log("ar-status:", e.detail.status);
+      if (e.detail.status === "failed") {
+        noArState.style.display = "flex";
+      }
+    });
+
+    viewer.addEventListener("ar-tracking", e => {
+      console.log("ar-tracking:", e.detail.status);
     });
   }
 
