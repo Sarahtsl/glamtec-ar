@@ -5,14 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>AR Viewer</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono&display=swap');
     * { margin:0; padding:0; box-sizing:border-box; }
     :root {
-      --accent:#7c6dfa; --accentB:#fa6d9f;
-      --bg:#07080f; --text:#eeeef5; --muted:rgba(255,255,255,0.45);
-      /* Safe area helpers */
+      --accent: #5b4bff;
+      --accentB: #7c6dfa;
+      --accentLight: #ede9ff;
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --text: #0a0a14;
+      --textSub: #6b6b80;
+      --border: #e4e4ec;
+      --shadow: 0 2px 16px rgba(0,0,0,0.07);
+      --shadowMd: 0 8px 40px rgba(91,75,255,0.13);
+      --radius: 14px;
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-top:    env(safe-area-inset-top,    0px);
       --safe-left:   env(safe-area-inset-left,   0px);
@@ -20,96 +28,118 @@
     }
     html, body {
       height: 100%; width: 100%;
-      background: var(--bg); color: var(--text);
-      font-family: 'DM Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ── TOPBAR ── */
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-      /* Hauteur fixe + safe area top pour les iPhones avec encoche / Dynamic Island */
-      height: calc(56px + var(--safe-top));
+      height: calc(60px + var(--safe-top));
       padding-top: var(--safe-top);
       display: flex; align-items: center; justify-content: space-between;
-      padding-left: calc(20px + var(--safe-left));
-      padding-right: calc(20px + var(--safe-right));
-      background: rgba(7,8,15,0.88); backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-left: calc(24px + var(--safe-left));
+      padding-right: calc(24px + var(--safe-right));
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
     }
     .topbar-logo {
-      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem;
-      background: linear-gradient(135deg, var(--accent), var(--accentB));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    .topbar-logo span {
+      color: var(--accent);
+    }
+    .topbar-right {
+      display: flex; align-items: center; gap: 10px;
     }
     .topbar-name {
-      font-size: 0.68rem; color: var(--muted); text-transform: uppercase;
-      letter-spacing: 2px; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 0.72rem;
+      color: var(--textSub);
+      font-weight: 500;
+      max-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .topbar-badge { font-size: 0.6rem; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; }
-    .badge-ios     { background: rgba(0,200,120,0.12); border: 1px solid rgba(0,200,120,0.3); color: #00c878; }
-    .badge-android { background: rgba(0,180,255,0.12); border: 1px solid rgba(0,180,255,0.3); color: #00b4ff; }
-    .badge-unknown { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--muted); }
+    .topbar-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 100px;
+      letter-spacing: 0.3px;
+    }
+    .badge-ios     { background: #e6faf3; border: 1px solid #a3e6cc; color: #1a9b64; }
+    .badge-android { background: #e6f4ff; border: 1px solid #a3d0f5; color: #1a72b8; }
+    .badge-unknown { background: var(--accentLight); border: 1px solid #ccc5ff; color: var(--accent); }
 
     /* ── MODEL VIEWER ── */
     model-viewer {
       width: 100vw;
       height: 100vh;
-      /* Padding bas pour que le contenu interne ne passe pas sous la barre Safari */
       padding-bottom: var(--safe-bottom);
-      background: radial-gradient(ellipse at 50% 40%, #1a1830 0%, #07080f 70%);
+      background: radial-gradient(ellipse at 50% 30%, #ece9ff 0%, #f5f5f7 65%);
     }
 
-    /* ── BOUTON AR (slot natif model-viewer) ── */
-.ar-btn {
-  position: absolute;
-
-  top: calc(80px + var(--safe-top));
-  right: calc(16px + var(--safe-right));
-  left: auto;
-  transform: none;
-
-  z-index: 10;
-
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 24px;
-
-  /* 👉 GLASS EFFECT ICI */
-  backdrop-filter: blur(12px);
-  background: rgba(124,109,250,0.85);
-
-  border: none;
-  border-radius: 60px;
-
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 0.9rem;
-  color: #fff;
-
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 8px 40px rgba(124,109,250,0.5);
-
-  animation: floatBtn 3s ease-in-out infinite;
-}
+    /* ── BOUTON AR ── */
+    .ar-btn {
+      position: absolute;
+      top: calc(76px + var(--safe-top));
+      right: calc(16px + var(--safe-right));
+      left: auto;
+      transform: none;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      background: var(--accent);
+      border: none;
+      border-radius: 100px;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 6px 32px rgba(91,75,255,0.38);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: floatBtn 3s ease-in-out infinite;
+    }
+    .ar-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px rgba(91,75,255,0.45);
+    }
+    @keyframes floatBtn {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-4px); }
+    }
 
     /* ── HINT PILL ── */
     .hint-pill {
       position: absolute;
-      /* FIX iPhone : au-dessus du bouton AR + safe area */
-      bottom: calc(100px + var(--safe-bottom));
+      bottom: calc(96px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 50px;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 100px;
       padding: 8px 18px;
-      font-size: 0.68rem;
-      color: var(--muted);
+      font-size: 0.69rem;
+      font-weight: 500;
+      color: var(--textSub);
       white-space: nowrap;
       pointer-events: none;
+      box-shadow: var(--shadow);
       opacity: 0;
       animation: hintFade 5s forwards;
       animation-delay: 1.5s;
@@ -125,67 +155,143 @@
     #loadingOverlay {
       position: fixed; inset: 0; background: var(--bg); z-index: 30;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 20px; transition: opacity 0.5s;
+      gap: 20px; transition: opacity 0.4s;
     }
     #loadingOverlay.hide { opacity: 0; pointer-events: none; }
     .loader-logo {
-      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem;
-      background: linear-gradient(135deg, var(--accent), var(--accentB));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 900;
+      font-size: 1.7rem;
+      letter-spacing: -1px;
+      color: var(--text);
     }
+    .loader-logo span { color: var(--accent); }
     .loader-ring {
-      width: 52px; height: 52px;
-      border: 3px solid rgba(124,109,250,0.15);
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
       border-top-color: var(--accent);
-      border-radius: 50%; animation: spin 1s linear infinite;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loader-text { font-size: 0.7rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; }
-    .loader-progress { width: 160px; height: 2px; background: rgba(124,109,250,0.15); border-radius: 2px; overflow: hidden; }
-    .loader-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accentB)); border-radius: 2px; width: 0%; transition: width 0.3s; }
+    .loader-text {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--textSub);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .loader-progress {
+      width: 160px; height: 3px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .loader-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* ── CARD BASE (shared by error & noAR) ── */
+    .state-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      max-width: 360px;
+      width: calc(100% - 48px);
+      text-align: center;
+      box-shadow: var(--shadowMd);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .state-icon {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      background: var(--accentLight);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+    }
+    .state-card h2 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .state-card p {
+      font-size: 0.78rem;
+      color: var(--textSub);
+      line-height: 1.8;
+      font-weight: 500;
+    }
 
     /* ── ERREUR ── */
     #errorState {
-      display: none; position: fixed; inset: 0; background: var(--bg); z-index: 40;
+      display: none;
+      position: fixed; inset: 0; background: var(--bg); z-index: 40;
       flex-direction: column; align-items: center; justify-content: center;
-      gap: 16px; padding: 32px; text-align: center;
-      /* FIX iPhone : padding bas pour que le bouton ne passe pas sous la barre */
-      padding-bottom: calc(32px + var(--safe-bottom));
+      padding: 24px;
+      padding-bottom: calc(24px + var(--safe-bottom));
     }
-    #errorState .err-icon { font-size: 52px; }
-    #errorState h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; }
-    #errorState p  { font-size: 0.75rem; color: var(--muted); line-height: 1.8; max-width: 300px; }
-    #errorState a  {
-      margin-top: 8px; padding: 12px 28px; border-radius: 50px;
-      background: linear-gradient(135deg, var(--accent), var(--accentB));
-      color: #fff; text-decoration: none;
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
+    #errorState a {
+      margin-top: 4px;
+      padding: 12px 28px;
+      border-radius: 100px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 20px rgba(91,75,255,0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    #errorState a:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(91,75,255,0.4);
     }
 
     /* ── NO AR STATE ── */
     #noArState {
-      display: none; position: fixed; inset: 0; background: var(--bg); z-index: 35;
+      display: none;
+      position: fixed; inset: 0; background: var(--bg); z-index: 35;
       flex-direction: column; align-items: center; justify-content: center;
-      gap: 18px;
-      padding: 32px;
-      /* FIX iPhone */
-      padding-bottom: calc(32px + var(--safe-bottom));
-      padding-top: calc(32px + var(--safe-top));
-      text-align: center;
+      padding: 24px;
+      padding-bottom: calc(24px + var(--safe-bottom));
+      padding-top: calc(24px + var(--safe-top));
     }
-    #noArState .na-icon { font-size: 52px; }
-    #noArState h2 { font-family: 'Syne', sans-serif; font-size: 1.2rem; line-height: 1.4; }
-    #noArState p  { font-size: 0.72rem; color: var(--muted); line-height: 1.9; max-width: 300px; }
     .req-list {
-      background: rgba(124,109,250,0.08); border: 1px solid rgba(124,109,250,0.2);
-      border-radius: 12px; padding: 16px 20px; text-align: left;
-      font-size: 0.7rem; color: var(--muted); line-height: 2.1; max-width: 300px; width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--textSub);
+      line-height: 2.1;
+      width: 100%;
     }
-    .req-list strong { color: var(--text); }
+    .req-list strong { color: var(--text); font-weight: 700; }
     .btn-dismiss {
-      padding: 12px 32px; border-radius: 50px; border: 1px solid var(--accent);
-      background: transparent; color: var(--accent);
-      font-family: 'DM Mono', monospace; font-size: 0.8rem; cursor: pointer;
+      padding: 12px 32px;
+      border-radius: 100px;
+      border: 1.5px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-dismiss:hover {
+      background: var(--accentLight);
     }
   </style>
 </head>
@@ -193,8 +299,8 @@
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="topbar-logo">AR·VIEWER</div>
-  <div style="display:flex;align-items:center;gap:10px;">
+  <div class="topbar-logo">AR<span>·</span>VIEWER</div>
+  <div class="topbar-right">
     <div class="topbar-name" id="topTitle">Chargement…</div>
     <div class="topbar-badge" id="platformBadge"></div>
   </div>
@@ -202,7 +308,7 @@
 
 <!-- LOADING -->
 <div id="loadingOverlay">
-  <div class="loader-logo">AR·VIEWER</div>
+  <div class="loader-logo">AR<span>·</span>VIEWER</div>
   <div class="loader-ring"></div>
   <div class="loader-text" id="loaderText">Chargement du modèle…</div>
   <div class="loader-progress"><div class="loader-bar" id="loaderBar"></div></div>
@@ -210,36 +316,34 @@
 
 <!-- ERREUR -->
 <div id="errorState">
-  <div class="err-icon">⚠️</div>
-  <h2>Modèle introuvable</h2>
-  <p>Le fichier 3D est introuvable.<br>Vérifiez que le modèle a bien été généré.</p>
-  <a href="/ar-generator">← Générer un modèle</a>
+  <div class="state-card">
+    <div class="state-icon">⚠️</div>
+    <h2>Modèle introuvable</h2>
+    <p>Le fichier 3D est introuvable.<br>Vérifiez que le modèle a bien été généré.</p>
+    <a href="/ar-generator">← Générer un modèle</a>
+  </div>
 </div>
 
 <!-- AR NON DISPO -->
 <div id="noArState">
-  <div class="na-icon">📱</div>
-  <h2>AR non disponible<br>sur cet appareil</h2>
-  <p>Votre navigateur ne supporte pas la Réalité Augmentée.</p>
-  <div class="req-list">
-    <strong>🍎 iOS — QuickLook :</strong><br>
-    ✅ iPhone 12+ · iOS 14+<br>
-    ✅ Ouvrir dans Safari<br><br>
-    <strong>🤖 Android — Scene Viewer :</strong><br>
-    ✅ Google Play Services for AR<br>
-    ✅ Chrome 79+
+  <div class="state-card">
+    <div class="state-icon">📱</div>
+    <h2>AR non disponible<br>sur cet appareil</h2>
+    <p>Votre navigateur ne supporte pas la Réalité Augmentée.</p>
+    <div class="req-list">
+      <strong>🍎 iOS — QuickLook :</strong><br>
+      ✅ iPhone 12+ · iOS 14+<br>
+      ✅ Ouvrir dans Safari<br><br>
+      <strong>🤖 Android — Scene Viewer :</strong><br>
+      ✅ Google Play Services for AR<br>
+      ✅ Chrome 79+
+    </div>
+    <p style="font-size:0.67rem;">Vous pouvez quand même visualiser le modèle en 3D.</p>
+    <button class="btn-dismiss" id="dismissNoAr">Voir en 3D →</button>
   </div>
-  <p style="font-size:0.67rem;color:var(--muted);">Vous pouvez quand même visualiser le modèle en 3D.</p>
-  <button class="btn-dismiss" id="dismissNoAr">Voir en 3D →</button>
 </div>
 
-<!--
-  MODEL-VIEWER
-  ar-modes="webxr scene-viewer quick-look"
-  - quick-look   = iOS Safari QuickLook (USDZ)
-  - scene-viewer = Android Chrome AR
-  - webxr        = fallback WebXR
--->
+<!-- MODEL-VIEWER -->
 <model-viewer
   id="viewer"
   ar
@@ -255,10 +359,6 @@
   shadow-softness="0.9"
   style="display:none;"
 >
-  <!--
-    SLOT ar-button : géré par model-viewer, déclenche QuickLook sur iOS
-    et Scene Viewer sur Android.
-  -->
   <button slot="ar-button" class="ar-btn">
     <span>📷</span>
     <span id="arBtnText">Voir en Réalité Augmentée</span>
@@ -266,6 +366,7 @@
 
   <div class="hint-pill">Glissez pour tourner · Pincez pour zoomer</div>
 </model-viewer>
+
 <script>
   const params     = new URLSearchParams(window.location.search);
   const modelParam = params.get("model");
@@ -282,7 +383,6 @@
   const platformBadge = document.getElementById("platformBadge");
   const arBtnText     = document.getElementById("arBtnText");
 
-  // ── Détecter plateforme ─────────────────────────────────────────
   const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isAndroid = /Android/.test(navigator.userAgent);
 
@@ -301,7 +401,6 @@
     platformBadge.className   = "topbar-badge badge-unknown";
   }
 
-  // ── Résoudre URLs ───────────────────────────────────────────────
   function toAbsolute(param) {
     if (!param) return null;
     if (param.startsWith("http://") || param.startsWith("https://")) return param;
@@ -322,7 +421,6 @@
   const glbUrl  = toAbsolute(modelParam);
   const usdzUrl = resolveUsdz();
 
-  // ── Titre ───────────────────────────────────────────────────────
   const title = titleParam
     ? decodeURIComponent(titleParam)
     : (modelParam || "").split("/").pop().replace(/\.(glb|gltf|usdz)$/i, "").replace(/[_-]/g, " ");
@@ -330,14 +428,10 @@
   document.title       = title ? `${title} — AR Viewer` : "AR Viewer";
   topTitle.textContent = title || "Modèle AR";
 
-  // ── Pas de modèle → erreur ──────────────────────────────────────
   if (!glbUrl) {
     overlay.classList.add("hide");
     errState.style.display = "flex";
-
   } else {
-
-    // ── Charger model-viewer ──────────────────────────────────────
     viewer.setAttribute("src", glbUrl);
     viewer.setAttribute("alt", title || "Modèle AR");
 
@@ -348,7 +442,6 @@
 
     viewer.style.display = "block";
 
-    // ── Events model-viewer ───────────────────────────────────────
     viewer.addEventListener("progress", e => {
       loaderBar.style.width = Math.round(e.detail.totalProgress * 100) + "%";
     });
