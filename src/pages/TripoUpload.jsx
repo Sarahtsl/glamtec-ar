@@ -10,7 +10,6 @@ const STEPS = {
   ERROR:      'error',
 };
 
-// ✅ CORRIGÉ — on passe maintenant glb_url ET usdz_url
 function buildArUrl(glbUrl, usdzUrl, title) {
   let url = `${window.location.origin}/ar-product.html`;
   url += `?model=${encodeURIComponent(glbUrl)}`;
@@ -53,11 +52,10 @@ export default function TripoUpload() {
       setProgress('Génération du QR code...');
       setStep(STEPS.GENERATING);
 
-      // ✅ On utilise glb_url ET usdz_url retournés par l'API
       const url = buildArUrl(model.glb_url, model.usdz_url, name);
       const qr  = await QRCode.toDataURL(url, {
         width: 260, margin: 2,
-        color: { dark: '#0f2557', light: '#ffffff' },
+        color: { dark: '#5b4bff', light: '#ffffff' },
         errorCorrectionLevel: 'H',
       });
 
@@ -91,80 +89,110 @@ export default function TripoUpload() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-          --navy: #0f2557; --navy-mid: #1e3a8a; --gold: #c9a84c; --gold-light: #e8c97e;
-          --cream: #faf8f5; --white: #ffffff; --text: #0f172a; --muted: #64748b;
-          --border: #e2e8f0; --shadow: 0 4px 24px rgba(15,37,87,0.08);
+          --accent: #5b4bff;
+          --accentB: #7c6dfa;
+          --accentLight: #ede9ff;
+          --accentBorder: #ccc5ff;
+          --bg: #f5f5f7;
+          --surface: #ffffff;
+          --text: #0a0a14;
+          --textSub: #6b6b80;
+          --border: #e4e4ec;
+          --shadow: 0 2px 16px rgba(0,0,0,0.06);
+          --shadowMd: 0 8px 40px rgba(91,75,255,0.10);
+          --radius: 14px;
         }
-        .tu-page { min-height: 100vh; background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--text); }
-        .tu-nav { height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 64px; background: rgba(255,255,255,0.97); border-bottom: 1px solid var(--border); }
-        .tu-logo { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: var(--navy); text-decoration: none; }
-        .tu-hero { background: var(--navy); padding: 52px 64px; }
-        .tu-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
-        .tu-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
-        .tu-h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(30px, 3vw, 46px); font-weight: 600; color: #fff; }
-        .tu-h1 em { font-style: italic; color: var(--gold-light); }
-        .tu-main { max-width: 900px; margin: 0 auto; padding: 48px 64px 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-        @media(max-width: 700px) { .tu-main { grid-template-columns: 1fr; padding: 28px 20px; } .tu-nav { padding: 0 20px; } .tu-hero { padding: 40px 20px; } }
+        .tu-page { min-height: 100vh; background: var(--bg); font-family: 'Manrope', sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        .tu-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
-        .tu-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-        .tu-card-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--navy); }
-        .tu-card-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 700; color: var(--navy); }
+        /* NAV */
+        .tu-nav { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; background: rgba(255,255,255,0.88); border-bottom: 1px solid var(--border); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 10; }
+        .tu-logo { font-family: 'Manrope', sans-serif; font-size: 20px; font-weight: 900; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
+        .tu-logo span { color: var(--accent); }
+
+        /* HERO */
+        .tu-hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 48px 48px 40px; }
+        .tu-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--accentLight); border: 1px solid var(--accentBorder); border-radius: 100px; padding: 5px 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; }
+        .tu-h1 { font-size: clamp(26px, 3vw, 40px); font-weight: 900; color: var(--text); letter-spacing: -1px; line-height: 1.15; }
+        .tu-h1 em { font-style: normal; color: var(--accent); }
+
+        /* MAIN GRID */
+        .tu-main { max-width: 880px; margin: 0 auto; padding: 40px 48px 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media(max-width: 700px) {
+          .tu-main { grid-template-columns: 1fr; padding: 24px 20px; }
+          .tu-nav { padding: 0 20px; }
+          .tu-hero { padding: 36px 20px 32px; }
+        }
+
+        /* CARDS */
+        .tu-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .tu-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: var(--bg); }
+        .tu-card-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        .tu-card-title { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.2px; }
         .tu-card-body { padding: 20px; }
 
-        .tu-drop { border: 2px dashed var(--border); border-radius: 10px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; background: var(--cream); position: relative; display: block; width: 100%; }
-        .tu-drop:hover { border-color: var(--navy); background: #f0f4ff; }
-        .tu-drop-icon { font-size: 32px; margin-bottom: 10px; }
-        .tu-drop-text { font-size: 13px; color: var(--muted); line-height: 1.7; }
-        .tu-drop input { display: none; }
+        /* DROP ZONE */
+        .tu-drop { border: 2px dashed var(--border); border-radius: 10px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; background: var(--bg); display: block; width: 100%; }
+        .tu-drop:hover { border-color: var(--accent); background: var(--accentLight); }
+        .tu-drop-icon { font-size: 30px; margin-bottom: 10px; }
+        .tu-drop-text { font-size: 13px; color: var(--textSub); line-height: 1.7; font-weight: 500; }
 
+        /* PREVIEW */
         .tu-preview { width: 100%; border-radius: 8px; object-fit: cover; max-height: 200px; margin-bottom: 16px; border: 1px solid var(--border); }
 
-        .tu-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--navy); margin-bottom: 6px; display: block; }
-        .tu-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--white); margin-bottom: 16px; outline: none; transition: border-color 0.2s; }
-        .tu-input:focus { border-color: var(--navy); }
+        /* FORM */
+        .tu-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); margin-bottom: 6px; display: block; }
+        .tu-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 500; color: var(--text); background: var(--surface); margin-bottom: 16px; outline: none; transition: border-color 0.2s; }
+        .tu-input:focus { border-color: var(--accent); }
+        .tu-input::placeholder { color: var(--textSub); }
 
-        .tu-btn { width: 100%; padding: 14px; background: var(--navy); color: #fff; border: none; border-radius: 7px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-        .tu-btn:hover:not(:disabled) { background: var(--navy-mid); transform: translateY(-1px); }
-        .tu-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .tu-btn-sec { width: 100%; padding: 11px; background: transparent; border: 1.5px solid var(--border); border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--navy); cursor: pointer; margin-top: 8px; transition: all 0.2s; }
-        .tu-btn-sec:hover { border-color: var(--navy); background: var(--cream); }
+        /* BUTTONS */
+        .tu-btn { width: 100%; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 100px; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px rgba(91,75,255,0.28); }
+        .tu-btn:hover:not(:disabled) { background: var(--accentB); transform: translateY(-1px); box-shadow: 0 6px 28px rgba(91,75,255,0.38); }
+        .tu-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+        .tu-btn-sec { width: 100%; padding: 11px; background: transparent; border: 1.5px solid var(--border); border-radius: 100px; font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); cursor: pointer; margin-top: 8px; transition: all 0.2s; }
+        .tu-btn-sec:hover { border-color: var(--accent); color: var(--accent); background: var(--accentLight); }
 
-        .tu-progress { background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 16px; }
-        .tu-spinner { width: 36px; height: 36px; border: 3px solid rgba(15,37,87,0.12); border-top-color: var(--navy); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+        /* PROGRESS */
+        .tu-progress { background: var(--accentLight); border: 1px solid var(--accentBorder); border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 16px; }
+        .tu-spinner { width: 34px; height: 34px; border: 3px solid rgba(91,75,255,0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 12px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .tu-progress-text { font-size: 13px; color: var(--muted); line-height: 1.7; }
+        .tu-progress-text { font-size: 13px; color: var(--accent); font-weight: 600; line-height: 1.7; }
 
-        .tu-qr-box { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; background: var(--cream); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px; }
-        .tu-qr-frame { background: #fff; border-radius: 8px; padding: 10px; border: 1px solid var(--border); }
-        .tu-qr-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--navy); }
-        .tu-qr-hint { font-size: 11px; color: var(--muted); text-align: center; }
+        /* QR BOX */
+        .tu-qr-box { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 16px; }
+        .tu-qr-frame { background: #fff; border-radius: 10px; padding: 10px; border: 1px solid var(--border); box-shadow: var(--shadowMd); }
+        .tu-qr-name { font-size: 18px; font-weight: 900; color: var(--text); letter-spacing: -0.4px; }
+        .tu-qr-hint { font-size: 11px; color: var(--textSub); font-weight: 500; text-align: center; }
         .tu-tags { display: flex; gap: 8px; }
-        .tu-tag { padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; }
-        .tu-tag-ios { background: rgba(22,163,74,0.07); border: 1px solid rgba(22,163,74,0.18); color: #15803d; }
-        .tu-tag-and { background: rgba(37,99,235,0.07); border: 1px solid rgba(37,99,235,0.18); color: #1d4ed8; }
+        .tu-tag { padding: 4px 11px; border-radius: 100px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; }
+        .tu-tag-ios { background: #e6faf3; border: 1px solid #a3e6cc; color: #1a9b64; }
+        .tu-tag-and { background: #e6f4ff; border: 1px solid #a3d0f5; color: #1a72b8; }
 
-        .tu-error { background: #fff1f1; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; color: #b91c1c; font-size: 13px; line-height: 1.7; margin-bottom: 16px; }
-        .tu-url { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; margin-bottom: 12px; }
-        .tu-url-label { font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--navy); margin-bottom: 3px; }
-        .tu-url-val { font-size: 10px; color: var(--muted); word-break: break-all; font-family: monospace; }
+        /* ERROR */
+        .tu-error { background: #fff1f1; border: 1px solid #fecaca; border-radius: 8px; padding: 14px 16px; color: #b91c1c; font-size: 13px; font-weight: 500; line-height: 1.7; margin-bottom: 16px; }
 
-        .tu-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; gap: 12px; background: var(--cream); border-radius: 8px; border: 1.5px dashed var(--border); }
-        .tu-empty-icon { font-size: 28px; opacity: 0.2; }
-        .tu-empty-text { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.7; }
+        /* URL */
+        .tu-url { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; }
+        .tu-url-label { font-size: 9px; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+        .tu-url-val { font-size: 10px; color: var(--textSub); word-break: break-all; font-family: monospace; }
+
+        /* EMPTY */
+        .tu-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; gap: 12px; background: var(--bg); border-radius: 10px; border: 1.5px dashed var(--border); }
+        .tu-empty-icon { font-size: 28px; opacity: 0.25; }
+        .tu-empty-text { font-size: 12px; color: var(--textSub); text-align: center; line-height: 1.8; font-weight: 500; }
       `}</style>
 
       <div className="tu-page">
 
         <nav className="tu-nav">
-          <a href="/" className="tu-logo">GlamTec</a>
+          <a href="/" className="tu-logo">Glam<span>Tec</span></a>
         </nav>
 
         <div className="tu-hero">
-          <div className="tu-eyebrow">Image vers 3D · Tripo AI</div>
+          <div className="tu-eyebrow">✦ Image vers 3D · Tripo AI</div>
           <h1 className="tu-h1">Génère un modèle <em>AR</em><br />depuis une photo</h1>
         </div>
 
@@ -178,10 +206,7 @@ export default function TripoUpload() {
             </div>
             <div className="tu-card-body">
 
-              <div
-                className="tu-drop"
-                onClick={() => fileRef.current.click()}
-              >
+              <div className="tu-drop" onClick={() => fileRef.current.click()}>
                 {preview
                   ? <img src={preview} className="tu-preview" alt="preview" />
                   : <>
@@ -213,7 +238,7 @@ export default function TripoUpload() {
               {step === STEPS.UPLOADING || step === STEPS.GENERATING ? (
                 <div className="tu-progress">
                   <div className="tu-spinner" />
-                  <div className="tu-progress-text">{progress}<br /><span style={{fontSize:11}}>Cela peut prendre 30 à 90 secondes…</span></div>
+                  <div className="tu-progress-text">{progress}<br /><span style={{fontSize:11, fontWeight:500}}>Cela peut prendre 30 à 90 secondes…</span></div>
                 </div>
               ) : (
                 <button
