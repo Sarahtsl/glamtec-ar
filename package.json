@@ -19,6 +19,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@supabase/supabase-js": "^2.102.1",
+    "cors": "^2.8.6",
     "deepar": "^4.1.0",
     "express": "^5.2.1",
     "facefilter": "^3.4.3",
