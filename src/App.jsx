@@ -1,16 +1,25 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import TryOnPage from "./pages/TryOnPage";
-import TryOnBodyPage from "./pages/TryOnBodyPage";
-import QrGenerator from "./pages/Qrqenerateur"; 
-import FaceFilterPage from "./pages/FaceFilterPage"; 
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import TryOnPage from './pages/TryOnPage';
+import TryOnBodyPage from './pages/TryOnBodyPage';
+import QrGenerator from './pages/Qrqenerateur';
+import FaceFilterPage from './pages/FaceFilterPage';
 import TripoUpload from './pages/TripoUpload';
 /* ══════════════════════════════════════════════
    HOME PAGE
 ══════════════════════════════════════════════ */
 function Home() {
-  return (
-    <div style={{ minHeight: "100vh", background: "#faf8f5", fontFamily: "'DM Sans', sans-serif", color: "#0f172a", overflowX: "hidden", width: "100%" }}>
-      <style>{`
+    return (
+        <div
+            style={{
+                minHeight: '100vh',
+                background: '#faf8f5',
+                fontFamily: "'DM Sans', sans-serif",
+                color: '#0f172a',
+                overflowX: 'hidden',
+                width: '100%',
+            }}
+        >
+            <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -209,217 +218,300 @@ function Home() {
         }
       `}</style>
 
-      {/* ── NAVBAR ── */}
-      <nav className="g-nav">
-        <a href="/" className="g-logo">GlamTec</a>
-        <div className="g-nav-links">
-          {["Accueil", "Produits", "Blog", "Contact"].map(l => (
-            <a key={l} href="#" className="g-nav-a">{l}</a>
-          ))}
-        </div>
-        <Link to="/try" className="g-nav-cta">Essayer AR →</Link>
-      </nav>
+            {/* ── NAVBAR ── */}
+            <nav className="g-nav">
+                <a href="/" className="g-logo">
+                    GlamTec
+                </a>
+                <div className="g-nav-links">
+                    {['Accueil', 'Produits', 'Blog', 'Contact'].map((l) => (
+                        <a key={l} href="#" className="g-nav-a">
+                            {l}
+                        </a>
+                    ))}
+                </div>
+                <Link to="/try" className="g-nav-cta">
+                    Essayer AR →
+                </Link>
+            </nav>
 
-      {/* ── HERO ── */}
-      <section className="g-hero">
+            {/* ── HERO ── */}
+            <section className="g-hero">
+                {/* Left — texte */}
+                <div className="g-hero-left">
+                    <div className="g-eyebrow">Réalité Augmentée</div>
 
-        {/* Left — texte */}
-        <div className="g-hero-left">
-          <div className="g-eyebrow">Réalité Augmentée</div>
+                    <h1 className="g-h1">
+                        Essayez
+                        <br />
+                        avant
+                        <br />
+                        <em>d'acheter.</em>
+                    </h1>
 
-          <h1 className="g-h1">
-            Essayez<br />avant<br />
-            <em>d'acheter.</em>
-          </h1>
+                    <p className="g-hero-p">
+                        Lunettes, vêtements et meubles en AR — directement depuis votre navigateur, sans application.
+                    </p>
 
-          <p className="g-hero-p">
-            Lunettes, vêtements et meubles en AR — directement depuis votre navigateur, sans application.
-          </p>
+                    <div className="g-btn-group">
+                        <Link to="/try" className="g-btn-primary">
+                            👓 Lunettes AR
+                        </Link>
+                        <Link to="/try-body" className="g-btn-ghost">
+                            👕 Vêtements
+                        </Link>
+                    </div>
 
-          <div className="g-btn-group">
-            <Link to="/try" className="g-btn-primary">👓 Lunettes AR</Link>
-            <Link to="/try-body" className="g-btn-ghost">👕 Vêtements</Link>
-          </div>
+                    <div className="g-stats">
+                        {[
+                            { n: '468', l: 'Points visage' },
+                            { n: '<16ms', l: 'Latence' },
+                            { n: '100%', l: 'Navigateur' },
+                        ].map(({ n, l }) => (
+                            <div key={l}>
+                                <div className="g-stat-n">{n}</div>
+                                <div className="g-stat-l">{l}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-          <div className="g-stats">
-            {[
-              { n: "468",   l: "Points visage" },
-              { n: "<16ms", l: "Latence"       },
-              { n: "100%",  l: "Navigateur"    },
-            ].map(({ n, l }) => (
-              <div key={l}>
-                <div className="g-stat-n">{n}</div>
-                <div className="g-stat-l">{l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+                {/* Right — visuel */}
+                <div className="g-hero-right">
+                    <div className="g-visual">
+                        <div className="g-glasses-wrap">
+                            <div className="g-ring1" />
+                            <div className="g-ring2" />
+                            <svg className="g-glasses" viewBox="0 0 280 100" style={{ width: 340, maxWidth: '90%' }}>
+                                <defs>
+                                    <linearGradient id="gG1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#1e3a8a" />
+                                        <stop offset="100%" stopColor="#3b5fc0" />
+                                    </linearGradient>
+                                    <linearGradient id="gL1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.4" />
+                                        <stop offset="100%" stopColor="#93c5fd" stopOpacity="0.15" />
+                                    </linearGradient>
+                                </defs>
+                                <rect x="6" y="20" width="108" height="60" rx="30" fill="url(#gG1)" />
+                                <rect x="166" y="20" width="108" height="60" rx="30" fill="url(#gG1)" />
+                                <rect x="13" y="27" width="94" height="46" rx="23" fill="url(#gL1)" />
+                                <rect x="173" y="27" width="94" height="46" rx="23" fill="url(#gL1)" />
+                                <path
+                                    d="M114 50 Q140 32 166 50"
+                                    stroke="url(#gG1)"
+                                    strokeWidth="7"
+                                    fill="none"
+                                    strokeLinecap="round"
+                                />
+                                <line
+                                    x1="6"
+                                    y1="50"
+                                    x2="-30"
+                                    y2="42"
+                                    stroke="url(#gG1)"
+                                    strokeWidth="7"
+                                    strokeLinecap="round"
+                                />
+                                <line
+                                    x1="274"
+                                    y1="50"
+                                    x2="310"
+                                    y2="42"
+                                    stroke="url(#gG1)"
+                                    strokeWidth="7"
+                                    strokeLinecap="round"
+                                />
+                                <ellipse
+                                    cx="38"
+                                    cy="38"
+                                    rx="16"
+                                    ry="9"
+                                    fill="rgba(255,255,255,0.13)"
+                                    transform="rotate(-12 38 38)"
+                                />
+                                <ellipse
+                                    cx="198"
+                                    cy="38"
+                                    rx="16"
+                                    ry="9"
+                                    fill="rgba(255,255,255,0.13)"
+                                    transform="rotate(-12 198 38)"
+                                />
+                            </svg>
+                        </div>
 
-        {/* Right — visuel */}
-        <div className="g-hero-right">
-          <div className="g-visual">
-            <div className="g-glasses-wrap">
-              <div className="g-ring1" />
-              <div className="g-ring2" />
-              <svg className="g-glasses" viewBox="0 0 280 100" style={{ width: 340, maxWidth: "90%" }}>
-                <defs>
-                  <linearGradient id="gG1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#1e3a8a" />
-                    <stop offset="100%" stopColor="#3b5fc0" />
-                  </linearGradient>
-                  <linearGradient id="gL1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#93c5fd" stopOpacity="0.15" />
-                  </linearGradient>
-                </defs>
-                <rect x="6" y="20" width="108" height="60" rx="30" fill="url(#gG1)" />
-                <rect x="166" y="20" width="108" height="60" rx="30" fill="url(#gG1)" />
-                <rect x="13" y="27" width="94" height="46" rx="23" fill="url(#gL1)" />
-                <rect x="173" y="27" width="94" height="46" rx="23" fill="url(#gL1)" />
-                <path d="M114 50 Q140 32 166 50" stroke="url(#gG1)" strokeWidth="7" fill="none" strokeLinecap="round" />
-                <line x1="6" y1="50" x2="-30" y2="42" stroke="url(#gG1)" strokeWidth="7" strokeLinecap="round" />
-                <line x1="274" y1="50" x2="310" y2="42" stroke="url(#gG1)" strokeWidth="7" strokeLinecap="round" />
-                <ellipse cx="38" cy="38" rx="16" ry="9" fill="rgba(255,255,255,0.13)" transform="rotate(-12 38 38)" />
-                <ellipse cx="198" cy="38" rx="16" ry="9" fill="rgba(255,255,255,0.13)" transform="rotate(-12 198 38)" />
-              </svg>
-            </div>
+                        <div className="g-badge g-badge-1">
+                            <div className="g-badge-lbl">Statut</div>
+                            <div className="g-badge-val">
+                                <span className="g-live-dot" />
+                                AR Actif
+                            </div>
+                        </div>
+                        <div className="g-badge g-badge-2">
+                            <div className="g-badge-lbl">Face Tracking</div>
+                            <div className="g-badge-val">468 pts détectés</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-            <div className="g-badge g-badge-1">
-              <div className="g-badge-lbl">Statut</div>
-              <div className="g-badge-val"><span className="g-live-dot" />AR Actif</div>
-            </div>
-            <div className="g-badge g-badge-2">
-              <div className="g-badge-lbl">Face Tracking</div>
-              <div className="g-badge-val">468 pts détectés</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FEATURE STRIP ── */}
-      <div className="g-strip">
-        {[
-          { icon: "🎯", val: "Précis",    lbl: "Face tracking MediaPipe"     },
-          { icon: "⚡", val: "Rapide",    lbl: "Moins de 16ms de latence"    },
-          { icon: "📱", val: "Mobile AR", lbl: "iOS & Android compatibles"   },
-          { icon: "🔒", val: "Privé",     lbl: "100% dans votre navigateur"  },
-        ].map(({ icon, val, lbl }) => (
-          <div key={val} className="g-strip-item">
-            <div className="g-strip-icon">{icon}</div>
-            <div className="g-strip-val">{val}</div>
-            <div className="g-strip-lbl">{lbl}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── PRODUITS ── */}
-      <div className="g-section" style={{ background: "#fff" }}>
-        <div className="g-section-inner">
-          <div className="g-sec-ey">Nos technologies</div>
-          <h2 className="g-sec-h2">Deux façons <em>d'essayer</em></h2>
-
-          <div className="g-products">
-
-            {/* Lunettes */}
-            <div className="g-pcard">
-              <span className="g-pcard-tag">Face Tracking</span>
-              <span className="g-pcard-icon">👓</span>
-              <div className="g-pcard-title">Lunettes AR</div>
-              <div className="g-pcard-desc">
-                468 points de repère faciaux pour un placement parfait en temps réel, dans votre navigateur.
-              </div>
-              <div className="g-pcard-chips">
-                {["MediaPipe", "Temps réel", "Tous modèles", "Couleurs"].map(t => (
-                  <span key={t} className="g-chip">{t}</span>
+            {/* ── FEATURE STRIP ── */}
+            <div className="g-strip">
+                {[
+                    { icon: '🎯', val: 'Précis', lbl: 'Face tracking MediaPipe' },
+                    { icon: '⚡', val: 'Rapide', lbl: 'Moins de 16ms de latence' },
+                    { icon: '📱', val: 'Mobile AR', lbl: 'iOS & Android compatibles' },
+                    { icon: '🔒', val: 'Privé', lbl: '100% dans votre navigateur' },
+                ].map(({ icon, val, lbl }) => (
+                    <div key={val} className="g-strip-item">
+                        <div className="g-strip-icon">{icon}</div>
+                        <div className="g-strip-val">{val}</div>
+                        <div className="g-strip-lbl">{lbl}</div>
+                    </div>
                 ))}
-              </div>
-              <div className="g-pcard-btns">
-                <Link to="/try" className="g-pbtn-main">Essayer maintenant →</Link>
-              </div>
             </div>
 
-            {/* Meubles / vêtements */}
-            <div className="g-pcard">
-              <span className="g-pcard-tag">QR Code · WebXR</span>
-              <span className="g-pcard-icon">🪑</span>
-              <div className="g-pcard-title">Meubles & Vêtements AR</div>
-              <div className="g-pcard-desc">
-                Scannez un QR code — le modèle 3D s'affiche sur votre surface via la caméra de votre téléphone.
-              </div>
-              <div className="g-pcard-chips">
-                {["iOS QuickLook", "Android AR", "GLB · USDZ", "3D Viewer"].map(t => (
-                  <span key={t} className="g-chip">{t}</span>
-                ))}
-              </div>
-              <div className="g-pcard-btns">
-                <Link to="/try-body" className="g-pbtn-main">Viewer 3D →</Link>
-                <Link to="/generate" className="g-pbtn-gold">📲 QR Codes</Link>
-              </div>
+            {/* ── PRODUITS ── */}
+            <div className="g-section" style={{ background: '#fff' }}>
+                <div className="g-section-inner">
+                    <div className="g-sec-ey">Nos technologies</div>
+                    <h2 className="g-sec-h2">
+                        Deux façons <em>d'essayer</em>
+                    </h2>
+
+                    <div className="g-products">
+                        {/* Lunettes */}
+                        <div className="g-pcard">
+                            <span className="g-pcard-tag">Face Tracking</span>
+                            <span className="g-pcard-icon">👓</span>
+                            <div className="g-pcard-title">Lunettes AR</div>
+                            <div className="g-pcard-desc">
+                                468 points de repère faciaux pour un placement parfait en temps réel, dans votre
+                                navigateur.
+                            </div>
+                            <div className="g-pcard-chips">
+                                {['MediaPipe', 'Temps réel', 'Tous modèles', 'Couleurs'].map((t) => (
+                                    <span key={t} className="g-chip">
+                                        {t}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="g-pcard-btns">
+                                <Link to="/try" className="g-pbtn-main">
+                                    Essayer maintenant →
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Meubles / vêtements */}
+                        <div className="g-pcard">
+                            <span className="g-pcard-tag">QR Code · WebXR</span>
+                            <span className="g-pcard-icon">🪑</span>
+                            <div className="g-pcard-title">Meubles & Vêtements AR</div>
+                            <div className="g-pcard-desc">
+                                Scannez un QR code — le modèle 3D s'affiche sur votre surface via la caméra de votre
+                                téléphone.
+                            </div>
+                            <div className="g-pcard-chips">
+                                {['iOS QuickLook', 'Android AR', 'GLB · USDZ', '3D Viewer'].map((t) => (
+                                    <span key={t} className="g-chip">
+                                        {t}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="g-pcard-btns">
+                                <Link to="/try-body" className="g-pbtn-main">
+                                    Viewer 3D →
+                                </Link>
+                                <Link to="/generate" className="g-pbtn-gold">
+                                    📲 QR Codes
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ── PROCESS ── */}
-      <div className="g-process-bg">
-        <div className="g-process-inner">
-          <div className="g-sec-ey" style={{ color: "var(--gold)" }}>Simple & rapide</div>
-          <h2 className="g-sec-h2" style={{ color: "#fff" }}>
-            En <em style={{ color: "var(--gold-lt)" }}>3 étapes</em>
-          </h2>
+            {/* ── PROCESS ── */}
+            <div className="g-process-bg">
+                <div className="g-process-inner">
+                    <div className="g-sec-ey" style={{ color: 'var(--gold)' }}>
+                        Simple & rapide
+                    </div>
+                    <h2 className="g-sec-h2" style={{ color: '#fff' }}>
+                        En <em style={{ color: 'var(--gold-lt)' }}>3 étapes</em>
+                    </h2>
 
-          <div className="g-steps">
-            {[
-              { n: "Étape 01", icon: "🔍", t: "Choisissez", d: "Parcourez notre catalogue de lunettes, vêtements et mobilier disponibles en AR." },
-              { n: "Étape 02", icon: "📷", t: "Activez",    d: "Autorisez la caméra — tout reste en local dans votre navigateur, rien n'est envoyé." },
-              { n: "Étape 03", icon: "✨", t: "Visualisez", d: "Le produit s'affiche sur vous ou sur une surface réelle en temps réel." },
-            ].map(({ n, icon, t, d }) => (
-              <div key={n} className="g-step">
-                <div className="g-step-num">{n}</div>
-                <span className="g-step-icon">{icon}</span>
-                <div className="g-step-title">{t}</div>
-                <div className="g-step-desc">{d}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+                    <div className="g-steps">
+                        {[
+                            {
+                                n: 'Étape 01',
+                                icon: '🔍',
+                                t: 'Choisissez',
+                                d: 'Parcourez notre catalogue de lunettes, vêtements et mobilier disponibles en AR.',
+                            },
+                            {
+                                n: 'Étape 02',
+                                icon: '📷',
+                                t: 'Activez',
+                                d: "Autorisez la caméra — tout reste en local dans votre navigateur, rien n'est envoyé.",
+                            },
+                            {
+                                n: 'Étape 03',
+                                icon: '✨',
+                                t: 'Visualisez',
+                                d: "Le produit s'affiche sur vous ou sur une surface réelle en temps réel.",
+                            },
+                        ].map(({ n, icon, t, d }) => (
+                            <div key={n} className="g-step">
+                                <div className="g-step-num">{n}</div>
+                                <span className="g-step-icon">{icon}</span>
+                                <div className="g-step-title">{t}</div>
+                                <div className="g-step-desc">{d}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
 
-      {/* ── FOOTER ── */}
-      <footer className="g-footer">
-        <div>
-          <div className="g-footer-logo">GlamTec</div>
-          <div className="g-footer-copy">© 2025 · PFE Webcom Casablanca</div>
+            {/* ── FOOTER ── */}
+            <footer className="g-footer">
+                <div>
+                    <div className="g-footer-logo">GlamTec</div>
+                    <div className="g-footer-copy">© 2025 · PFE Webcom Casablanca</div>
+                </div>
+                <div className="g-footer-links">
+                    {[
+                        { to: '/try', l: 'AR Lunettes' },
+                        { to: '/try-body', l: 'AR Vêtements' },
+                        { to: '/qr-generator', l: 'QR Codes' },
+                    ].map(({ to, l }) => (
+                        <Link key={to} to={to} className="g-footer-a">
+                            {l}
+                        </Link>
+                    ))}
+                </div>
+            </footer>
         </div>
-        <div className="g-footer-links">
-          {[
-            { to: "/try",          l: "AR Lunettes"  },
-            { to: "/try-body",     l: "AR Vêtements" },
-            { to: "/qr-generator", l: "QR Codes"     },
-          ].map(({ to, l }) => (
-            <Link key={to} to={to} className="g-footer-a">{l}</Link>
-          ))}
-        </div>
-      </footer>
-    </div>
-  );
+    );
 }
 
 /* ══════════════════════════════════════════════
    APP
 ══════════════════════════════════════════════ */
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/"             element={<Home />} />
-        <Route path="/try"          element={<FaceFilterPage />} /> 
-        <Route path="/try-body"     element={<TryOnBodyPage />} />
-        <Route path="/qr-generator" element={<QrGenerator />} />  
-        <Route path="/generate" element={<TripoUpload />} />
-      </Routes>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter basename="/admin/qr-code">
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/try" element={<FaceFilterPage />} />
+                <Route path="/try-body" element={<TryOnBodyPage />} />
+                <Route path="/qr-generator" element={<QrGenerator />} />
+                <Route path="/generate" element={<TripoUpload />} />
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
 export default App;

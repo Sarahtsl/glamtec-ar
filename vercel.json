@@ -1,34 +1,36 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "functions": {
-    "api/*.js": {
-      "memory": 1024,
-      "maxDuration": 300
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/ar-product.html",
-      "destination": "/ar-product.html"
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "framework": "vite",
+    "functions": {
+        "api/*.js": {
+            "memory": 1024,
+            "maxDuration": 300
+        }
     },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ], 
-  "headers": [
-    {
-      "source": "/(.*).usdz",
-      "headers": [
-        { "key": "Content-Type", "value": "model/vnd.usdz+zip" }
-      ]
-    }
-  ]
-
+    "rewrites": [
+        {
+            "source": "/ar-product.html",
+            "destination": "/ar-product.html"
+        },
+        {
+            "source": "/api/(.*)",
+            "destination": "/api/$1"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*).usdz",
+            "headers": [
+                { "key": "Content-Type", "value": "model/vnd.usdz+zip" },
+                { "key": "Access-Control-Allow-Origin", "value": "*" },
+                { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+                { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+            ]
+        }
+    ]
 }
