@@ -21,6 +21,7 @@
     "@supabase/supabase-js": "^2.102.1",
     "cors": "^2.8.6",
     "deepar": "^4.1.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "facefilter": "^3.4.3",
     "formidable": "^3.5.4",

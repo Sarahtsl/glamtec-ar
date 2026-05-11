@@ -1,7 +1,5 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import TryOnPage from './pages/TryOnPage';
-import TryOnBodyPage from './pages/TryOnBodyPage';
-import QrGenerator from './pages/Qrqenerateur';
 import FaceFilterPage from './pages/FaceFilterPage';
 import TripoUpload from './pages/TripoUpload';
 /* ══════════════════════════════════════════════
@@ -506,8 +504,6 @@ function App() {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/try" element={<FaceFilterPage />} />
-                <Route path="/try-body" element={<TryOnBodyPage />} />
-                <Route path="/qr-generator" element={<QrGenerator />} />
                 <Route path="/generate" element={<TripoUpload />} />
             </Routes>
         </BrowserRouter>

@@ -5,7 +5,6 @@ import { useGLTF, OrbitControls } from "@react-three/drei";
 // ── Modèle affiché en 3D viewer simple ──
 function TShirtModel({ path, scale, color }) {
   const { scene } = useGLTF(path);
-
   useEffect(() => {
     if (!color) return;
     scene.traverse((child) => {

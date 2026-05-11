@@ -4,7 +4,7 @@ export async function generateModelFromImage(imageFile, modelName) {
     formData.append('name', modelName);
 
     const res = await fetch('https://glamtec-ar.vercel.app/api/generate', {
-        // ← plus de localhost !
+        
         method: 'POST',
         headers: {
             'Access-Control-Allow-Origin': '*',
