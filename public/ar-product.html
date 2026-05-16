@@ -14,6 +14,9 @@
       --accentB: #ff758c;
       --accentLight: #fff0f3;
       --accentGlow: rgba(255,77,109,0.22);
+      --btn-bg: #ff4d6d;
+      --btn-color: #ffffff;
+      --btn-font: 'Syne', sans-serif;
       --bg: #0c0c14;
       --bgCard: #13131f;
       --surface: #1a1a28;
@@ -116,24 +119,24 @@
       align-items: center;
       gap: 9px;
       padding: 14px 24px;
-      background: var(--accent);
+      background: var(--btn-bg);
       border: none;
       border-radius: 100px;
-      font-family: 'Syne', sans-serif;
+      font-family: var(--btn-font);
       font-weight: 700;
       font-size: 0.82rem;
       letter-spacing: 0.4px;
       text-transform: uppercase;
-      color: #fff;
+      color: var(--btn-color);
       cursor: pointer;
       white-space: nowrap;
-      box-shadow: 0 6px 36px var(--accentGlow), 0 0 0 1px rgba(255,77,109,0.3);
+      box-shadow: 0 6px 36px color-mix(in srgb, var(--btn-bg) 40%, transparent), 0 0 0 1px color-mix(in srgb, var(--btn-bg) 50%, transparent);
       transition: transform 0.2s, box-shadow 0.2s;
       animation: floatBtn 3.2s ease-in-out infinite;
     }
     .ar-btn:hover {
       transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 12px 48px rgba(255,77,109,0.45), 0 0 0 1px rgba(255,77,109,0.4);
+      box-shadow: 0 12px 48px color-mix(in srgb, var(--btn-bg) 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--btn-bg) 60%, transparent);
     }
     .ar-btn .ar-icon {
       font-size: 1rem;
@@ -436,6 +439,46 @@
   const modelParam = params.get("model");
   const iosParam   = params.get("ios_model");
   const titleParam = params.get("title");
+  const brandParam = params.get("brand");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  async function applyBrandTheme(subdomain) {
+    try {
+      const apiUrl = `https://${subdomain}.devaito.com/api/fonts-and-colors`;
+      const res = await fetch(apiUrl);
+      if (!res.ok) return;
+      const theme = await res.json();
+
+      const btn = theme.button;
+      if (!btn) return;
+
+      const bg    = prefersDark ? (btn.dark_bg     || btn.light_bg)    : (btn.light_bg    || btn.dark_bg);
+      const color = prefersDark ? (btn.dark_color  || btn.light_color) : (btn.light_color || btn.dark_color);
+      const font  = btn.font || null;
+
+      const root = document.documentElement;
+      if (bg)    root.style.setProperty("--btn-bg",    bg);
+      if (color) root.style.setProperty("--btn-color", color);
+      if (font) {
+        const link = document.createElement("link");
+        link.rel  = "stylesheet";
+        link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;600;700&display=swap`;
+        document.head.appendChild(link);
+        root.style.setProperty("--btn-font", `'${font}', sans-serif`);
+      }
+
+      // Optionnel : applique aussi le fond body du site client
+      const bodyBg = prefersDark ? theme.body?.dark_bg : theme.body?.light_bg;
+      if (bodyBg) root.style.setProperty("--bg", bodyBg);
+
+    } catch (e) {
+      console.warn("Brand theme fetch failed, using defaults.", e);
+    }
+  }
+
+  if (brandParam) {
+    applyBrandTheme(brandParam);
+  }
 
   const viewer        = document.getElementById("viewer");
   const overlay       = document.getElementById("loadingOverlay");
