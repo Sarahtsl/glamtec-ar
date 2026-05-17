@@ -11,31 +11,31 @@
     * { margin:0; padding:0; box-sizing:border-box; }
 
     /* ─────────────────────────────────────────────────
-       PALETTE FIXE — devaito.com (light)
-       Ces variables ne changent JAMAIS via JS.
-       Seules --btn-bg / --btn-color / --btn-font
-       sont overridées par le fetch de l'API brand.
+       Toutes les variables sont overridées par JS
+       via l'API https://{brand}.devaito.com/api/fonts-and-colors
+       Les valeurs ici = fallback si pas de brand ou fetch échoué
     ───────────────────────────────────────────────── */
     :root {
+      /* Page background */
       --bg:         #ebebf3;
       --bgCard:     #ffffff;
       --surface:    #f4f4fb;
-      --border:     rgba(79,70,229,0.1);
-      --shadow:     0 2px 16px rgba(79,70,229,0.07);
-      --shadowMd:   0 12px 48px rgba(79,70,229,0.12);
-      --radius:     16px;
 
+      /* Text */
       --text:       #0f0f1a;
       --textSub:    #6b7280;
-      --accent:     #4f46e5;
-      --accentB:    #6366f1;
-      --accentGlow: rgba(79,70,229,0.18);
 
-      /* ── BOUTON AR — seules variables modifiées par l'API brand ──
-         Défaut = couleurs du bouton devaito.com */
-      --btn-bg:    #3d35d4;
-      --btn-color: #ffffff;
-      --btn-font:  'Syne', sans-serif;
+      /* Accent (bouton + décorations) */
+      --btn-bg:     #3d35d4;
+      --btn-color:  #ffffff;
+      --btn-font:   'Syne', sans-serif;
+
+      /* Dérivés auto du btn-bg (calculés en JS aussi) */
+      --accent:     #3d35d4;
+      --accentGlow: rgba(61,53,212,0.18);
+
+      --border:     rgba(61,53,212,0.1);
+      --shadowMd:   0 12px 48px rgba(61,53,212,0.12);
 
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-top:    env(safe-area-inset-top,    0px);
@@ -43,12 +43,17 @@
       --safe-right:  env(safe-area-inset-right,  0px);
     }
 
+    /* Page cachée jusqu'au fetch du thème */
+    body { visibility: hidden; }
+    body.ready { visibility: visible; }
+
     html, body {
       height:100%; width:100%;
       background: var(--bg);
       color: var(--text);
       font-family: 'DM Sans', sans-serif;
       -webkit-font-smoothing: antialiased;
+      transition: background 0.3s;
     }
 
     /* ── TOPBAR ── */
@@ -59,21 +64,21 @@
       display:flex; align-items:center; justify-content:space-between;
       padding-left:  calc(24px + var(--safe-left));
       padding-right: calc(24px + var(--safe-right));
-      background: rgba(235,235,243,0.88);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       border-bottom: 1px solid var(--border);
     }
     .topbar-logo {
-      font-family:'Syne',sans-serif; font-weight:800; font-size:1.05rem;
+      font-family: var(--btn-font); font-weight:800; font-size:1.05rem;
       letter-spacing:1px; color:var(--text); text-transform:uppercase;
       display:flex; align-items:center; gap:7px;
     }
     .topbar-logo .dot {
       width:8px; height:8px; border-radius:50%;
-      background:var(--accent);
-      box-shadow:0 0 8px var(--accentGlow);
-      animation:pulse 2.4s ease-in-out infinite;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accentGlow);
+      animation: pulse 2.4s ease-in-out infinite;
     }
     @keyframes pulse {
       0%,100% { opacity:1; transform:scale(1); }
@@ -87,21 +92,19 @@
     .topbar-badge {
       font-size:0.6rem; font-weight:700; padding:4px 12px;
       border-radius:100px; letter-spacing:0.5px; text-transform:uppercase;
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+      color: var(--accent);
     }
-    .badge-ios     { background:rgba(22,163,74,0.08);  border:1px solid rgba(22,163,74,0.25);  color:#16a34a; }
-    .badge-android { background:rgba(37,99,235,0.08);  border:1px solid rgba(37,99,235,0.25);  color:#2563eb; }
-    .badge-unknown { background:rgba(79,70,229,0.07);  border:1px solid rgba(79,70,229,0.2);   color:var(--accent); }
 
     /* ── MODEL VIEWER ── */
     model-viewer {
       width:100vw; height:100vh;
-      padding-bottom:var(--safe-bottom);
-      background:radial-gradient(ellipse at 45% 40%, #e4e4f5 0%, var(--bg) 65%);
+      padding-bottom: var(--safe-bottom);
+      background: radial-gradient(ellipse at 45% 40%, color-mix(in srgb, var(--accent) 8%, var(--bg)) 0%, var(--bg) 65%);
     }
 
-    /* ══════════════════════════════════════════════
-       AR BUTTON — couleurs via --btn-* uniquement
-    ══════════════════════════════════════════════ */
+    /* ── AR BUTTON ── */
     .ar-btn {
       position:absolute;
       top:  calc(78px + var(--safe-top));
@@ -109,24 +112,24 @@
       left:auto; z-index:10;
       display:flex; align-items:center; gap:9px;
       padding:13px 22px;
-      background:var(--btn-bg);
+      background: var(--btn-bg);
       border:none; border-radius:100px;
-      font-family:var(--btn-font);
+      font-family: var(--btn-font);
       font-weight:700; font-size:0.82rem;
       letter-spacing:0.3px; text-transform:uppercase;
-      color:var(--btn-color);
+      color: var(--btn-color);
       cursor:pointer; white-space:nowrap;
       box-shadow:
         0 4px 24px color-mix(in srgb, var(--btn-bg) 38%, transparent),
-        0 1px 0 rgba(255,255,255,0.18) inset;
-      transition:transform 0.18s, box-shadow 0.18s;
-      animation:floatBtn 3.2s ease-in-out infinite;
+        0 1px 0 rgba(255,255,255,0.15) inset;
+      transition: transform 0.18s, box-shadow 0.18s;
+      animation: floatBtn 3.2s ease-in-out infinite;
     }
     .ar-btn:hover {
       transform:translateY(-2px) scale(1.02);
       box-shadow:
         0 10px 36px color-mix(in srgb, var(--btn-bg) 52%, transparent),
-        0 1px 0 rgba(255,255,255,0.18) inset;
+        0 1px 0 rgba(255,255,255,0.15) inset;
     }
     .ar-btn:active { transform:scale(0.97); }
     .ar-btn .ar-icon { font-size:1rem; animation:wiggle 3.4s ease-in-out infinite; }
@@ -147,7 +150,7 @@
       position:absolute;
       bottom:calc(90px + var(--safe-bottom));
       left:50%; transform:translateX(-50%);
-      background:rgba(255,255,255,0.75);
+      background: color-mix(in srgb, var(--bgCard) 80%, transparent);
       backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
       border:1px solid var(--border); border-radius:100px;
       padding:8px 18px; font-size:0.67rem; font-weight:500;
@@ -170,7 +173,7 @@
     }
     #loadingOverlay.hide { opacity:0; pointer-events:none; }
     .loader-logo {
-      font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem;
+      font-family: var(--btn-font); font-weight:800; font-size:1.6rem;
       letter-spacing:2px; text-transform:uppercase; color:var(--text);
       display:flex; align-items:center; gap:10px;
     }
@@ -180,8 +183,8 @@
     }
     .loader-ring {
       width:44px; height:44px;
-      border:2.5px solid rgba(79,70,229,0.1);
-      border-top-color:var(--accent);
+      border: 2.5px solid color-mix(in srgb, var(--accent) 12%, transparent);
+      border-top-color: var(--accent);
       border-radius:50%; animation:spin 0.85s linear infinite;
     }
     @keyframes spin { to { transform:rotate(360deg); } }
@@ -191,11 +194,12 @@
     }
     .loader-progress {
       width:180px; height:2px;
-      background:rgba(79,70,229,0.1); border-radius:2px; overflow:hidden;
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      border-radius:2px; overflow:hidden;
     }
     .loader-bar {
       height:100%; width:0%;
-      background:linear-gradient(90deg, var(--accent), var(--accentB));
+      background: var(--accent);
       border-radius:2px; transition:width 0.3s;
     }
 
@@ -211,15 +215,16 @@
     .state-card::before {
       content:''; position:absolute; top:0; left:50%;
       transform:translateX(-50%); width:50%; height:2px;
-      background:linear-gradient(90deg, transparent, var(--accent), transparent);
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
     }
     .state-icon {
       width:64px; height:64px; border-radius:18px;
-      background:rgba(79,70,229,0.06); border:1px solid rgba(79,70,229,0.12);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
       display:flex; align-items:center; justify-content:center; font-size:1.9rem;
     }
     .state-card h2 {
-      font-family:'Syne',sans-serif; font-size:1.25rem; font-weight:700;
+      font-family: var(--btn-font); font-size:1.25rem; font-weight:700;
       color:var(--text); line-height:1.35;
     }
     .state-card p { font-size:0.78rem; color:var(--textSub); line-height:1.9; }
@@ -232,11 +237,11 @@
     }
     #errorState a {
       margin-top:6px; padding:12px 30px; border-radius:100px;
-      background:var(--accent); color:#fff;
-      text-decoration:none; font-family:'Syne',sans-serif;
+      background: var(--btn-bg); color: var(--btn-color);
+      text-decoration:none; font-family: var(--btn-font);
       font-weight:700; font-size:0.8rem; letter-spacing:0.3px; text-transform:uppercase;
-      box-shadow:0 4px 20px var(--accentGlow);
-      transition:transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px var(--accentGlow);
+      transition:transform 0.15s;
     }
     #errorState a:hover { transform:translateY(-2px); }
 
@@ -249,20 +254,24 @@
       padding-bottom:calc(24px + var(--safe-bottom));
     }
     .req-list {
-      background:rgba(79,70,229,0.03); border:1px solid var(--border);
+      background: color-mix(in srgb, var(--accent) 4%, var(--bgCard));
+      border:1px solid var(--border);
       border-radius:12px; padding:16px 20px; text-align:left;
       font-size:0.7rem; color:var(--textSub); line-height:2.2; width:100%;
     }
     .req-list strong { color:var(--text); font-weight:600; }
     .btn-dismiss {
       padding:12px 32px; border-radius:100px;
-      border:1.5px solid rgba(79,70,229,0.25);
+      border: 1.5px solid color-mix(in srgb, var(--accent) 30%, transparent);
       background:transparent; color:var(--accent);
-      font-family:'Syne',sans-serif; font-weight:700; font-size:0.8rem;
+      font-family: var(--btn-font); font-weight:700; font-size:0.8rem;
       letter-spacing:0.3px; text-transform:uppercase; cursor:pointer;
       transition:background 0.15s, border-color 0.15s;
     }
-    .btn-dismiss:hover { background:rgba(79,70,229,0.05); border-color:var(--accent); }
+    .btn-dismiss:hover {
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      border-color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -338,13 +347,13 @@
 
 <script>
   /*
-   * ?model=      fichier GLB
-   * ?ios_model=  fichier USDZ (optionnel iOS)
-   * ?title=      nom affiché
-   * ?brand=      subdomain devaito  ex: "picksssss"
-   *              → fetch https://picksssss.devaito.com/api/fonts-and-colors
-   *              → applique button.light_bg/dark_bg, light_color/dark_color, font
-   *              → rien d'autre ne change
+   * URL params :
+   *   ?model=      → fichier GLB/GLTF
+   *   ?ios_model=  → fichier USDZ iOS (optionnel)
+   *   ?title=      → nom du modèle
+   *   ?brand=      → subdomain ex: "picksssss"
+   *                  → fetch https://picksssss.devaito.com/api/fonts-and-colors
+   *                  → applique TOUTE la palette de ce site sur la page
    */
   const params      = new URLSearchParams(window.location.search);
   const modelParam  = params.get("model");
@@ -354,51 +363,105 @@
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const root        = document.documentElement;
 
-  /* ══════════════════════════════════════════════════════
-     applyButtonTheme()
-     Modifie UNIQUEMENT les 3 variables CSS :
-       --btn-bg  --btn-color  --btn-font
-     Tout le reste de la page reste palette devaito.com.
-  ══════════════════════════════════════════════════════ */
-  async function applyButtonTheme() {
-    if (!brandParam) return;
+  /* ══════════════════════════════════════════════════════════
+     applyTheme()
+     Fetch l'API du site brand et applique TOUTE la palette :
+       body bg, card bg, text, textSub, btn bg/color/font
+
+     Structure JSON attendue :
+     {
+       body:      { light_bg, dark_bg },
+       paragraph: { light_color, dark_color, font },
+       button:    { light_bg, dark_bg, light_color, dark_color, font },
+       h1/h2/h3:  { light_color, dark_color, font }
+     }
+
+     Si pas de ?brand= ou fetch échoué → fallback CSS (devaito)
+  ══════════════════════════════════════════════════════════ */
+  async function applyTheme() {
+    if (!brandParam) {
+      document.body.classList.add("ready");
+      return;
+    }
 
     const url = `https://${brandParam}.devaito.com/api/fonts-and-colors`;
+
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const theme = await res.json();
+      const t = await res.json();
 
-      const btn = theme?.button;
-      if (!btn) return;
+      /* ── Helpers ── */
+      const pick = (obj, lightKey, darkKey) =>
+        obj ? (prefersDark ? (obj[darkKey] ?? obj[lightKey]) : (obj[lightKey] ?? obj[darkKey])) : null;
 
-      const bg    = prefersDark
-        ? (btn.dark_bg     ?? btn.light_bg)
-        : (btn.light_bg    ?? btn.dark_bg);
-      const color = prefersDark
-        ? (btn.dark_color  ?? btn.light_color)
-        : (btn.light_color ?? btn.dark_color);
-      const font  = btn.font ?? null;
+      /* ── Body background ── */
+      const bodyBg = pick(t.body, "light_bg", "dark_bg");
+      if (bodyBg) {
+        root.style.setProperty("--bg", bodyBg);
+        /* Génère bgCard légèrement plus clair/foncé selon le thème */
+        root.style.setProperty("--bgCard",
+          prefersDark
+            ? `color-mix(in srgb, ${bodyBg} 70%, white 30%)`
+            : `#ffffff`
+        );
+        root.style.setProperty("--surface",
+          `color-mix(in srgb, ${bodyBg} 90%, white 10%)`
+        );
+      }
 
-      if (bg)    root.style.setProperty("--btn-bg",    bg);
-      if (color) root.style.setProperty("--btn-color", color);
-      if (font) {
-        if (font !== 'Syne') {
+      /* ── Text principal (h1 ou paragraph) ── */
+      const textColor = pick(t.h1, "light_color", "dark_color")
+                     ?? pick(t.paragraph, "light_color", "dark_color");
+      if (textColor) root.style.setProperty("--text", textColor);
+
+      /* ── Text secondaire (paragraph) ── */
+      const subColor = pick(t.paragraph, "light_color", "dark_color");
+      if (subColor) root.style.setProperty("--textSub",
+        `color-mix(in srgb, ${subColor} 55%, transparent)`
+      );
+
+      /* ── Bouton ── */
+      const btnBg    = pick(t.button, "light_bg",    "dark_bg");
+      const btnColor = pick(t.button, "light_color", "dark_color");
+      const btnFont  = t.button?.font ?? t.h1?.font ?? null;
+
+      if (btnBg) {
+        root.style.setProperty("--btn-bg",    btnBg);
+        root.style.setProperty("--accent",    btnBg);
+        root.style.setProperty("--accentGlow", `color-mix(in srgb, ${btnBg} 22%, transparent)`);
+        root.style.setProperty("--border",     `color-mix(in srgb, ${btnBg} 12%, transparent)`);
+        root.style.setProperty("--shadowMd",   `0 12px 48px color-mix(in srgb, ${btnBg} 14%, transparent)`);
+      }
+      if (btnColor) root.style.setProperty("--btn-color", btnColor);
+
+      /* ── Police ── */
+      if (btnFont) {
+        const safeFont = btnFont.replace(/\+/g, " ");
+        // Charge la Google Font si pas déjà présente
+        const alreadyLoaded = [...document.querySelectorAll('link[rel="stylesheet"]')]
+          .some(l => l.href.includes(encodeURIComponent(safeFont)));
+        if (!alreadyLoaded) {
           const link = document.createElement("link");
           link.rel  = "stylesheet";
-          link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;600;700&display=swap`;
+          link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(safeFont)}:wght@400;600;700;800&display=swap`;
           document.head.appendChild(link);
         }
-        root.style.setProperty("--btn-font", `'${font}', sans-serif`);
+        root.style.setProperty("--btn-font", `'${safeFont}', sans-serif`);
       }
+
     } catch (e) {
-      console.warn(`[AR Viewer] brand fetch failed (${brandParam}):`, e.message);
+      console.warn(`[AR Viewer] Theme fetch failed for "${brandParam}":`, e.message);
     }
+
+    /* Révèle la page après application du thème (ou après échec) */
+    document.body.classList.add("ready");
   }
 
-  applyButtonTheme(); // lance en parallèle, pas d'attente
+  /* Applique le thème AVANT de rendre la page visible */
+  applyTheme();
 
-  /* ── PLATFORM ── */
+  /* ── PLATFORM DETECTION ── */
   const viewer        = document.getElementById("viewer");
   const overlay       = document.getElementById("loadingOverlay");
   const errState      = document.getElementById("errorState");
@@ -414,25 +477,21 @@
 
   if (isIOS) {
     platformBadge.textContent = "🍎 iOS · QuickLook";
-    platformBadge.className   = "topbar-badge badge-ios";
     loaderText.textContent    = "Preparing AR experience for iOS…";
     arBtnText.textContent     = "Place in My Room";
   } else if (isAndroid) {
     platformBadge.textContent = "🤖 Android · Scene Viewer";
-    platformBadge.className   = "topbar-badge badge-android";
     loaderText.textContent    = "Preparing AR experience for Android…";
     arBtnText.textContent     = "Place in My Room";
   } else {
     platformBadge.textContent = "💻 Desktop · 3D Viewer";
-    platformBadge.className   = "topbar-badge badge-unknown";
   }
 
-  /* ── MODEL ── */
+  /* ── MODEL RESOLUTION ── */
   function toAbsolute(p) {
     if (!p) return null;
     return (p.startsWith("http://") || p.startsWith("https://"))
-      ? p
-      : `${window.location.origin}/models/${p}`;
+      ? p : `${window.location.origin}/models/${p}`;
   }
   function resolveUsdz() {
     if (iosParam) return toAbsolute(iosParam);
